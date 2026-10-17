@@ -1,0 +1,3 @@
+sourceServiceBackendRevision: 7215388da1722de621867743212175466615d6f7
+domain: observability-metering
+cutoverState: staged
