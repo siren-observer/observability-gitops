@@ -1,0 +1,3 @@
+domain: observability-metering
+controllerNamespace: flux-observability-system
+forbidden: []
