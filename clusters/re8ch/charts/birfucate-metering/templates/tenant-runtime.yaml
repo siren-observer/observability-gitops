@@ -87,6 +87,7 @@ spec:
     spec:
       serviceAccountName: admin-api
       automountServiceAccountToken: false
+      {{- include "birfucate-metering.localDNSPodSpec" . | nindent 6 }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -148,6 +149,7 @@ spec:
       terminationGracePeriodSeconds: 75
       serviceAccountName: tenant-api
       automountServiceAccountToken: true
+      {{- include "birfucate-metering.localDNSPodSpec" . | nindent 6 }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

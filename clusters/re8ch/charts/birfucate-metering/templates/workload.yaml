@@ -20,13 +20,7 @@ spec:
     spec:
       serviceAccountName: {{ include "birfucate-metering.fullname" . }}
       automountServiceAccountToken: false
-      {{- if .Values.localDNS.enabled }}
-      dnsPolicy: None
-      dnsConfig:
-        nameservers: [{{ .Values.localDNS.clusterIP | quote }}]
-        searches: [{{ .Release.Namespace }}.svc.cluster.local, svc.cluster.local, cluster.local]
-        options: [{name: ndots, value: "5"}]
-      {{- end }}
+      {{- include "birfucate-metering.localDNSPodSpec" . | nindent 6 }}
       securityContext: {runAsNonRoot: true, runAsUser: 65532, runAsGroup: 65532, fsGroup: 65532, seccompProfile: {type: RuntimeDefault}}
       containers:
         - name: collector
@@ -106,6 +100,7 @@ spec:
     spec:
       serviceAccountName: {{ include "birfucate-metering.fullname" . }}-discovery
       automountServiceAccountToken: true
+      {{- include "birfucate-metering.localDNSPodSpec" . | nindent 6 }}
       securityContext: {runAsNonRoot: true, runAsUser: 65532, runAsGroup: 65532, seccompProfile: {type: RuntimeDefault}}
       containers:
         - name: discovery
