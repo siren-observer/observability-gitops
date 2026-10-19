@@ -2832,6 +2832,7 @@ metadata:
   name: birfucate-metering
   namespace: flux-observability-system
 spec:
+  suspend: true
   chart:
     spec:
       chart: ./clusters/re8ch/charts/birfucate-metering
@@ -3230,6 +3231,7 @@ metadata:
   name: incidentrelay
   namespace: flux-observability-system
 spec:
+  suspend: true
   chartRef:
     kind: OCIRepository
     name: incidentrelay
@@ -3392,6 +3394,7 @@ metadata:
   name: re8ch-kube-state-metrics
   namespace: flux-observability-system
 spec:
+  suspend: true
   chartRef:
     kind: OCIRepository
     name: prometheus-community
@@ -3460,6 +3463,7 @@ metadata:
   name: re8ch-opentelemetry-operator
   namespace: flux-observability-system
 spec:
+  suspend: true
   chartRef:
     kind: OCIRepository
     name: open-telemetry
@@ -3507,6 +3511,7 @@ metadata:
   name: victoria-metrics-operator
   namespace: flux-observability-system
 spec:
+  suspend: true
   chartRef:
     kind: OCIRepository
     name: victoriametrics
