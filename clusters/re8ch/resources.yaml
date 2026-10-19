@@ -2735,6 +2735,29 @@ spec:
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
+  name: incidentrelay-pigsty
+  namespace: incidentrelay
+spec:
+  egress:
+  - toPorts:
+    - ports:
+      - port: '5432'
+        protocol: TCP
+    toServices:
+    - k8sService:
+        namespace: pigsty-external
+        serviceName: pg-re8ch-primary
+  - toEntities:
+    - host
+    toPorts:
+    - ports:
+      - port: '5432'
+        protocol: TCP
+  endpointSelector: {}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
   name: incidentrelay-from-gateway
   namespace: incidentrelay
 spec:
@@ -3314,9 +3337,9 @@ spec:
             nodeSelectorTerms:
             - matchExpressions:
               - key: kubernetes.io/hostname
-                operator: In
+                operator: NotIn
                 values:
-                - vm-20-12-ubuntu
+                - r640
       enabled: true
       extraEnv:
       - name: HTTP_PROXY
@@ -3369,18 +3392,15 @@ metadata:
   name: re8ch-kube-state-metrics
   namespace: flux-observability-system
 spec:
-  chart:
-    spec:
-      chart: kube-state-metrics
-      sourceRef:
-        kind: HelmRepository
-        name: prometheus-community
-        namespace: flux-observability-system
-      version: 8.3.0
+  chartRef:
+    kind: OCIRepository
+    name: prometheus-community
+    namespace: flux-observability-system
   install:
     remediation:
       retries: 3
   interval: 3m
+  releaseName: re8ch-kube-state-metrics
   upgrade:
     remediation:
       remediateLastFailure: true
@@ -3440,14 +3460,10 @@ metadata:
   name: re8ch-opentelemetry-operator
   namespace: flux-observability-system
 spec:
-  chart:
-    spec:
-      chart: opentelemetry-operator
-      sourceRef:
-        kind: HelmRepository
-        name: open-telemetry
-        namespace: flux-observability-system
-      version: 0.115.0
+  chartRef:
+    kind: OCIRepository
+    name: open-telemetry
+    namespace: flux-observability-system
   install:
     remediation:
       retries: 3
@@ -3491,20 +3507,16 @@ metadata:
   name: victoria-metrics-operator
   namespace: flux-observability-system
 spec:
-  chart:
-    spec:
-      chart: victoria-metrics-operator
-      interval: 1h
-      sourceRef:
-        kind: HelmRepository
-        name: victoriametrics
-        namespace: flux-observability-system
-      version: 0.67.2
+  chartRef:
+    kind: OCIRepository
+    name: victoriametrics
+    namespace: flux-observability-system
   install:
     crds: CreateReplace
     remediation:
       retries: 3
   interval: 3m
+  releaseName: victoria-metrics-operator
   upgrade:
     crds: CreateReplace
     remediation:
@@ -3608,7 +3620,7 @@ spec:
       protocol: TCP
     to:
     - ipBlock:
-        cidr: 10.181.22.0/24
+        cidr: 10.250.0.128/32
   - ports:
     - port: 17891
       protocol: TCP
@@ -4471,26 +4483,9 @@ metadata:
 spec:
   retentionPeriod: 90d
   vminsert:
-    affinity:
-      nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms:
-          - matchExpressions:
-            - key: kubernetes.io/hostname
-              operator: In
-              values:
-              - a1-wsl-zt
-              - b1-wsl-zt
-              - r640
-      podAntiAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-        - podAffinityTerm:
-            labelSelector:
-              matchLabels:
-                app.kubernetes.io/name: vminsert
-            topologyKey: kubernetes.io/hostname
-          weight: 100
-    replicaCount: 2
+    nodeSelector:
+      kubernetes.io/hostname: r640
+    replicaCount: 1
     resources:
       limits:
         cpu: '1'
@@ -4498,33 +4493,12 @@ spec:
       requests:
         cpu: 250m
         memory: 256Mi
-    tolerations:
-    - effect: NoSchedule
-      key: node-role.kubernetes.io/control-plane
-      operator: Exists
   vmselect:
-    affinity:
-      nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms:
-          - matchExpressions:
-            - key: kubernetes.io/hostname
-              operator: In
-              values:
-              - a1-wsl-zt
-              - b1-wsl-zt
-              - r640
-      podAntiAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-        - podAffinityTerm:
-            labelSelector:
-              matchLabels:
-                app.kubernetes.io/name: vmselect
-            topologyKey: kubernetes.io/hostname
-          weight: 100
     extraArgs:
       dedup.minScrapeInterval: 15s
-    replicaCount: 2
+    nodeSelector:
+      kubernetes.io/hostname: r640
+    replicaCount: 1
     resources:
       limits:
         cpu: '2'
@@ -4532,10 +4506,6 @@ spec:
       requests:
         cpu: 500m
         memory: 1Gi
-    tolerations:
-    - effect: NoSchedule
-      key: node-role.kubernetes.io/control-plane
-      operator: Exists
   vmstorage:
     extraArgs:
       dedup.minScrapeInterval: 15s
@@ -5737,34 +5707,40 @@ spec:
     - hubble-metrics.kube-system.svc:9965
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
+kind: OCIRepository
 metadata:
   name: open-telemetry
   namespace: flux-observability-system
 spec:
   interval: 6m
-  timeout: 5m
-  url: https://open-telemetry.github.io/opentelemetry-helm-charts
+  provider: generic
+  ref:
+    digest: sha256:9e3b657e793e7e7f69b7770de46851aebc5fc2fe00c1866ddee999ad61cb73dc
+  url: oci://ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-operator
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
+kind: OCIRepository
 metadata:
   name: prometheus-community
   namespace: flux-observability-system
 spec:
   interval: 6m
-  timeout: 5m
-  url: https://prometheus-community.github.io/helm-charts
+  provider: generic
+  ref:
+    digest: sha256:1fe070bab14c87f6bcdbef42200cf39b207b5f3d3a20234c429cebfe1bdb4270
+  url: oci://ghcr.io/prometheus-community/charts/kube-state-metrics
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
+kind: OCIRepository
 metadata:
   name: victoriametrics
   namespace: flux-observability-system
 spec:
   interval: 6m
-  timeout: 5m
-  url: https://victoriametrics.github.io/helm-charts/
+  provider: generic
+  ref:
+    digest: sha256:454e94bbc58a44edf760c69d69d3e2cbc4a355b90b5adda2dcc28069213fb442
+  url: oci://ghcr.io/victoriametrics/helm-charts/victoria-metrics-operator
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
