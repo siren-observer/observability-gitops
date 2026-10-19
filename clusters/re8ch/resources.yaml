@@ -3434,6 +3434,13 @@ spec:
     - volumeattachments
     customLabels:
       observability.re8ch.com/component: inventory
+    extraEnv:
+    - name: KUBERNETES_SERVICE_HOST
+      valueFrom:
+        fieldRef:
+          fieldPath: status.hostIP
+    - name: KUBERNETES_SERVICE_PORT
+      value: '6443'
     fullnameOverride: re8ch-kube-state-metrics
     metricAnnotationsAllowList:
     - services=[observability.re8ch.com/owner,observability.re8ch.com/runbook,observability.re8ch.com/metrics-doc,observability.re8ch.com/slo]
