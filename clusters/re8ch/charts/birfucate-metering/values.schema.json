@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "collectionIntervalSeconds": {"type": "integer", "minimum": 10, "maximum": 3600},
+    "browserAPI": {
+      "type": "object", "additionalProperties": false, "required": ["enabled", "lookbackSeconds"],
+      "properties": {"enabled": {"type": "boolean"}, "lookbackSeconds": {"type": "integer", "minimum": 60, "maximum": 3600}}
+    },
+    "tenantPlatform": {
+      "type": "object", "additionalProperties": false, "required": ["enabled", "image", "provider", "tenantReadinessPath", "placement", "state", "supplyChain", "tenants"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "image": {"type": "string", "pattern": "@sha256:[a-f0-9]{64}$|IMAGE_REQUIRES_VERIFIED_DIGEST$"},
+        "tenantAPI": {
+          "type": "object", "additionalProperties": false, "required": ["enabled", "image"],
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "openAIAppsChallengeToken": {"type": "string", "pattern": "^$|^[A-Za-z0-9_-]{16,256}$"},
+            "usersURL": {"type": "string", "pattern": "^$|^https?://[^ ]+$"},
+            "organizationsURL": {"type": "string", "pattern": "^$|^https?://[^ ]+$"},
+            "platformSessionURL": {"type": "string", "pattern": "^$|^https?://[^ ]+$"},
+            "image": {"type": "string", "pattern": "@sha256:[a-f0-9]{64}$|IMAGE_REQUIRES_VERIFIED_DIGEST$"}
+          }
+        },
+        "provider": {
+          "type": "object", "additionalProperties": false, "required": ["enabled", "image"],
+          "properties": {"enabled": {"type": "boolean"}, "image": {"type": "string", "pattern": "@sha256:[a-f0-9]{64}$|IMAGE_REQUIRES_VERIFIED_DIGEST$"},
+            "databaseBindings": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+              "required": ["tenantRef", "database", "namespace", "secretName", "secretUID"],
+              "properties": {"tenantRef": {"type": "string"}, "database": {"type": "string"}, "namespace": {"type": "string"}, "secretName": {"type": "string"}, "secretUID": {"type": "string", "format": "uuid"}}}}
+          }
+        },
+        "tenantReadinessPath": {"enum": ["/readyz", "/livez"]},
+        "placement": {
+          "type": "object", "additionalProperties": false, "required": ["nodeNames"],
+          "properties": {"nodeNames": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}}
+        },
+        "tolerations": {"type": "array", "items": {"type": "object"}},
+        "state": {
+          "type": "object", "additionalProperties": false, "required": ["storageClassName", "size"],
+          "properties": {"storageClassName": {"type": "string", "minLength": 1}, "size": {"type": "string", "pattern": "^[1-9][0-9]*(Mi|Gi)$"}}
+        },
+        "supplyChain": {
+          "type": "object", "additionalProperties": false, "required": ["required"],
+          "properties": {"required": {"type": "boolean"}}
+        },
+        "tenants": {"type": "array", "items": {"type": "object"}}
+      }
+    },
+    "prometheus": {
+      "type": "object", "required": ["baseURL", "timeoutSeconds"],
+      "properties": {"baseURL": {"type": "string", "pattern": "^https?://"}, "writePath": {"type": "string", "pattern": "^/"}, "timeoutSeconds": {"type": "integer", "minimum": 1, "maximum": 60}}
+    },
+    "usageSink": {
+      "type": "object", "required": ["enabled", "url"],
+      "properties": {"enabled": {"type": "boolean"}, "url": {"type": "string", "pattern": "^https?://"}, "allowedTenants": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}}
+    },
+    "billingSink": {
+      "type": "object", "additionalProperties": false, "required": ["enabled", "url", "timeoutSeconds", "mappings"],
+      "properties": {
+        "enabled": {"type": "boolean"}, "url": {"type": "string", "pattern": "^https?://"},
+        "timeoutSeconds": {"type": "integer", "minimum": 1, "maximum": 60},
+        "mappings": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+          "required": ["serviceClass", "meter", "serviceRef", "meterCode"],
+          "properties": {"serviceClass": {"type": "string", "minLength": 1}, "meter": {"type": "string", "minLength": 1},
+            "serviceRef": {"type": "string", "minLength": 1}, "meterCode": {"type": "string", "pattern": "^[a-z][a-z0-9._-]{1,63}$"}}}}
+      }
+    },
+    "pricing": {
+      "type": "object", "additionalProperties": false, "required": ["enabled", "currency", "rateCardRef"],
+      "properties": {"enabled": {"type": "boolean"}, "currency": {"type": "string", "pattern": "^[A-Z]{3}$"}, "rateCardRef": {"type": "string", "minLength": 1}}
+    },
+    "nodeCostAllocation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["enabled", "hourlyCostQuery", "weightQuery", "nodeLabel", "tenantLabel", "currencyLabel", "resources"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "hourlyCostQuery": {"type": "string", "minLength": 1},
+        "weightQuery": {"type": "string", "minLength": 1},
+        "nodeLabel": {"type": "string", "minLength": 1},
+        "tenantLabel": {"type": "string", "minLength": 1},
+        "currencyLabel": {"type": "string", "minLength": 1},
+        "resources": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["name", "unit", "capacityQuery", "usageQuery"], "properties": {"name": {"enum": ["cpu", "ram", "gpu"]}, "unit": {"type": "string", "minLength": 1}, "capacityQuery": {"type": "string", "minLength": 1}, "usageQuery": {"type": "string", "minLength": 1}}}}
+      }
+    },
+    "meters": {
+      "type": "object", "required": ["usage", "occupancy", "bifurcation"],
+      "properties": {
+        "usage": {"type": "array", "items": {"$ref": "#/$defs/usage"}},
+        "occupancy": {"type": "array", "items": {"$ref": "#/$defs/occupancy"}},
+        "bifurcation": {"type": "array", "items": {"$ref": "#/$defs/bifurcation"}}
+      }
+    }
+  },
+  "$defs": {
+    "name": {"type": "string", "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"},
+    "domain": {"enum": ["compute", "ceph", "pigsty", "networks", "ai-gateway", "sandbox"]},
+    "usage": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "domain", "serviceClass", "unit", "query"],
+      "properties": {"name": {"$ref": "#/$defs/name"}, "domain": {"$ref": "#/$defs/domain"}, "serviceClass": {"type": "string", "minLength": 1}, "resourceType": {"type": "string"}, "purpose": {"type": "string"}, "pricePerBillingUnit": {"type": "number", "minimum": 0}, "billingUnitSize": {"type": "number", "exclusiveMinimum": 0}, "costFromQuantity": {"type": "boolean"}, "currency": {"type": "string", "pattern": "^[A-Z]{3}$"}, "unit": {"type": "string"}, "valueKind": {"enum": ["rate", "interval"]}, "query": {"type": "string", "minLength": 1}, "tenantLabel": {"type": "string"}, "resourceLabel": {"type": "string"}}
+    },
+    "occupancy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "domain", "unit", "valueKind", "query"],
+      "properties": {"name": {"$ref": "#/$defs/name"}, "domain": {"$ref": "#/$defs/domain"}, "serviceClass": {"type": "string", "minLength": 1}, "resourceType": {"type": "string"}, "purpose": {"type": "string"}, "pricePerBillingUnit": {"type": "number", "minimum": 0}, "billingUnitSize": {"type": "number", "exclusiveMinimum": 0}, "unit": {"type": "string"}, "valueKind": {"const": "gauge"}, "query": {"type": "string", "minLength": 1}, "tenantLabel": {"type": "string"}, "resourceLabel": {"type": "string"}}
+    },
+    "bifurcation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "domain", "occurrenceUnit", "intensityUnit", "referenceIntensity", "countQuery", "intensityQuery", "fanoutQuery"],
+      "properties": {"name": {"$ref": "#/$defs/name"}, "domain": {"$ref": "#/$defs/domain"}, "resourceType": {"type": "string"}, "purpose": {"type": "string"}, "pricePerBillingUnit": {"type": "number", "minimum": 0}, "billingUnitSize": {"type": "number", "exclusiveMinimum": 0}, "occurrenceUnit": {"type": "string"}, "intensityUnit": {"type": "string"}, "referenceIntensity": {"type": "number", "exclusiveMinimum": 0}, "countQuery": {"type": "string", "minLength": 1}, "intensityQuery": {"type": "string", "minLength": 1}, "fanoutQuery": {"type": "string", "minLength": 1}}
+    }
+  }
+}

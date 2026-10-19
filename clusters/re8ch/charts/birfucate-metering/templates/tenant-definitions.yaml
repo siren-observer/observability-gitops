@@ -1,0 +1,80 @@
+{{- if .Values.tenantPlatform.enabled }}
+{{- range $tenant := .Values.tenantPlatform.tenants }}
+---
+apiVersion: tenancy.re8ch.com/v1alpha1
+kind: Tenant
+metadata:
+  name: {{ $tenant.name }}
+  labels: {app.kubernetes.io/part-of: birfucate-metering}
+spec:
+  displayName: {{ $tenant.displayName | quote }}
+  lifecycle: {{ $tenant.lifecycle }}
+  deletionPolicy: {{ $tenant.deletionPolicy }}
+  namespacePolicy:
+    defaultNamespace: {{ $tenant.namespacePolicy.defaultNamespace }}
+    allowedPrefixes:
+{{- range $prefix := $tenant.namespacePolicy.allowedPrefixes }}
+      - {{ $prefix | quote }}
+{{- end }}
+    maxNamespaces: {{ $tenant.namespacePolicy.maxNamespaces }}
+    allowCreate: {{ $tenant.namespacePolicy.allowCreate }}
+    allowDelete: {{ $tenant.namespacePolicy.allowDelete }}
+{{- if $tenant.runtimeNamespaceRef }}
+  # Deprecated read-only compatibility for claims created before namespace autonomy.
+  runtimeNamespaceRef: {{ $tenant.runtimeNamespaceRef }}
+{{- end }}
+  imagePullSecretRef: {{ $tenant.imagePullSecretRef }}
+  harborProjectRef: {{ $tenant.harborProjectRef }}
+  visibility: {{ default "Private" $tenant.visibility }}
+  hostingMode: {{ default "platform-managed" $tenant.hostingMode }}
+  byocAllowed: {{ default false $tenant.byocAllowed }}
+  grants: {{ $tenant.grants | default (list) | toJson }}
+{{- range $namespace := $tenant.namespacePolicy.bootstrapNamespaces }}
+---
+apiVersion: tenancy.re8ch.com/v1alpha1
+kind: TenantNamespace
+metadata:
+  name: {{ printf "%s-%s" $tenant.name (sha256sum $namespace | trunc 16) }}
+  labels: {app.kubernetes.io/part-of: birfucate-metering, tenancy.re8ch.com/tenant: {{ $tenant.name }}}
+spec:
+  tenantRef: {{ $tenant.name }}
+  namespaceName: {{ $namespace }}
+  operation: EnsurePresent
+{{- end }}
+{{- if and $tenant.runtimeNamespaceRef (not (has $tenant.runtimeNamespaceRef $tenant.namespacePolicy.bootstrapNamespaces)) }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tenant-resource-provisioner
+  namespace: {{ $tenant.runtimeNamespaceRef }}
+  labels:
+    app.kubernetes.io/part-of: birfucate-metering
+    tenancy.re8ch.com/tenant: {{ $tenant.name }}
+subjects:
+  - kind: ServiceAccount
+    name: tenant-control-controller
+    namespace: tenant-infrastructure
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tenant-resource-provisioner
+{{- end }}
+{{- range $binding := $tenant.identityBindings }}
+---
+apiVersion: tenancy.re8ch.com/v1alpha1
+kind: TenantIdentityBinding
+metadata: {name: {{ $binding.name }}}
+spec:
+  tenantRef: {{ $tenant.name }}
+  issuer: {{ $binding.issuer }}
+{{- if $binding.subjectHash }}
+  subjectHash: {{ $binding.subjectHash | quote }}
+{{- else }}
+  group: {{ $binding.group | quote }}
+{{- end }}
+  role: {{ $binding.role }}
+  revoked: {{ default false $binding.revoked }}
+{{- end }}
+{{- end }}
+{{- end }}
