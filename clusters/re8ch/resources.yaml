@@ -3236,7 +3236,6 @@ metadata:
   name: incidentrelay
   namespace: flux-observability-system
 spec:
-  suspend: true
   chartRef:
     kind: OCIRepository
     name: incidentrelay
