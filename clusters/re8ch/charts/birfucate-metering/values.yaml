@@ -10,6 +10,14 @@ replicaCount: 1
 collectionIntervalSeconds: 60
 lookbackSeconds: 300
 
+# A node-local view of the cluster DNS service for R640-pinned collectors.
+# The dedicated Service keeps a stable VIP while internalTrafficPolicy: Local
+# prevents requests from selecting DNS replicas on another node.
+localDNS:
+  enabled: false
+  serviceName: birfucate-r640-dns
+  clusterIP: ""
+
 # The Headlamp browser talks only to this Chart-owned, read-only endpoint.
 # Metric names are allowlisted in the collector; arbitrary PromQL is rejected.
 browserAPI:

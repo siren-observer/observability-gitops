@@ -2864,6 +2864,10 @@ spec:
       pullPolicy: IfNotPresent
       repository: python
       tag: 3.13-alpine@sha256:540c7d91f98ff6880174c40e99067bf5941eb54d818a7a5e094d188b196a934d
+    localDNS:
+      clusterIP: 10.43.0.53
+      enabled: true
+      serviceName: birfucate-r640-dns
     nodeCostAllocation:
       enabled: true
     nodeSelector:
