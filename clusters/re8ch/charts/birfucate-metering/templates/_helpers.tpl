@@ -25,4 +25,5 @@ dnsConfig:
     fieldRef:
       fieldPath: status.hostIP
 - {name: KUBERNETES_SERVICE_PORT, value: "6443"}
+- {name: KUBERNETES_SERVICE_PORT_HTTPS, value: "6443"}
 {{- end }}
