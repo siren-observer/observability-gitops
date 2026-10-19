@@ -3434,7 +3434,7 @@ spec:
     - volumeattachments
     customLabels:
       observability.re8ch.com/component: inventory
-    extraEnv:
+    env:
     - name: KUBERNETES_SERVICE_HOST
       valueFrom:
         fieldRef:
