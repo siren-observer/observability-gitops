@@ -2832,7 +2832,7 @@ metadata:
   name: birfucate-metering
   namespace: flux-observability-system
 spec:
-  suspend: true
+  suspend: false
   chart:
     spec:
       chart: ./clusters/re8ch/charts/birfucate-metering
