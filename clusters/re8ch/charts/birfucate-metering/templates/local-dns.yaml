@@ -1,0 +1,18 @@
+{{- if .Values.localDNS.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.localDNS.serviceName }}
+  namespace: kube-system
+  labels:
+    {{- include "birfucate-metering.labels" . | nindent 4 }}
+    app.kubernetes.io/component: local-dns
+spec:
+  clusterIP: {{ .Values.localDNS.clusterIP }}
+  internalTrafficPolicy: Local
+  selector:
+    app.kubernetes.io/name: advanced-fabric-doh
+  ports:
+    - {name: dns, port: 53, protocol: UDP, targetPort: dns}
+    - {name: dns-tcp, port: 53, protocol: TCP, targetPort: dns-tcp}
+{{- end }}
