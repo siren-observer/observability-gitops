@@ -122,6 +122,7 @@ spec:
             - {secretRef: {name: tenant-registry-supply-chain, optional: true}}
             - {secretRef: {name: tenant-claim-internal-auth, optional: true}}
           env:
+            {{- include "birfucate-metering.localAPIEnv" . | nindent 12 }}
             - {name: LISTEN_PORT, value: "19447"}
             - {name: IMAGE_POLICY_URL, value: "http://harbor-supply-chain.tenant-infrastructure.svc"}
             - {name: IDENTITY_REST_URL, value: "http://supabase-identity-rest.supabase-identity.svc:3000"}
@@ -240,6 +241,7 @@ spec:
           image: {{ .Values.tenantPlatform.provider.image | quote }}
           command: [python, /app/tenant_provider_reconciler.py]
           env:
+            {{- include "birfucate-metering.localAPIEnv" . | nindent 12 }}
             - {name: IDENTITY_REST_URL, value: "http://supabase-identity-rest.supabase-identity.svc:3000"}
             - {name: IDENTITY_SERVICE_KEY, valueFrom: {secretKeyRef: {name: tenant-provider-identity, key: service-role-key}}}
             - {name: GRAFANA_DATABASE_BINDINGS_JSON, value: {{ .Values.tenantPlatform.provider.databaseBindings | toJson | quote }}}
