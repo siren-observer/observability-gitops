@@ -172,6 +172,7 @@ spec:
             - {secretRef: {name: tenant-registry-supply-chain, optional: true}}
             - {secretRef: {name: tenant-grafana-credentials, optional: true}}
           env:
+            {{- include "birfucate-metering.localAPIEnv" . | nindent 12 }}
             - {name: RE8CH_TOOL_PROFILE, value: tenant}
             - {name: RE8CH_TOOL_AUDIENCE, value: re8ch-tenant}
             - {name: SERVICE_API_TOKEN, valueFrom: {secretKeyRef: {name: admin-vmcp-backend-auth, key: token}}}

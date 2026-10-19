@@ -19,3 +19,10 @@ dnsConfig:
   options: [{name: ndots, value: "5"}]
 {{- end }}
 {{- end }}
+{{- define "birfucate-metering.localAPIEnv" -}}
+- name: KUBERNETES_SERVICE_HOST
+  valueFrom:
+    fieldRef:
+      fieldPath: status.hostIP
+- {name: KUBERNETES_SERVICE_PORT, value: "6443"}
+{{- end }}
