@@ -5718,6 +5718,9 @@ metadata:
   namespace: flux-observability-system
 spec:
   interval: 6m
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
   provider: generic
   ref:
     digest: sha256:9e3b657e793e7e7f69b7770de46851aebc5fc2fe00c1866ddee999ad61cb73dc
@@ -5730,6 +5733,9 @@ metadata:
   namespace: flux-observability-system
 spec:
   interval: 6m
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
   provider: generic
   ref:
     digest: sha256:1fe070bab14c87f6bcdbef42200cf39b207b5f3d3a20234c429cebfe1bdb4270
@@ -5742,6 +5748,9 @@ metadata:
   namespace: flux-observability-system
 spec:
   interval: 6m
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
   provider: generic
   ref:
     digest: sha256:454e94bbc58a44edf760c69d69d3e2cbc4a355b90b5adda2dcc28069213fb442

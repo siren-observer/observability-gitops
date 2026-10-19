@@ -36,6 +36,12 @@ for name, digest in oci_digests.items():
     source = next((d for d in documents if d.get("kind") == "OCIRepository" and d.get("metadata", {}).get("name") == name), None)
     if not source or source.get("spec", {}).get("ref", {}).get("digest") != digest:
         errors.append(f"OCI source is not pinned: {name}")
+        continue
+    if source.get("spec", {}).get("layerSelector") != {
+        "mediaType": "application/vnd.cncf.helm.chart.content.v1.tar+gzip",
+        "operation": "copy",
+    }:
+        errors.append(f"OCI Helm layer selector is not pinned: {name}")
 if errors:
     print("\n".join(errors), file=sys.stderr)
     raise SystemExit(1)
