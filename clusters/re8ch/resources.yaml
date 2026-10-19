@@ -2749,6 +2749,7 @@ spec:
         serviceName: pg-re8ch-primary
   - toEntities:
     - host
+    - remote-node
     toPorts:
     - ports:
       - port: '5432'
