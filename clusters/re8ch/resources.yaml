@@ -2816,7 +2816,7 @@ spec:
       reconcileStrategy: Revision
       sourceRef:
         kind: GitRepository
-        name: service-backend
+        name: domain
         namespace: flux-observability-system
   install:
     crds: CreateReplace

@@ -1,0 +1,452 @@
+#!/usr/bin/env python3
+"""Prometheus-backed Occupancy and Bifurcation usage collector."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import math
+import os
+import sqlite3
+import threading
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from typing import Any
+
+CONFIG_PATH = Path(os.getenv("BIRFUCATE_CONFIG", "/etc/birfucate/config.json"))
+OUTBOX_PATH = Path(os.getenv("BIRFUCATE_OUTBOX", "/var/lib/birfucate/outbox.db"))
+USAGE_TOKEN_PATH = Path(os.getenv("BIRFUCATE_USAGE_TOKEN_PATH", "/var/run/secrets/re8ch-usage/token"))
+LOCK = threading.Lock()
+METRICS: dict[tuple[str, tuple[tuple[str, str], ...]], float] = {}
+READY = False
+LAST_SUCCESS = 0.0
+BROWSER_METRICS = frozenset({
+    "birfucate_occupancy_current",
+    "birfucate_occupancy_units_total",
+    "birfucate_usage_total",
+    "birfucate_bifurcation_occurrences_total",
+    "birfucate_bifurcation_intensity",
+    "birfucate_bifurcation_fanout",
+    "birfucate_bifurcation_score_total",
+    "birfucate_metered_cost_total",
+    "birfucate_tenant_cost_total",
+    "birfucate_unallocated_cost_total",
+    "birfucate_tenant_resource_count",
+})
+
+
+def load_config() -> dict[str, Any]:
+    return json.loads(CONFIG_PATH.read_text())
+
+
+def prometheus_query(base_url: str, query: str, timeout: int) -> list[dict[str, Any]]:
+    url = base_url.rstrip("/") + "/api/v1/query?" + urllib.parse.urlencode({"query": query})
+    request = urllib.request.Request(url, headers={"Accept": "application/json"})
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        payload = json.load(response)
+    if payload.get("status") != "success":
+        raise RuntimeError("Prometheus query failed")
+    return payload.get("data", {}).get("result", [])
+
+
+def browser_query(config: dict[str, Any], metric: str) -> dict[str, Any]:
+    browser = config.get("browserAPI") or {}
+    if not browser.get("enabled"):
+        raise PermissionError("browser_api_disabled")
+    if metric not in BROWSER_METRICS:
+        raise ValueError("metric_not_allowed")
+    lookback = max(60, min(3600, int(browser.get("lookbackSeconds", 600))))
+    prom = config["prometheus"]
+    result = prometheus_query(
+        prom["baseURL"], f"last_over_time({metric}[{lookback}s])", int(prom["timeoutSeconds"])
+    )
+    return {"status": "success", "data": {"resultType": "vector", "result": result}}
+
+
+def vector(items: list[dict[str, Any]], tenant_label: str, resource_label: str) -> dict[tuple[str, str], float]:
+    result: dict[tuple[str, str], float] = {}
+    for item in items:
+        labels = item.get("metric") or {}
+        tenant, resource = str(labels.get(tenant_label) or ""), str(labels.get(resource_label) or "")
+        if not tenant or not resource:
+            continue
+        try:
+            value = float((item.get("value") or [0, 0])[1])
+        except (TypeError, ValueError, IndexError):
+            continue
+        if math.isfinite(value) and value >= 0:
+            result[(tenant, resource)] = value
+    return result
+
+
+def labeled_vector(items: list[dict[str, Any]], labels: list[str]) -> dict[tuple[str, ...], float]:
+    """Return finite non-negative samples keyed by required Prometheus labels."""
+    result: dict[tuple[str, ...], float] = {}
+    for item in items:
+        metric = item.get("metric") or {}
+        key = tuple(str(metric.get(label) or "") for label in labels)
+        if any(not value for value in key):
+            continue
+        try:
+            value = float((item.get("value") or [0, 0])[1])
+        except (TypeError, ValueError, IndexError):
+            continue
+        if math.isfinite(value) and value >= 0:
+            result[key] = value
+    return result
+
+
+def set_metric(name: str, labels: dict[str, str], value: float) -> None:
+    key = (name, tuple(sorted((str(k), str(v)) for k, v in labels.items())))
+    with LOCK:
+        METRICS[key] = float(value)
+
+
+def add_metric(name: str, labels: dict[str, str], value: float) -> None:
+    key = (name, tuple(sorted((str(k), str(v)) for k, v in labels.items())))
+    with LOCK:
+        METRICS[key] = METRICS.get(key, 0.0) + float(value)
+
+
+def event_id(parts: list[Any]) -> str:
+    raw = json.dumps(parts, sort_keys=True, separators=(",", ":")).encode()
+    return "ue_" + hashlib.sha256(raw).hexdigest()[:32]
+
+
+class Outbox:
+    def __init__(self, path: Path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        self.path = path
+        with self.connect() as db:
+            db.execute("PRAGMA journal_mode=WAL")
+            db.execute("CREATE TABLE IF NOT EXISTS events(event_id TEXT PRIMARY KEY,event_json TEXT NOT NULL,created_at INTEGER NOT NULL,delivered_at INTEGER)")
+
+    def connect(self):
+        return sqlite3.connect(self.path)
+
+    def put(self, event: dict[str, Any]) -> None:
+        with self.connect() as db:
+            db.execute("INSERT OR IGNORE INTO events VALUES(?,?,?,NULL)", (event["eventId"], json.dumps(event, sort_keys=True), int(time.time())))
+
+    def pending(self, limit: int = 100) -> list[tuple[str, dict[str, Any]]]:
+        with self.connect() as db:
+            rows = db.execute("SELECT event_id,event_json FROM events WHERE delivered_at IS NULL ORDER BY created_at LIMIT ?", (limit,)).fetchall()
+        return [(row[0], json.loads(row[1])) for row in rows]
+
+    def delivered(self, event_id_value: str) -> None:
+        with self.connect() as db:
+            db.execute("UPDATE events SET delivered_at=? WHERE event_id=?", (int(time.time()), event_id_value))
+
+    def prune(self, retention_days: int) -> None:
+        cutoff = int(time.time()) - retention_days * 86400
+        with self.connect() as db:
+            db.execute("DELETE FROM events WHERE delivered_at IS NOT NULL AND delivered_at < ?", (cutoff,))
+
+
+def price(config: dict[str, Any], meter: dict[str, Any], quantity: float) -> tuple[float, bool, str]:
+    pricing = config.get("pricing") or {}
+    rate = meter.get("pricePerBillingUnit")
+    unit_size = float(meter.get("billingUnitSize", 1))
+    applied = bool(pricing.get("enabled")) and rate is not None and unit_size > 0
+    return (quantity / unit_size * float(rate) if applied else 0.0, applied, str(pricing.get("currency", "CNY")))
+
+
+def usage_event(tenant: str, resource: str, domain: str, meter: str, quantity: float, unit: str, start: int, end: int, dimensions: dict[str, Any], cost: float = 0, priced: bool = False, currency: str = "CNY", service_class: str | None = None) -> dict[str, Any]:
+    stable = [tenant, resource, domain, meter, start, end]
+    iso = lambda value: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(value))
+    event = {
+        "eventId": event_id(stable), "tenantRef": tenant, "resourceRef": resource,
+        "serviceClass": service_class or {"compute": "compute.workload.v1", "ceph": "storage.volume.v1", "pigsty": "database.postgresql.shared.v1", "networks": "network.tenant.v1"}[domain],
+        "meter": meter, "quantity": quantity, "unit": unit, "periodStart": iso(start), "periodEnd": iso(end),
+        "regionRef": "meter-source", "sourceOperationId": "birfucate:" + event_id(stable)[3:], "observedAt": iso(end),
+        "schemaVersion": "usage.re8ch.com/v1", "dimensions": dimensions,
+        "pricingApplied": priced, "accountingPosted": False,
+    }
+    if priced:
+        event.update({"cost": cost, "currency": currency})
+    return event
+
+
+def collect_node_cost_allocation(
+    config: dict[str, Any], start: int, end: int, queue: Any,
+    tenant_resources: set[tuple[str, str, str]], tenant_costs: dict[tuple[str, str], float],
+) -> None:
+    """Allocate contracted node cost from observed CPU/RAM capacity shares."""
+    allocation = config.get("nodeCostAllocation") or {}
+    if not allocation.get("enabled"):
+        return
+    prom = config["prometheus"]
+    query_base_url = prom.get("queryBaseURL") or prom["baseURL"]
+    timeout = int(prom["timeoutSeconds"])
+    node_label = str(allocation.get("nodeLabel", "node"))
+    tenant_label = str(allocation.get("tenantLabel", "tenant"))
+    currency_label = str(allocation.get("currencyLabel", "currency"))
+    interval = max(1, end - start)
+    costs = labeled_vector(
+        prometheus_query(query_base_url, allocation["hourlyCostQuery"], timeout),
+        [node_label, currency_label],
+    )
+    weights = labeled_vector(
+        prometheus_query(query_base_url, allocation["weightQuery"], timeout),
+        [node_label, "resource"],
+    )
+    for resource in allocation.get("resources", []):
+        resource_name = str(resource["name"])
+        capacities = labeled_vector(
+            prometheus_query(query_base_url, resource["capacityQuery"], timeout), [node_label]
+        )
+        usages = labeled_vector(
+            prometheus_query(query_base_url, resource["usageQuery"], timeout), [node_label, tenant_label]
+        )
+        for (node, currency), hourly_cost in costs.items():
+            capacity = capacities.get((node,), 0.0)
+            weight = weights.get((node, resource_name), 0.0)
+            if hourly_cost <= 0 or capacity <= 0 or weight <= 0:
+                continue
+            node_usages = {tenant: value for (usage_node, tenant), value in usages.items() if usage_node == node}
+            total_usage = sum(node_usages.values())
+            # Capacity is the normal denominator. If telemetry briefly exceeds
+            # allocatable capacity, normalize by observed total to ensure the
+            # cost pool is never over-allocated.
+            denominator = max(capacity, total_usage)
+            pool_cost = hourly_cost * interval / 3600.0 * weight
+            allocated_cost = 0.0
+            for tenant, usage in node_usages.items():
+                cost = pool_cost * usage / denominator
+                allocated_cost += cost
+                labels = {
+                    "tenant": tenant, "resource_ref": node, "domain": "compute",
+                    "resource_type": f"node-{resource_name}-cost", "purpose": "actual-node-cost",
+                    "meter": f"node-{resource_name}-cost-allocation", "unit": resource["unit"],
+                    "currency": currency, "priced": "true", "cost_basis": "contracted-node-cost",
+                }
+                add_metric("birfucate_metered_cost_total", labels, cost)
+                tenant_resources.add((tenant, node, f"node-{resource_name}-cost"))
+                tenant_costs[(tenant, currency)] = tenant_costs.get((tenant, currency), 0.0) + cost
+                event = usage_event(
+                    tenant, node, "compute", f"cost.node-{resource_name}", usage * interval,
+                    resource["unit"], start, end,
+                    {"observed": usage, "capacity": capacity, "share": usage / denominator,
+                     "allocationWeight": weight, "costBasis": "contracted-node-cost",
+                     "nodeHourlyCost": hourly_cost, "resourceType": f"node-{resource_name}-cost",
+                     "purpose": "actual-node-cost"},
+                    service_class="compute.workload.v1",
+                )
+                event.update({"cost": cost, "currency": currency, "costAllocated": True})
+                queue(event)
+            add_metric(
+                "birfucate_unallocated_cost_total",
+                {"node": node, "resource": resource_name, "currency": currency,
+                 "cost_basis": "contracted-node-cost"},
+                max(0.0, pool_cost - allocated_cost),
+            )
+
+
+def collect_once(config: dict[str, Any], outbox: Outbox, start: int, end: int) -> None:
+    interval = max(1, end - start)
+    allowed_tenants = set((config.get("usageSink") or {}).get("allowedTenants") or [])
+    def queue(event: dict[str, Any]) -> None:
+        if not allowed_tenants or event["tenantRef"] in allowed_tenants:
+            outbox.put(event)
+    prom = config["prometheus"]
+    query_base_url = prom.get("queryBaseURL") or prom["baseURL"]
+    tenant_label = config["tenantLabels"]["tenant"]
+    resource_label = config["tenantLabels"]["resource"]
+    tenant_resources: set[tuple[str, str, str]] = set()
+    tenant_costs: dict[tuple[str, str], float] = {}
+    set_metric("birfucate_dependency_up", {"dependency": "prometheus"}, 1)
+    opencost = config.get("opencost") or {}
+    if opencost.get("enabled"):
+        request = urllib.request.Request(opencost["baseURL"].rstrip("/") + opencost["allocationPath"], headers={"Accept": "application/json"})
+        try:
+            with urllib.request.urlopen(request, timeout=int(prom["timeoutSeconds"])) as response:
+                set_metric("birfucate_dependency_up", {"dependency": "opencost"}, 1 if response.status == 200 else 0)
+        except urllib.error.URLError:
+            set_metric("birfucate_dependency_up", {"dependency": "opencost"}, 0)
+    try:
+        collect_node_cost_allocation(config, start, end, queue, tenant_resources, tenant_costs)
+        set_metric("birfucate_dependency_up", {"dependency": "node-cost-allocation"}, 1)
+    except (KeyError, OSError, RuntimeError, urllib.error.URLError):
+        # Cost enrichment must not suppress raw occupancy and bifurcation facts
+        # while its upstream metrics are rolling out or temporarily unavailable.
+        set_metric("birfucate_dependency_up", {"dependency": "node-cost-allocation"}, 0)
+    for meter in config["meters"].get("occupancy", []):
+        values = vector(prometheus_query(query_base_url, meter["query"], int(prom["timeoutSeconds"])), meter.get("tenantLabel", tenant_label), meter.get("resourceLabel", resource_label))
+        for (tenant, resource), gauge in values.items():
+            quantity = gauge * interval
+            resource_type = str(meter.get("resourceType", meter["domain"]))
+            purpose = str(meter.get("purpose", meter["name"]))
+            cost, priced, currency = price(config, meter, quantity)
+            labels = {"tenant": tenant, "resource_ref": resource, "domain": meter["domain"], "resource_type": resource_type, "purpose": purpose, "meter": meter["name"], "unit": meter["unit"]}
+            set_metric("birfucate_occupancy_current", labels, gauge)
+            add_metric("birfucate_occupancy_units_total", labels, quantity)
+            add_metric("birfucate_metered_cost_total", {**labels, "currency": currency, "priced": str(priced).lower()}, cost)
+            tenant_resources.add((tenant, resource, resource_type))
+            tenant_costs[(tenant, currency)] = tenant_costs.get((tenant, currency), 0) + cost
+            queue(usage_event(tenant, resource, meter["domain"], "occupancy." + meter["name"], quantity, meter["unit"], start, end, {"gauge": gauge, "durationSeconds": interval, "resourceType": resource_type, "purpose": purpose}, cost, priced, currency, meter.get("serviceClass")))
+    for meter in config["meters"].get("usage", []):
+        values = vector(prometheus_query(query_base_url, meter["query"], int(prom["timeoutSeconds"])), meter.get("tenantLabel", tenant_label), meter.get("resourceLabel", resource_label))
+        for (tenant, resource), observed in values.items():
+            quantity = observed * interval if meter.get("valueKind") == "rate" else observed
+            resource_type = str(meter.get("resourceType", meter["domain"]))
+            purpose = str(meter.get("purpose", meter["name"]))
+            if meter.get("costFromQuantity"):
+                priced = bool((config.get("pricing") or {}).get("enabled"))
+                cost, currency = (quantity if priced else 0.0), str(meter.get("currency", "USD"))
+            else:
+                cost, priced, currency = price(config, meter, quantity)
+            labels = {"tenant": tenant, "resource_ref": resource, "domain": meter["domain"], "resource_type": resource_type, "purpose": purpose, "meter": meter["name"], "unit": meter["unit"]}
+            add_metric("birfucate_usage_total", labels, quantity)
+            add_metric("birfucate_metered_cost_total", {**labels, "currency": currency, "priced": str(priced).lower()}, cost)
+            tenant_resources.add((tenant, resource, resource_type))
+            tenant_costs[(tenant, currency)] = tenant_costs.get((tenant, currency), 0) + cost
+            queue(usage_event(tenant, resource, meter["domain"], "usage." + meter["name"], quantity, meter["unit"], start, end, {"resourceType": resource_type, "purpose": purpose}, cost, priced, currency, meter.get("serviceClass")))
+    for meter in config["meters"].get("bifurcation", []):
+        counts = vector(prometheus_query(query_base_url, meter["countQuery"], int(prom["timeoutSeconds"])), tenant_label, resource_label)
+        intensities = vector(prometheus_query(query_base_url, meter["intensityQuery"], int(prom["timeoutSeconds"])), tenant_label, resource_label)
+        fanouts = vector(prometheus_query(query_base_url, meter["fanoutQuery"], int(prom["timeoutSeconds"])), tenant_label, resource_label)
+        for (tenant, resource), rate in counts.items():
+            occurrences = rate * interval
+            intensity = intensities.get((tenant, resource), 0.0)
+            fanout = max(1.0, fanouts.get((tenant, resource), 1.0))
+            reference = max(float(meter.get("referenceIntensity", 1)), 0.000001)
+            strength = math.log2(1.0 + intensity / reference)
+            score = occurrences * strength * fanout
+            resource_type = str(meter.get("resourceType", meter["domain"]))
+            purpose = str(meter.get("purpose", meter["name"]))
+            cost, priced, currency = price(config, meter, score)
+            labels = {"tenant": tenant, "resource_ref": resource, "domain": meter["domain"], "resource_type": resource_type, "purpose": purpose, "meter": meter["name"]}
+            add_metric("birfucate_bifurcation_occurrences_total", {**labels, "unit": meter["occurrenceUnit"]}, occurrences)
+            set_metric("birfucate_bifurcation_intensity", {**labels, "unit": meter["intensityUnit"]}, intensity)
+            set_metric("birfucate_bifurcation_fanout", labels, fanout)
+            add_metric("birfucate_bifurcation_score_total", labels, score)
+            add_metric("birfucate_metered_cost_total", {**labels, "unit": "bifurcation-point", "currency": currency, "priced": str(priced).lower()}, cost)
+            tenant_resources.add((tenant, resource, resource_type))
+            tenant_costs[(tenant, currency)] = tenant_costs.get((tenant, currency), 0) + cost
+            queue(usage_event(tenant, resource, meter["domain"], "bifurcation." + meter["name"], score, "bifurcation-point", start, end, {"occurrences": occurrences, "occurrenceUnit": meter["occurrenceUnit"], "intensity": intensity, "intensityUnit": meter["intensityUnit"], "referenceIntensity": reference, "fanout": fanout, "strength": strength, "resourceType": resource_type, "purpose": purpose}, cost, priced, currency))
+    counts: dict[tuple[str, str], int] = {}
+    for tenant, _resource, resource_type in tenant_resources:
+        counts[(tenant, resource_type)] = counts.get((tenant, resource_type), 0) + 1
+    for (tenant, resource_type), count in counts.items():
+        set_metric("birfucate_tenant_resource_count", {"tenant": tenant, "resource_type": resource_type}, count)
+    for (tenant, currency), cost in tenant_costs.items():
+        add_metric("birfucate_tenant_cost_total", {"tenant": tenant, "currency": currency}, cost)
+
+
+def deliver(config: dict[str, Any], outbox: Outbox) -> None:
+    sink = config.get("usageSink") or {}
+    if not sink.get("enabled"):
+        return
+    headers = {"Content-Type": "application/json"}
+    token = USAGE_TOKEN_PATH.read_text().strip()
+    if not token:
+        raise RuntimeError("usage service account token is empty")
+    headers["Authorization"] = "Bearer " + token
+    for key, event in outbox.pending():
+        if event.get("pricingApplied"):
+            raise RuntimeError("priced events cannot be delivered to the raw usage ledger")
+        headers["Idempotency-Key"] = key
+        request = urllib.request.Request(sink["url"], data=json.dumps(event).encode(), headers=headers, method="POST")
+        try:
+            with urllib.request.urlopen(request, timeout=int(sink.get("timeoutSeconds", 10))) as response:
+                if not 200 <= response.status < 300:
+                    break
+            billing = config.get("billingSink") or {}
+            if billing.get("enabled"):
+                mapping = next((item for item in billing.get("mappings", [])
+                    if item["serviceClass"] == event["serviceClass"] and item["meter"] == event["meter"]), None)
+                if mapping is None:
+                    raise RuntimeError("Catalog billing mapping missing for UsageEvent")
+                rated = {"event": event, "service_ref": mapping["serviceRef"], "meter_code": mapping["meterCode"]}
+                billing_request = urllib.request.Request(billing["url"], data=json.dumps(rated).encode(), headers=headers, method="POST")
+                with urllib.request.urlopen(billing_request, timeout=int(billing.get("timeoutSeconds", 10))) as response:
+                    if not 200 <= response.status < 300:
+                        break
+            outbox.delivered(key)
+        except urllib.error.URLError:
+            break
+
+
+def render_metrics(timestamp_ms: int | None = None) -> bytes:
+    suffix = f" {timestamp_ms}" if timestamp_ms is not None else ""
+    lines = ["# HELP birfucate_up Whether the last collection completed.", "# TYPE birfucate_up gauge", f"birfucate_up {1 if READY else 0}{suffix}", "# HELP birfucate_last_success_unixtime Last successful collection time.", "# TYPE birfucate_last_success_unixtime gauge", f"birfucate_last_success_unixtime {LAST_SUCCESS}{suffix}"]
+    with LOCK:
+        items = sorted(METRICS.items())
+    for (name, labels), value in items:
+        encoded = ",".join(f'{key}="{str(val).replace(chr(92), chr(92)+chr(92)).replace(chr(34), chr(92)+chr(34))}"' for key, val in labels)
+        lines.append(f"{name}{{{encoded}}} {value}{suffix}")
+    return ("\n".join(lines) + "\n").encode()
+
+
+def publish_metrics(config: dict[str, Any]) -> None:
+    prom = config["prometheus"]
+    path = str(prom.get("writePath") or "").strip()
+    if not path:
+        return
+    request = urllib.request.Request(prom["baseURL"].rstrip("/") + path, data=render_metrics(int(time.time() * 1000)), headers={"Content-Type": "text/plain"}, method="POST")
+    with urllib.request.urlopen(request, timeout=int(prom["timeoutSeconds"])) as response:
+        if not 200 <= response.status < 300:
+            raise RuntimeError("VictoriaMetrics import failed")
+
+
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self) -> None:
+        parsed = urllib.parse.urlsplit(self.path)
+        if parsed.path == "/metrics":
+            body, status, content_type = render_metrics(), 200, "text/plain; version=0.0.4"
+        elif parsed.path == "/healthz":
+            body, status, content_type = b'{"status":"ok"}', 200, "application/json"
+        elif parsed.path == "/readyz":
+            body, status, content_type = (b'{"status":"ready"}', 200, "application/json") if READY else (b'{"status":"not-ready"}', 503, "application/json")
+        elif parsed.path == "/api/v1/browser/query":
+            params = urllib.parse.parse_qs(parsed.query)
+            metric = (params.get("metric") or [""])[0]
+            try:
+                body = json.dumps(browser_query(load_config(), metric), separators=(",", ":")).encode()
+                status, content_type = 200, "application/json"
+            except PermissionError as exc:
+                body, status, content_type = json.dumps({"status": "error", "error": str(exc)}).encode(), 404, "application/json"
+            except ValueError as exc:
+                body, status, content_type = json.dumps({"status": "error", "error": str(exc)}).encode(), 400, "application/json"
+            except (OSError, RuntimeError, urllib.error.URLError) as exc:
+                body, status, content_type = json.dumps({"status": "error", "error": str(exc)}).encode(), 502, "application/json"
+        else:
+            body, status, content_type = b'{"error":"not_found"}', 404, "application/json"
+        self.send_response(status); self.send_header("Content-Type", content_type); self.send_header("Content-Length", str(len(body))); self.end_headers(); self.wfile.write(body)
+
+    def log_message(self, fmt: str, *args: Any) -> None:
+        return
+
+
+def loop(config: dict[str, Any], outbox: Outbox) -> None:
+    global READY, LAST_SUCCESS
+    interval = max(10, int(config.get("collectionIntervalSeconds", 60)))
+    end = int(time.time())
+    while True:
+        start, end = end, int(time.time())
+        if end <= start:
+            start = end - interval
+        try:
+            collect_once(config, outbox, start, end)
+            READY, LAST_SUCCESS = True, time.time()
+            publish_metrics(config)
+            deliver(config, outbox)
+            outbox.prune(int(config.get("outbox", {}).get("retentionDays", 30)))
+        except Exception as exc:
+            READY = False
+            print(json.dumps({"level": "error", "event": "collection_failed", "error": str(exc)}), flush=True)
+        time.sleep(interval)
+
+
+def main() -> None:
+    config, outbox = load_config(), Outbox(OUTBOX_PATH)
+    threading.Thread(target=loop, args=(config, outbox), daemon=True).start()
+    ThreadingHTTPServer(("0.0.0.0", 9791), Handler).serve_forever()
+
+
+if __name__ == "__main__":
+    main()
