@@ -1,3 +1,18 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources: [resources.yaml]
+patches:
+  - path: vmagent-control-plane-offload.yaml
+    target:
+      group: operator.victoriametrics.com
+      version: v1beta1
+      kind: VMAgent
+      namespace: observability-system
+      name: re8ch
+  - path: vmalert-control-plane-offload.yaml
+    target:
+      group: operator.victoriametrics.com
+      version: v1beta1
+      kind: VMAlert
+      namespace: observability-system
+      name: re8ch
