@@ -24,6 +24,12 @@ spec:
     issuer: https://token.actions.githubusercontent.com
   authorization:
     fieldManager: re8ch-release/observability-kube-state-metrics
+    forceConflictObjects:
+    - apps/Deployment/observability-system/re8ch-kube-state-metrics
+    - core/Service/observability-system/re8ch-kube-state-metrics
+    - core/ServiceAccount/observability-system/re8ch-kube-state-metrics
+    - rbac.authorization.k8s.io/ClusterRole/_/re8ch-kube-state-metrics
+    - rbac.authorization.k8s.io/ClusterRoleBinding/_/re8ch-kube-state-metrics
     resources:
     - apps/Deployment
     - core/Service
