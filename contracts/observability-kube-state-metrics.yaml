@@ -1,0 +1,49 @@
+apiVersion: delivery.re8ch.com/v1alpha1
+kind: ReleaseContract
+metadata:
+  name: observability-kube-state-metrics
+spec:
+  authorityDomain: observability-metering
+  target: {cluster: re8ch, namespace: observability-system}
+  source:
+    renderer: kustomize
+    revision: helm-oci@sha256:1fe070bab14c87f6bcdbef42200cf39b207b5f3d3a20234c429cebfe1bdb4270
+    repository: siren-observer/observability-gitops
+    path: releases/observability-kube-state-metrics
+    chartOCI: oci://ghcr.io/prometheus-community/charts/kube-state-metrics@sha256:1fe070bab14c87f6bcdbef42200cf39b207b5f3d3a20234c429cebfe1bdb4270
+    values:
+    - path: releases/observability-kube-state-metrics/values.yaml
+      digest: sha256:bddab6c60eb55111c44a08caf89bcc08eee89074e7019fd4e6203268896d26c0
+  provenance:
+    repository: siren-observer/observability-gitops
+    workflow: .github/workflows/static-release.yml
+    ref: refs/heads/main
+    environment: release-executor-observability-metering
+    audience: https://kube-api.re8ch.com/release-executor-observability-metering
+    signer: https://github.com/siren-observer/observability-gitops/.github/workflows/static-release.yml@refs/heads/main
+    issuer: https://token.actions.githubusercontent.com
+  authorization:
+    fieldManager: re8ch-release/observability-kube-state-metrics
+    resources:
+    - apps/Deployment
+    - core/Service
+    - core/ServiceAccount
+    - rbac.authorization.k8s.io/ClusterRole
+    - rbac.authorization.k8s.io/ClusterRoleBinding
+    objectNames: [re8ch-kube-state-metrics]
+    allowClusterScoped: true
+  inventory:
+    digest: sha256:800b09d6945fc0fbd6a997d07cb1086f4825701a9a64a69f836ef9961b054006
+  lifecycle:
+    prune: true
+    healthTimeoutSeconds: 300
+    protectedKinds: [Namespace, CustomResourceDefinition, PersistentVolume, PersistentVolumeClaim, StorageClass]
+    stages:
+    - {name: cluster-rbac, kinds: [ServiceAccount, ClusterRole, ClusterRoleBinding], automaticRollback: false}
+    - {name: runtime, kinds: [Deployment, Service], automaticRollback: true}
+    deletionAllowlist:
+    - apps/Deployment/observability-system/re8ch-kube-state-metrics
+    - core/Service/observability-system/re8ch-kube-state-metrics
+    - core/ServiceAccount/observability-system/re8ch-kube-state-metrics
+    - rbac.authorization.k8s.io/ClusterRole/_/re8ch-kube-state-metrics
+    - rbac.authorization.k8s.io/ClusterRoleBinding/_/re8ch-kube-state-metrics

@@ -1,0 +1,15 @@
+apiVersion: delivery.re8ch.com/locked-helm-render/v1alpha1
+kind: LockedHelmRender
+metadata:
+  name: observability-kube-state-metrics
+spec:
+  chart: oci://ghcr.io/prometheus-community/charts/kube-state-metrics@sha256:1fe070bab14c87f6bcdbef42200cf39b207b5f3d3a20234c429cebfe1bdb4270
+  version: 8.3.0
+  releaseName: re8ch-kube-state-metrics
+  namespace: observability-system
+  includeCRDs: true
+  values: values.yaml
+  valuesDigest: sha256:bddab6c60eb55111c44a08caf89bcc08eee89074e7019fd4e6203268896d26c0
+  renderedResources: resources.yaml
+  renderedResourcesDigest: sha256:005536ffbb08ac23ab31080b9990d6f8e907222b704064b69149f840f4f97d38
+  containerImage: registry.k8s.io/kube-state-metrics/kube-state-metrics@sha256:85108987d044b18a098126732f98602df408888c0f7d456241f5abefb9744bc1

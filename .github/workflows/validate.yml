@@ -11,6 +11,13 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: azure/setup-kubectl@c0c8b32d33a5244f1e5947304550403b63930415 # v4
-      - run: python -m pip install 'PyYAML>=6.0.2'
+      - run: python -m pip install 'PyYAML>=6.0.2' 'jsonschema>=4.23' 'pytest>=8.3'
       - run: kubectl kustomize clusters/re8ch >/dev/null
       - run: python3 policies/validate.py
+      - name: Validate static release executor
+        run: |
+          python operations/releases/profile.py --contract contracts/observability-kube-state-metrics.yaml
+          kubectl kustomize releases/observability-kube-state-metrics > "$RUNNER_TEMP/rendered.yaml"
+          python operations/releases/unified_bundle.py --contract contracts/observability-kube-state-metrics.yaml \
+            --rendered "$RUNNER_TEMP/rendered.yaml" --output "$RUNNER_TEMP/release.bundle"
+          python -m pytest -q tests/test_ssa_release_executor.py tests/test_unified_release_bundle.py

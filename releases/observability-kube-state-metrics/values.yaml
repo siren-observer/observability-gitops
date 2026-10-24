@@ -1,0 +1,52 @@
+collectors:
+- cronjobs
+- daemonsets
+- deployments
+- endpointslices
+- horizontalpodautoscalers
+- ingresses
+- jobs
+- leases
+- namespaces
+- networkpolicies
+- nodes
+- persistentvolumeclaims
+- persistentvolumes
+- poddisruptionbudgets
+- pods
+- replicasets
+- replicationcontrollers
+- resourcequotas
+- services
+- statefulsets
+- storageclasses
+- volumeattachments
+customLabels:
+  observability.re8ch.com/component: inventory
+env:
+- name: KUBERNETES_SERVICE_HOST
+  valueFrom:
+    fieldRef:
+      fieldPath: status.hostIP
+- name: KUBERNETES_SERVICE_PORT
+  value: "6443"
+fullnameOverride: re8ch-kube-state-metrics
+image:
+  registry: registry.k8s.io
+  repository: kube-state-metrics/kube-state-metrics
+  sha: sha256:85108987d044b18a098126732f98602df408888c0f7d456241f5abefb9744bc1
+metricAnnotationsAllowList:
+- services=[observability.re8ch.com/owner,observability.re8ch.com/runbook,observability.re8ch.com/metrics-doc,observability.re8ch.com/slo]
+metricLabelsAllowlist:
+- nodes=[topology.kubernetes.io/region,topology.kubernetes.io/zone,node-role.kubernetes.io/control-plane,pigsty.cc/workload]
+- namespaces=[tenancy.re8ch.com/tenant]
+- pods=[app.kubernetes.io/name,app.kubernetes.io/component,app.kubernetes.io/instance,observability.re8ch.com/tier,tenant,resource_ref,re8ch.com/tenant,birfucate.re8ch.com/resource,birfucate.re8ch.com/metered,opensandbox.re8ch.com/workload]
+- services=[app.kubernetes.io/name,app.kubernetes.io/component,observability.re8ch.com/tier,observability.re8ch.com/scrape]
+- persistentvolumeclaims=[app.kubernetes.io/name,app.kubernetes.io/component,tenant,resource_ref,birfucate.re8ch.com/metered]
+nodeSelector:
+  kubernetes.io/hostname: r640
+replicas: 1
+resources:
+  limits: {cpu: "1", memory: 1Gi}
+  requests: {cpu: 100m, memory: 256Mi}
+updateStrategy: Recreate
