@@ -4209,8 +4209,9 @@ spec:
           - key: kubernetes.io/hostname
             operator: In
             values:
-            - zan
-            - suxunji
+            # Keep the collector with its existing VMSingle. The retired
+            # placement left the metrics store empty and OpenCost crash-looping.
+            - r640
   externalLabelName: vmagent_ha
   externalLabels:
     cluster: re8ch
