@@ -2,6 +2,32 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources: [resources.yaml]
 patches:
+  # These two-replica services require separate hosts. B1 is the second
+  # serving node and carries the explicit storage-coordinator taint; A1 is
+  # the cordoned control plane, not a workload fallback.
+  - target:
+      kind: (OpenTelemetryCollector|VMAlertmanager)
+      namespace: observability-system
+      name: (re8ch-gateway|re8ch-alertmanager)
+    patch: |-
+      apiVersion: ignored
+      kind: ignored
+      metadata:
+        name: ignored
+      spec:
+        tolerations:
+          - key: storage.re8ch.com/coordinator
+            operator: Equal
+            value: "true"
+            effect: NoSchedule
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: kubernetes.io/hostname
+                      operator: In
+                      values: [b1-wsl-zt, r640]
   - path: vmagent-control-plane-offload.yaml
     target:
       group: operator.victoriametrics.com
