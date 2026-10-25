@@ -4280,6 +4280,7 @@ spec:
       - labelSelector:
           matchLabels:
             app.kubernetes.io/name: vmagent
+            app.kubernetes.io/instance: re8ch
         topologyKey: kubernetes.io/hostname
   externalLabelName: vmagent_ha
   externalLabels:
