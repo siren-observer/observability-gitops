@@ -369,8 +369,9 @@ spec:
 ---
 apiVersion: operator.victoriametrics.com/v1beta1
 kind: VMServiceScrape
-metadata: {name: tenant-mcp-tool-usage, namespace: tenant-infrastructure}
+metadata: {name: tenant-mcp-tool-usage, namespace: observability-system}
 spec:
+  namespaceSelector: {matchNames: [tenant-infrastructure]}
   selector: {matchLabels: {re8ch.com/metrics-surface: tenant-mcp}}
   endpoints: [{port: http, path: /metrics, interval: 30s}]
 {{- end }}
