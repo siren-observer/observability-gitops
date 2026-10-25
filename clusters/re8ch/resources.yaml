@@ -249,7 +249,7 @@ data:
     currencyCode\": \"CNY\", \"$filter\": query})\n            azure_payloads[region]\
     \ = self.fetcher(url)\n        observed_at = dt.datetime.fromtimestamp(now, dt.timezone.utc).isoformat()\n\
     \        items = []\n        for target in self.config[\"targets\"]:\n       \
-    \     mapping = self.config[\"regionMappings\"][target[\"regionGroup\"]]\n   \
+    \     mapping = self.config[\"regionMappings\"].get(target[\"regionGroup\"])\n            if mapping is None:\n                item = aggregate(target, [], self.config[\"minimumIndependentSources\"], now,\n                                 self.config[\"maximumObservationAgeHours\"])\n                item[\"reason\"] = \"region-mapping-missing\"\n                items.append(item)\n                continue\n   \
     \         inventory_complete = all(target.get(field) is not None for field in\
     \ (\"cpuCores\", \"memoryGiB\", \"storageGiB\"))\n            source_offers =\
     \ {\n                \"linode\": linode_offers(linode, usd_cny, mapping[\"linode\"\
@@ -1518,6 +1518,8 @@ spec:
     type: Recreate
   template:
     metadata:
+      annotations:
+        observability.re8ch.com/fair-value-revision: region-isolation-v1
       labels:
         app.kubernetes.io/name: re8ch-fair-value-controller
         app.kubernetes.io/part-of: re8ch-observability
@@ -1531,8 +1533,7 @@ spec:
         - /app/fair-value-controller.py
         image: python:3.13-alpine@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844
         livenessProbe:
-          httpGet:
-            path: /healthz
+          tcpSocket:
             port: metrics
           initialDelaySeconds: 30
           periodSeconds: 30
