@@ -369,7 +369,10 @@ spec:
 ---
 apiVersion: operator.victoriametrics.com/v1beta1
 kind: VMServiceScrape
-metadata: {name: tenant-mcp-tool-usage, namespace: observability-system}
+metadata:
+  name: tenant-mcp-tool-usage
+  namespace: observability-system
+  labels: {observability.re8ch.com/managed: "true"}
 spec:
   namespaceSelector: {matchNames: [tenant-infrastructure]}
   selector: {matchLabels: {re8ch.com/metrics-surface: tenant-mcp}}
