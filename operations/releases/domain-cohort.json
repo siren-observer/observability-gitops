@@ -3,12 +3,6 @@
   "sourceObjects": 117,
   "releases": [
     {
-      "name": "observability-domain-credential-broker",
-      "namespace": "credential-broker",
-      "objects": 2,
-      "contract": "contracts/observability-domain-credential-broker.yaml"
-    },
-    {
       "name": "observability-domain-flux-system",
       "namespace": "flux-system",
       "objects": 2,
@@ -45,12 +39,6 @@
       "contract": "contracts/observability-domain-opencost.yaml"
     },
     {
-      "name": "observability-domain-qianwen-ops",
-      "namespace": "qianwen-ops",
-      "objects": 2,
-      "contract": "contracts/observability-domain-qianwen-ops.yaml"
-    },
-    {
       "name": "observability-domain-supabase-pg-re8ch",
       "namespace": "supabase-pg-re8ch",
       "objects": 2,
@@ -69,7 +57,7 @@
       "contract": "contracts/observability-domain-tenant-infrastructure.yaml"
     }
   ],
-  "publishableObjects": 93,
+  "publishableObjects": 89,
   "deferred": [
     {
       "identity": "apps/DaemonSet/observability-system/re8ch-node-storage-exporter",
@@ -150,6 +138,22 @@
     {
       "identity": "helm.toolkit.fluxcd.io/HelmRelease/flux-observability-system/victoria-metrics-operator",
       "reason": "helm-render"
+    },
+    {
+      "identity": "rbac.authorization.k8s.io/Role/credential-broker/harbor-supply-chain-credentials",
+      "reason": "platform-owned-rbac"
+    },
+    {
+      "identity": "rbac.authorization.k8s.io/Role/qianwen-ops/retire-legacy-qianwen-grafana",
+      "reason": "platform-owned-rbac"
+    },
+    {
+      "identity": "rbac.authorization.k8s.io/RoleBinding/credential-broker/harbor-supply-chain-credentials",
+      "reason": "platform-owned-rbac"
+    },
+    {
+      "identity": "rbac.authorization.k8s.io/RoleBinding/qianwen-ops/retire-legacy-qianwen-grafana",
+      "reason": "platform-owned-rbac"
     },
     {
       "identity": "source.toolkit.fluxcd.io/OCIRepository/flux-observability-system/incidentrelay",
