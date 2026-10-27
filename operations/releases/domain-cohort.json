@@ -5,7 +5,7 @@
     {
       "name": "observability-domain-flux-system",
       "namespace": "flux-system",
-      "objects": 2,
+      "objects": 1,
       "contract": "contracts/observability-domain-flux-system.yaml"
     },
     {
@@ -17,7 +17,7 @@
     {
       "name": "observability-domain-incidentrelay",
       "namespace": "incidentrelay",
-      "objects": 9,
+      "objects": 8,
       "contract": "contracts/observability-domain-incidentrelay.yaml"
     },
     {
@@ -41,7 +41,7 @@
     {
       "name": "observability-domain-supabase-pg-re8ch",
       "namespace": "supabase-pg-re8ch",
-      "objects": 2,
+      "objects": 1,
       "contract": "contracts/observability-domain-supabase-pg-re8ch.yaml"
     },
     {
@@ -57,7 +57,7 @@
       "contract": "contracts/observability-domain-tenant-infrastructure.yaml"
     }
   ],
-  "publishableObjects": 89,
+  "publishableObjects": 86,
   "deferred": [
     {
       "identity": "apps/DaemonSet/observability-system/re8ch-node-storage-exporter",
@@ -82,6 +82,18 @@
     {
       "identity": "apps/Deployment/observability-system/re8ch-grafana-renderer",
       "reason": "image-digest-required"
+    },
+    {
+      "identity": "batch/Job/flux-system/retire-legacy-qianwen-grafana-v2",
+      "reason": "one-shot-job-platform-owned"
+    },
+    {
+      "identity": "batch/Job/incidentrelay/incidentrelay-bootstrap-admin-v3",
+      "reason": "one-shot-job-platform-owned"
+    },
+    {
+      "identity": "batch/Job/supabase-pg-re8ch/incidentrelay-database-bootstrap-v7",
+      "reason": "one-shot-job-platform-owned"
     },
     {
       "identity": "core/Secret/globalping-system/globalping-adoption",

@@ -1,0 +1,58 @@
+apiVersion: delivery.re8ch.com/v1alpha1
+kind: ReleaseContract
+metadata:
+  name: observability-chart-birfucate-metering
+spec:
+  authorityDomain: observability-metering
+  target:
+    cluster: re8ch
+    namespace: observability-ai
+  source:
+    renderer: kustomize
+    revision: git-chart@sha256:84b58a64c3429793e421fbb39550302544536ebbec5e52635653e2abdec41dc0
+    repository: siren-observer/observability-gitops
+    path: releases/observability-chart-birfucate-metering
+    values:
+    - path: releases/observability-chart-birfucate-metering/values.yaml
+      digest: sha256:f792eca3c1a7055c2de15372ce894c071ab4fc4caead09a39828ec3d7a460aaf
+    chart: clusters/re8ch/charts/birfucate-metering
+    chartDigest: sha256:84b58a64c3429793e421fbb39550302544536ebbec5e52635653e2abdec41dc0
+  provenance:
+    repository: siren-observer/observability-gitops
+    workflow: .github/workflows/static-release.yml
+    ref: refs/heads/main
+    environment: release-executor-observability-metering
+    audience: https://kube-api.re8ch.com/release-executor-observability-metering
+    signer: https://github.com/siren-observer/observability-gitops/.github/workflows/static-release.yml@refs/heads/main
+    issuer: https://token.actions.githubusercontent.com
+  authorization:
+    fieldManager: re8ch-release/observability-chart-birfucate-metering
+    resources:
+    - apps/Deployment
+    - core/ConfigMap
+    - core/Service
+    - core/ServiceAccount
+    objectNames:
+    - birfucate-metering
+    - birfucate-metering-discovery
+    allowClusterScoped: false
+    forceConflictObjects:
+    - apps/Deployment/observability-ai/birfucate-metering
+    - apps/Deployment/observability-ai/birfucate-metering-discovery
+    - core/ConfigMap/observability-ai/birfucate-metering
+    - core/Service/observability-ai/birfucate-metering
+    - core/ServiceAccount/observability-ai/birfucate-metering
+    - core/ServiceAccount/observability-ai/birfucate-metering-discovery
+    requireExisting: true
+  inventory:
+    digest: sha256:489490ee8ac60dd99b75fdce3edf526b606fa0602892ca24e0162f4559c0f5b1
+  lifecycle:
+    prune: false
+    healthTimeoutSeconds: 300
+    protectedKinds:
+    - Namespace
+    - CustomResourceDefinition
+    - PersistentVolume
+    - PersistentVolumeClaim
+    - StorageClass
+    deletionAllowlist: []

@@ -20,6 +20,8 @@ jobs:
           kubectl kustomize releases/observability-kube-state-metrics > "$RUNNER_TEMP/rendered.yaml"
           python operations/releases/unified_bundle.py --contract contracts/observability-kube-state-metrics.yaml \
             --rendered "$RUNNER_TEMP/rendered.yaml" --output "$RUNNER_TEMP/release.bundle"
-          python -m pytest -q tests/test_ssa_release_executor.py tests/test_unified_release_bundle.py tests/test_fair_value_runtime.py tests/test_domain_compiler.py
+          python -m pytest -q tests/test_ssa_release_executor.py tests/test_unified_release_bundle.py tests/test_fair_value_runtime.py tests/test_domain_compiler.py tests/test_existing_objects.py tests/test_locked_chart_profiles.py
       - name: Check complete native domain cohort
         run: python operations/releases/compile_domain.py --check
+      - name: Check locked Helm runtime contracts
+        run: python operations/releases/compile_chart_access.py --check

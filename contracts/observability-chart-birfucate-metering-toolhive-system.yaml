@@ -1,0 +1,49 @@
+apiVersion: delivery.re8ch.com/v1alpha1
+kind: ReleaseContract
+metadata:
+  name: observability-chart-birfucate-metering-toolhive-system
+spec:
+  authorityDomain: observability-metering
+  target:
+    cluster: re8ch
+    namespace: toolhive-system
+  source:
+    renderer: kustomize
+    revision: git-chart@sha256:84b58a64c3429793e421fbb39550302544536ebbec5e52635653e2abdec41dc0
+    repository: siren-observer/observability-gitops
+    path: releases/observability-chart-birfucate-metering-toolhive-system
+    values:
+    - path: releases/observability-chart-birfucate-metering-toolhive-system/values.yaml
+      digest: sha256:f792eca3c1a7055c2de15372ce894c071ab4fc4caead09a39828ec3d7a460aaf
+    chart: clusters/re8ch/charts/birfucate-metering
+    chartDigest: sha256:84b58a64c3429793e421fbb39550302544536ebbec5e52635653e2abdec41dc0
+  provenance:
+    repository: siren-observer/observability-gitops
+    workflow: .github/workflows/static-release.yml
+    ref: refs/heads/main
+    environment: release-executor-observability-metering
+    audience: https://kube-api.re8ch.com/release-executor-observability-metering
+    signer: https://github.com/siren-observer/observability-gitops/.github/workflows/static-release.yml@refs/heads/main
+    issuer: https://token.actions.githubusercontent.com
+  authorization:
+    fieldManager: re8ch-release/observability-chart-birfucate-metering-toolhive-system
+    resources:
+    - gateway.networking.k8s.io/HTTPRoute
+    objectNames:
+    - tenant-mcp
+    allowClusterScoped: false
+    forceConflictObjects:
+    - gateway.networking.k8s.io/HTTPRoute/toolhive-system/tenant-mcp
+    requireExisting: true
+  inventory:
+    digest: sha256:39d5707533657dbae28bd0d94fb283dddce06dce417e8610d4e665c5d23be55c
+  lifecycle:
+    prune: false
+    healthTimeoutSeconds: 300
+    protectedKinds:
+    - Namespace
+    - CustomResourceDefinition
+    - PersistentVolume
+    - PersistentVolumeClaim
+    - StorageClass
+    deletionAllowlist: []

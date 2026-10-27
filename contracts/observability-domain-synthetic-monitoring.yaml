@@ -31,6 +31,7 @@ spec:
     - k6-contracts-96kmtdg46c
     - k6-contracts-fast
     allowClusterScoped: false
+    requireExisting: true
     forceConflictObjects:
     - batch/CronJob/synthetic-monitoring/k6-contracts
     - batch/CronJob/synthetic-monitoring/k6-contracts-fast

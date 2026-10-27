@@ -1,0 +1,23 @@
+apiVersion: delivery.re8ch.com/locked-helm-render/v1alpha1
+kind: LockedHelmRender
+metadata:
+  name: observability-chart-incidentrelay
+spec:
+  chart: oci://ghcr.io/roxy-wi/incidentrelay-charts/incidentrelay@sha256:8bb521139db33f008c2a3c35546dcf2d5a583017b9487f6e9c8657124d43fdc9
+  version: 2.2.0
+  releaseName: incidentrelay
+  namespace: incidentrelay
+  releaseNamespace: incidentrelay
+  values: values.yaml
+  valuesDigest: sha256:3852edbf6bee5225c7bda613179b1974e2939359e6930e9e0afbcbd13f4c586f
+  renderedResources: resources.yaml
+  renderedResourcesDigest: sha256:2965398de1f538bb1346752b282bd3dfdd6cb375fc219e5fd8e19e159a40220e
+  helmRelease:
+    namespace: flux-observability-system
+    name: incidentrelay
+  helmDeclarationDigest: sha256:6968057c7481011ee69a87855b39212e6ef276f9107a8cc446418f6004f98376
+  imagePins:
+    registry.k8s.io/pause:3.10.1: registry.k8s.io/pause@sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c
+    ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.153.0: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator@sha256:71c80734e698e0a38039aeb5a6fad7129ca68eaa31eb262752c1e5015b319a24
+    victoriametrics/operator:v0.74.0: docker.io/victoriametrics/operator@sha256:c4fde419a4f03c7c45d7ee554e7039c12c75af161f7f7e1baef1b343015e3df9
+  deferred: []

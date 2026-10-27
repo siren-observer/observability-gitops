@@ -1,0 +1,984 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: birfucate-metering
+  labels:
+    app.kubernetes.io/name: birfucate-metering
+    app.kubernetes.io/instance: birfucate-metering
+    app.kubernetes.io/version: 0.4.0
+    app.kubernetes.io/managed-by: Helm
+  namespace: observability-ai
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: birfucate-metering
+      app.kubernetes.io/instance: birfucate-metering
+  template:
+    metadata:
+      annotations:
+        checksum/collector: 6721cc7678fe7048f415e7878d17e308d4160be5d12207b4f63177f272fc2281
+        checksum/config: 3038ac5a6403e7015d15cb79058c25d4156f876bc1586911c957157eb9a4e615
+      labels:
+        app.kubernetes.io/name: birfucate-metering
+        app.kubernetes.io/instance: birfucate-metering
+        app.kubernetes.io/version: 0.4.0
+        app.kubernetes.io/managed-by: Helm
+    spec:
+      serviceAccountName: birfucate-metering
+      automountServiceAccountToken: false
+      dnsPolicy: None
+      dnsConfig:
+        nameservers:
+        - 10.43.0.53
+        searches:
+        - observability-ai.svc.cluster.local
+        - tenant-infrastructure.svc.cluster.local
+        - svc.cluster.local
+        - cluster.local
+        options:
+        - name: ndots
+          value: '5'
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: collector
+        image: python:3.13-alpine@sha256:540c7d91f98ff6880174c40e99067bf5941eb54d818a7a5e094d188b196a934d
+        imagePullPolicy: IfNotPresent
+        command:
+        - python3
+        - /etc/birfucate/collector.py
+        env:
+        - name: BIRFUCATE_CONFIG
+          value: /etc/birfucate/config.json
+        - name: BIRFUCATE_OUTBOX
+          value: /var/lib/birfucate/outbox.db
+        ports:
+        - name: metrics
+          containerPort: 9791
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: metrics
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: metrics
+          periodSeconds: 30
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        resources:
+          limits:
+            cpu: 500m
+            memory: 256Mi
+          requests:
+            cpu: 25m
+            memory: 64Mi
+        volumeMounts:
+        - name: config
+          mountPath: /etc/birfucate
+          readOnly: true
+        - name: state
+          mountPath: /var/lib/birfucate
+        - name: tmp
+          mountPath: /tmp
+        - name: usage-token
+          mountPath: /var/run/secrets/re8ch-usage
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: birfucate-metering
+          defaultMode: 292
+      - name: state
+        emptyDir: {}
+      - name: tmp
+        emptyDir: {}
+      - name: usage-token
+        projected:
+          sources:
+          - serviceAccountToken:
+              path: token
+              audience: re8ch-usage
+              expirationSeconds: 3600
+      nodeSelector:
+        kubernetes.io/hostname: r640
+      tolerations: []
+      affinity: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: birfucate-metering-discovery
+  labels:
+    app.kubernetes.io/name: birfucate-metering
+    app.kubernetes.io/instance: birfucate-metering
+    app.kubernetes.io/version: 0.4.0
+    app.kubernetes.io/managed-by: Helm
+  namespace: observability-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: birfucate-metering-discovery
+      app.kubernetes.io/instance: birfucate-metering
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: birfucate-metering-discovery
+        app.kubernetes.io/instance: birfucate-metering
+      annotations:
+        checksum/controller: b418c62b587ac5def72c83cfc1d748c7e19619af7e944f297e4755c9f602cdce
+        checksum/discovery: 9ea536825a331bdfb0636ac2162f6c34ce9995bee07c7df6b873e00e6fa2e082
+    spec:
+      serviceAccountName: birfucate-metering-discovery
+      automountServiceAccountToken: true
+      dnsPolicy: None
+      dnsConfig:
+        nameservers:
+        - 10.43.0.53
+        searches:
+        - observability-ai.svc.cluster.local
+        - tenant-infrastructure.svc.cluster.local
+        - svc.cluster.local
+        - cluster.local
+        options:
+        - name: ndots
+          value: '5'
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: discovery
+        image: python:3.13-alpine@sha256:540c7d91f98ff6880174c40e99067bf5941eb54d818a7a5e094d188b196a934d
+        imagePullPolicy: IfNotPresent
+        command:
+        - python3
+        - /etc/birfucate/controller.py
+        env:
+        - name: KUBERNETES_SERVICE_HOST
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: KUBERNETES_SERVICE_PORT
+          value: '6443'
+        - name: KUBERNETES_SERVICE_PORT_HTTPS
+          value: '6443'
+        - name: BIFURCATE_DISCOVERY_CONFIG
+          value: /etc/birfucate/discovery.json
+        resources:
+          requests:
+            cpu: 25m
+            memory: 64Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: config
+          mountPath: /etc/birfucate
+          readOnly: true
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: config
+        configMap:
+          name: birfucate-metering
+          defaultMode: 292
+      - name: tmp
+        emptyDir: {}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: birfucate-metering
+  labels:
+    app.kubernetes.io/name: birfucate-metering
+    app.kubernetes.io/instance: birfucate-metering
+    app.kubernetes.io/version: 0.4.0
+    app.kubernetes.io/managed-by: Helm
+  namespace: observability-ai
+data:
+  config.json: '{"billingSink":{"enabled":false,"mappings":[],"timeoutSeconds":10,"url":"http://billing-usage-gateway.billing.svc.cluster.local/v1/usage-events"},"browserAPI":{"enabled":true,"lookbackSeconds":600},"collectionIntervalSeconds":60,"lookbackSeconds":300,"meters":{"bifurcation":[{"billingUnitSize":1000000,"countQuery":"sum
+    by (tenant, resource_ref) (rate(ceph_pool_rd{tenant!=\"\"}[5m]) + rate(ceph_pool_wr{tenant!=\"\"}[5m]))","domain":"ceph","fanoutQuery":"count
+    by (tenant, resource_ref) (ceph_client_metadata{tenant!=\"\"})","intensityQuery":"sum
+    by (tenant, resource_ref) (rate(ceph_pool_rd_bytes{tenant!=\"\"}[5m]) + rate(ceph_pool_wr_bytes{tenant!=\"\"}[5m]))
+    / clamp_min(sum by (tenant, resource_ref) (rate(ceph_pool_rd{tenant!=\"\"}[5m])
+    + rate(ceph_pool_wr{tenant!=\"\"}[5m])), 0.000001)","intensityUnit":"byte-per-operation","name":"ceph-client-io","occurrenceUnit":"operation","pricePerBillingUnit":0.01,"purpose":"data-access","referenceIntensity":4096,"resourceType":"storage-io"},{"billingUnitSize":1000000,"countQuery":"sum
+    by (tenant, resource_ref) (rate(pg_stat_database_xact_commit{tenant!=\"\"}[5m])
+    + rate(pg_stat_database_xact_rollback{tenant!=\"\"}[5m]))","domain":"pigsty","fanoutQuery":"count
+    by (tenant, resource_ref) (pg_stat_activity_count{tenant!=\"\",state=\"active\"})","intensityQuery":"sum
+    by (tenant, resource_ref) (rate(pg_stat_database_tup_fetched{tenant!=\"\"}[5m])
+    + rate(pg_stat_database_tup_inserted{tenant!=\"\"}[5m]) + rate(pg_stat_database_tup_updated{tenant!=\"\"}[5m])
+    + rate(pg_stat_database_tup_deleted{tenant!=\"\"}[5m])) / clamp_min(sum by (tenant,
+    resource_ref) (rate(pg_stat_database_xact_commit{tenant!=\"\"}[5m]) + rate(pg_stat_database_xact_rollback{tenant!=\"\"}[5m])),
+    0.000001)","intensityUnit":"tuple-per-transaction","name":"pigsty-transactions","occurrenceUnit":"transaction","pricePerBillingUnit":0.02,"purpose":"transactional-workload","referenceIntensity":1,"resourceType":"database-transaction"},{"billingUnitSize":1000000,"countQuery":"sum
+    by (tenant, resource_ref) (rate(hubble_flows_processed_total{tenant!=\"\"}[5m]))","domain":"networks","fanoutQuery":"count
+    by (tenant, resource_ref) (hubble_flows_processed_total{tenant!=\"\",destination!=\"\"})","intensityQuery":"sum
+    by (tenant, resource_ref) (rate(hubble_flow_bytes_total{tenant!=\"\"}[5m])) /
+    clamp_min(sum by (tenant, resource_ref) (rate(hubble_flows_processed_total{tenant!=\"\"}[5m])),
+    0.000001)","intensityUnit":"byte-per-flow","name":"hubble-network-flows","occurrenceUnit":"flow","pricePerBillingUnit":0.005,"purpose":"service-connectivity","referenceIntensity":1500,"resourceType":"network-flow"},{"billingUnitSize":1000000,"countQuery":"sum
+    by (tenant, resource_ref) (rate(hyperglass_route_change_total{tenant!=\"\"}[5m]))","domain":"networks","fanoutQuery":"count
+    by (tenant, resource_ref) (hyperglass_route_path_info{tenant!=\"\"})","intensityQuery":"avg
+    by (tenant, resource_ref) (hyperglass_route_path_count{tenant!=\"\"})","intensityUnit":"path-per-change","name":"hyperglass-route-branches","occurrenceUnit":"route-change","pricePerBillingUnit":0.005,"purpose":"public-routing","referenceIntensity":1,"resourceType":"route-branch"}],"occupancy":[{"domain":"compute","name":"tenant-namespace-cpu-request","purpose":"workload-runtime","query":"label_replace((sum
+    by (exported_namespace) (max by (exported_namespace, exported_pod, exported_container)
+    (kube_pod_container_resource_requests{resource=\"cpu\"}) unless on (exported_namespace,
+    exported_pod) kube_pod_labels{label_birfucate_re8ch_com_metered=\"true\"}) * on
+    (exported_namespace) group_left(label_tenancy_re8ch_com_tenant) max by (exported_namespace,
+    label_tenancy_re8ch_com_tenant) (kube_namespace_labels{label_tenancy_re8ch_com_tenant!=\"\"})),
+    \"namespace\", \"$1\", \"exported_namespace\", \"(.+)\")","resourceLabel":"namespace","resourceType":"namespace-cpu","serviceClass":"compute.workload.v1","tenantLabel":"label_tenancy_re8ch_com_tenant","unit":"core-second","valueKind":"gauge"},{"domain":"compute","name":"tenant-namespace-memory-request","purpose":"workload-runtime","query":"label_replace((sum
+    by (exported_namespace) (max by (exported_namespace, exported_pod, exported_container)
+    (kube_pod_container_resource_requests{resource=\"memory\"}) unless on (exported_namespace,
+    exported_pod) kube_pod_labels{label_birfucate_re8ch_com_metered=\"true\"}) * on
+    (exported_namespace) group_left(label_tenancy_re8ch_com_tenant) max by (exported_namespace,
+    label_tenancy_re8ch_com_tenant) (kube_namespace_labels{label_tenancy_re8ch_com_tenant!=\"\"})),
+    \"namespace\", \"$1\", \"exported_namespace\", \"(.+)\") / 1073741824","resourceLabel":"namespace","resourceType":"namespace-memory","serviceClass":"compute.workload.v1","tenantLabel":"label_tenancy_re8ch_com_tenant","unit":"GiB-second","valueKind":"gauge"},{"billingUnitSize":3600,"domain":"sandbox","name":"sandbox-cpu-request","pricePerBillingUnit":0.08,"purpose":"agent-execution","query":"sum
+    by (label_re8ch_com_tenant, label_birfucate_re8ch_com_resource) (kube_pod_container_resource_requests{resource=\"cpu\"}
+    * on (namespace, pod) group_left(label_re8ch_com_tenant, label_birfucate_re8ch_com_resource)
+    kube_pod_labels{label_opensandbox_re8ch_com_workload=\"true\",label_re8ch_com_tenant!=\"\"})","resourceLabel":"label_birfucate_re8ch_com_resource","resourceType":"sandbox-cpu","serviceClass":"sandbox.runtime.v1","tenantLabel":"label_re8ch_com_tenant","unit":"core-second","valueKind":"gauge"},{"billingUnitSize":3600,"domain":"sandbox","name":"sandbox-memory-request","pricePerBillingUnit":0.03,"purpose":"agent-execution","query":"sum
+    by (label_re8ch_com_tenant, label_birfucate_re8ch_com_resource) (kube_pod_container_resource_requests{resource=\"memory\"}
+    * on (namespace, pod) group_left(label_re8ch_com_tenant, label_birfucate_re8ch_com_resource)
+    kube_pod_labels{label_opensandbox_re8ch_com_workload=\"true\",label_re8ch_com_tenant!=\"\"})
+    / 1073741824","resourceLabel":"label_birfucate_re8ch_com_resource","resourceType":"sandbox-memory","serviceClass":"sandbox.runtime.v1","tenantLabel":"label_re8ch_com_tenant","unit":"GiB-second","valueKind":"gauge"},{"billingUnitSize":3600,"domain":"compute","name":"tenant-claim-cpu-request","pricePerBillingUnit":0.2,"purpose":"workload-runtime","query":"sum
+    by (label_tenant, label_resource_ref) (kube_pod_container_resource_requests{resource=\"cpu\"}
+    * on (namespace, pod) group_left(label_tenant, label_resource_ref) kube_pod_labels{label_birfucate_re8ch_com_metered=\"true\"})","resourceLabel":"label_resource_ref","resourceType":"cpu","tenantLabel":"label_tenant","unit":"core-second","valueKind":"gauge"},{"billingUnitSize":3600,"domain":"compute","name":"tenant-claim-memory-request","pricePerBillingUnit":0.03,"purpose":"workload-runtime","query":"sum
+    by (label_tenant, label_resource_ref) (kube_pod_container_resource_requests{resource=\"memory\"}
+    * on (namespace, pod) group_left(label_tenant, label_resource_ref) kube_pod_labels{label_birfucate_re8ch_com_metered=\"true\"})
+    / 1073741824","resourceLabel":"label_resource_ref","resourceType":"memory","tenantLabel":"label_tenant","unit":"GiB-second","valueKind":"gauge"},{"domain":"compute","name":"tenant-workload-cpu-used","purpose":"workload-runtime","query":"sum
+    by (label_tenant, label_resource_ref) (rate(container_cpu_usage_seconds_total{container!=\"\",image!=\"\"}[5m])
+    * on (namespace, pod) group_left(label_tenant, label_resource_ref) kube_pod_labels{label_birfucate_re8ch_com_metered=\"true\"})","resourceLabel":"label_resource_ref","resourceType":"cpu-used","tenantLabel":"label_tenant","unit":"core-second","valueKind":"gauge"},{"domain":"compute","name":"tenant-workload-memory-used","purpose":"workload-runtime","query":"sum
+    by (label_tenant, label_resource_ref) (container_memory_working_set_bytes{container!=\"\",image!=\"\"}
+    * on (namespace, pod) group_left(label_tenant, label_resource_ref) kube_pod_labels{label_birfucate_re8ch_com_metered=\"true\"})
+    / 1073741824","resourceLabel":"label_resource_ref","resourceType":"memory-used","tenantLabel":"label_tenant","unit":"GiB-second","valueKind":"gauge"},{"billingUnitSize":3600,"domain":"compute","name":"tenant-claim-ephemeral-storage-request","pricePerBillingUnit":0.005,"purpose":"workload-scratch","query":"sum
+    by (label_tenant, label_resource_ref) (kube_pod_container_resource_requests{resource=\"ephemeral_storage\"}
+    * on (namespace, pod) group_left(label_tenant, label_resource_ref) kube_pod_labels{label_birfucate_re8ch_com_metered=\"true\"})
+    / 1073741824","resourceLabel":"label_resource_ref","resourceType":"ephemeral-storage","tenantLabel":"label_tenant","unit":"GiB-second","valueKind":"gauge"},{"billingUnitSize":3600,"domain":"ceph","name":"ceph-volume-capacity","pricePerBillingUnit":0.002,"purpose":"persistent-data","query":"sum
+    by (label_tenant, label_resource_ref) ((kube_persistentvolumeclaim_resource_requests_storage_bytes
+    * on (namespace, persistentvolumeclaim) group_left(label_tenant, label_resource_ref)
+    kube_persistentvolumeclaim_labels{label_birfucate_re8ch_com_metered=\"true\"})
+    * on (namespace, persistentvolumeclaim) group_left() (kube_persistentvolumeclaim_status_phase{phase=\"Bound\"}
+    == 1)) / 1073741824","resourceLabel":"label_resource_ref","resourceType":"block-storage","tenantLabel":"label_tenant","unit":"GiB-second","valueKind":"gauge"},{"domain":"ceph","name":"ceph-volume-requested","purpose":"requested-capacity","query":"sum
+    by (label_tenant, label_resource_ref) (kube_persistentvolumeclaim_resource_requests_storage_bytes
+    * on (namespace, persistentvolumeclaim) group_left(label_tenant, label_resource_ref)
+    kube_persistentvolumeclaim_labels{label_birfucate_re8ch_com_metered=\"true\"})
+    / 1073741824","resourceLabel":"label_resource_ref","resourceType":"storage-request","tenantLabel":"label_tenant","unit":"GiB-second","valueKind":"gauge"},{"domain":"ceph","name":"ceph-volume-used","purpose":"occupied-capacity","query":"sum
+    by (label_tenant, label_resource_ref) (max by (namespace, persistentvolumeclaim)
+    (kubelet_volume_stats_used_bytes) * on (namespace, persistentvolumeclaim) group_left(label_tenant,
+    label_resource_ref) kube_persistentvolumeclaim_labels{label_birfucate_re8ch_com_metered=\"true\"})
+    / 1073741824","resourceLabel":"label_resource_ref","resourceType":"storage-used","tenantLabel":"label_tenant","unit":"GiB-second","valueKind":"gauge"},{"billingUnitSize":3600,"domain":"pigsty","name":"pigsty-database-storage","pricePerBillingUnit":0.003,"purpose":"transactional-data","query":"sum
+    by (tenant, resource_ref) (pg_database_size_bytes{tenant!=\"\"}) / 1073741824","resourceType":"database-storage","unit":"GiB-second","valueKind":"gauge"},{"billingUnitSize":3600,"domain":"networks","name":"network-public-ip","pricePerBillingUnit":0.01,"purpose":"public-ingress","query":"sum
+    by (tenant, resource_ref) (public_edge_service_info{tenant!=\"\"})","resourceType":"public-ip","unit":"IP-second","valueKind":"gauge"}],"usage":[{"costFromQuantity":true,"currency":"USD","domain":"ai-gateway","name":"ai-gateway-provider-spend","purpose":"model-inference","query":"sum
+    by (team_alias, requested_model) (rate(litellm_spend_metric_total{team_alias!=\"\"}[5m]))","resourceLabel":"requested_model","resourceType":"model-spend","serviceClass":"ai.model-gateway.v1","tenantLabel":"team_alias","unit":"USD","valueKind":"rate"},{"domain":"ai-gateway","name":"ai-gateway-input-tokens","purpose":"model-inference","query":"sum
+    by (team_alias, requested_model) (rate(litellm_input_tokens_metric_total{team_alias!=\"\"}[5m]))","resourceLabel":"requested_model","resourceType":"model-token","serviceClass":"ai.model-gateway.v1","tenantLabel":"team_alias","unit":"token","valueKind":"rate"},{"domain":"ai-gateway","name":"ai-gateway-output-tokens","purpose":"model-inference","query":"sum
+    by (team_alias, requested_model) (rate(litellm_output_tokens_metric_total{team_alias!=\"\"}[5m]))","resourceLabel":"requested_model","resourceType":"model-token","serviceClass":"ai.model-gateway.v1","tenantLabel":"team_alias","unit":"token","valueKind":"rate"},{"costFromQuantity":true,"currency":"USD","domain":"ai-gateway","name":"ai-gateway-tool-spend","purpose":"tenant-tool-call","query":"sum
+    by (team_alias, mcp_server_name) (rate(litellm_mcp_tool_call_spend_metric_total{team_alias!=\"\"}[5m]))","resourceLabel":"mcp_server_name","resourceType":"tool-spend","serviceClass":"ai.model-gateway.v1","tenantLabel":"team_alias","unit":"USD","valueKind":"rate"},{"domain":"ai-gateway","name":"ai-gateway-tool-calls","purpose":"tenant-tool-call","query":"sum
+    by (team_alias, mcp_server_name) (rate(litellm_mcp_tool_calls_total{team_alias!=\"\"}[5m]))","resourceLabel":"mcp_server_name","resourceType":"tool-call","serviceClass":"ai.model-gateway.v1","tenantLabel":"team_alias","unit":"call","valueKind":"rate"}]},"nodeCostAllocation":{"currencyLabel":"currency","enabled":true,"hourlyCostQuery":"re8ch_node_hourly_cost{status=\"confirmed\"}","nodeLabel":"node","resources":[{"capacityQuery":"max
+    by (node) (kube_node_status_allocatable{resource=\"cpu\",unit=\"core\"})","name":"cpu","unit":"core-second","usageQuery":"sum
+    by (node, label_tenancy_re8ch_com_tenant) (rate(container_cpu_usage_seconds_total{container!=\"\",image!=\"\"}[5m])
+    * on (namespace) group_left(label_tenancy_re8ch_com_tenant) label_replace(max
+    by (exported_namespace, label_tenancy_re8ch_com_tenant) (kube_namespace_labels{label_tenancy_re8ch_com_tenant!=\"\"}),
+    \"namespace\", \"$1\", \"exported_namespace\", \"(.+)\"))"},{"capacityQuery":"max
+    by (node) (kube_node_status_allocatable{resource=\"memory\",unit=\"byte\"}) /
+    1073741824","name":"ram","unit":"GiB-second","usageQuery":"sum by (node, label_tenancy_re8ch_com_tenant)
+    (container_memory_working_set_bytes{container!=\"\",image!=\"\"} * on (namespace)
+    group_left(label_tenancy_re8ch_com_tenant) label_replace(max by (exported_namespace,
+    label_tenancy_re8ch_com_tenant) (kube_namespace_labels{label_tenancy_re8ch_com_tenant!=\"\"}),
+    \"namespace\", \"$1\", \"exported_namespace\", \"(.+)\")) / 1073741824"}],"tenantLabel":"label_tenancy_re8ch_com_tenant","weightQuery":"re8ch_node_cost_allocation_weight{status=\"confirmed\"}"},"opencost":{"allocationPath":"/allocation/compute?window=1h\u0026aggregate=namespace","baseURL":"http://opencost.opencost.svc.cluster.local:9003","enabled":true},"outbox":{"enabled":false,"retentionDays":30,"size":"1Gi","storageClassName":"rbd-r640"},"pricing":{"currency":"CNY","enabled":false,"rateCardRef":"re8ch-showback-2026-09"},"prometheus":{"baseURL":"http://vmsingle-opencost.observability-system.svc.cluster.local:8428","queryBaseURL":"http://vmselect-re8ch-metrics.observability-system.svc.cluster.local:8481/select/0/prometheus","timeoutSeconds":15,"writePath":"/api/v1/import/prometheus"},"tenantLabels":{"resource":"resource_ref","tenant":"tenant"},"usageSink":{"allowedTenants":["re8ch"],"enabled":true,"timeoutSeconds":10,"url":"http://tenant-infrastructure.tenant-infrastructure.svc.cluster.local/internal/usage-events"}}
+
+    '
+  collector.py: "#!/usr/bin/env python3\n\"\"\"Prometheus-backed Occupancy and Bifurcation\
+    \ usage collector.\"\"\"\n\nfrom __future__ import annotations\n\nimport hashlib\n\
+    import json\nimport math\nimport os\nimport sqlite3\nimport threading\nimport\
+    \ time\nimport urllib.error\nimport urllib.parse\nimport urllib.request\nfrom\
+    \ http.server import BaseHTTPRequestHandler, ThreadingHTTPServer\nfrom pathlib\
+    \ import Path\nfrom typing import Any\n\nCONFIG_PATH = Path(os.getenv(\"BIRFUCATE_CONFIG\"\
+    , \"/etc/birfucate/config.json\"))\nOUTBOX_PATH = Path(os.getenv(\"BIRFUCATE_OUTBOX\"\
+    , \"/var/lib/birfucate/outbox.db\"))\nUSAGE_TOKEN_PATH = Path(os.getenv(\"BIRFUCATE_USAGE_TOKEN_PATH\"\
+    , \"/var/run/secrets/re8ch-usage/token\"))\nLOCK = threading.Lock()\nMETRICS:\
+    \ dict[tuple[str, tuple[tuple[str, str], ...]], float] = {}\nREADY = False\nLAST_SUCCESS\
+    \ = 0.0\nBROWSER_METRICS = frozenset({\n    \"birfucate_occupancy_current\",\n\
+    \    \"birfucate_occupancy_units_total\",\n    \"birfucate_usage_total\",\n  \
+    \  \"birfucate_bifurcation_occurrences_total\",\n    \"birfucate_bifurcation_intensity\"\
+    ,\n    \"birfucate_bifurcation_fanout\",\n    \"birfucate_bifurcation_score_total\"\
+    ,\n    \"birfucate_metered_cost_total\",\n    \"birfucate_tenant_cost_total\"\
+    ,\n    \"birfucate_unallocated_cost_total\",\n    \"birfucate_tenant_resource_count\"\
+    ,\n})\n\n\ndef load_config() -> dict[str, Any]:\n    return json.loads(CONFIG_PATH.read_text())\n\
+    \n\ndef prometheus_query(base_url: str, query: str, timeout: int) -> list[dict[str,\
+    \ Any]]:\n    url = base_url.rstrip(\"/\") + \"/api/v1/query?\" + urllib.parse.urlencode({\"\
+    query\": query})\n    request = urllib.request.Request(url, headers={\"Accept\"\
+    : \"application/json\"})\n    with urllib.request.urlopen(request, timeout=timeout)\
+    \ as response:\n        payload = json.load(response)\n    if payload.get(\"status\"\
+    ) != \"success\":\n        raise RuntimeError(\"Prometheus query failed\")\n \
+    \   return payload.get(\"data\", {}).get(\"result\", [])\n\n\ndef browser_query(config:\
+    \ dict[str, Any], metric: str) -> dict[str, Any]:\n    browser = config.get(\"\
+    browserAPI\") or {}\n    if not browser.get(\"enabled\"):\n        raise PermissionError(\"\
+    browser_api_disabled\")\n    if metric not in BROWSER_METRICS:\n        raise\
+    \ ValueError(\"metric_not_allowed\")\n    lookback = max(60, min(3600, int(browser.get(\"\
+    lookbackSeconds\", 600))))\n    prom = config[\"prometheus\"]\n    result = prometheus_query(\n\
+    \        prom[\"baseURL\"], f\"last_over_time({metric}[{lookback}s])\", int(prom[\"\
+    timeoutSeconds\"])\n    )\n    return {\"status\": \"success\", \"data\": {\"\
+    resultType\": \"vector\", \"result\": result}}\n\n\ndef vector(items: list[dict[str,\
+    \ Any]], tenant_label: str, resource_label: str) -> dict[tuple[str, str], float]:\n\
+    \    result: dict[tuple[str, str], float] = {}\n    for item in items:\n     \
+    \   labels = item.get(\"metric\") or {}\n        tenant, resource = str(labels.get(tenant_label)\
+    \ or \"\"), str(labels.get(resource_label) or \"\")\n        if not tenant or\
+    \ not resource:\n            continue\n        try:\n            value = float((item.get(\"\
+    value\") or [0, 0])[1])\n        except (TypeError, ValueError, IndexError):\n\
+    \            continue\n        if math.isfinite(value) and value >= 0:\n     \
+    \       result[(tenant, resource)] = value\n    return result\n\n\ndef labeled_vector(items:\
+    \ list[dict[str, Any]], labels: list[str]) -> dict[tuple[str, ...], float]:\n\
+    \    \"\"\"Return finite non-negative samples keyed by required Prometheus labels.\"\
+    \"\"\n    result: dict[tuple[str, ...], float] = {}\n    for item in items:\n\
+    \        metric = item.get(\"metric\") or {}\n        key = tuple(str(metric.get(label)\
+    \ or \"\") for label in labels)\n        if any(not value for value in key):\n\
+    \            continue\n        try:\n            value = float((item.get(\"value\"\
+    ) or [0, 0])[1])\n        except (TypeError, ValueError, IndexError):\n      \
+    \      continue\n        if math.isfinite(value) and value >= 0:\n           \
+    \ result[key] = value\n    return result\n\n\ndef set_metric(name: str, labels:\
+    \ dict[str, str], value: float) -> None:\n    key = (name, tuple(sorted((str(k),\
+    \ str(v)) for k, v in labels.items())))\n    with LOCK:\n        METRICS[key]\
+    \ = float(value)\n\n\ndef add_metric(name: str, labels: dict[str, str], value:\
+    \ float) -> None:\n    key = (name, tuple(sorted((str(k), str(v)) for k, v in\
+    \ labels.items())))\n    with LOCK:\n        METRICS[key] = METRICS.get(key, 0.0)\
+    \ + float(value)\n\n\ndef event_id(parts: list[Any]) -> str:\n    raw = json.dumps(parts,\
+    \ sort_keys=True, separators=(\",\", \":\")).encode()\n    return \"ue_\" + hashlib.sha256(raw).hexdigest()[:32]\n\
+    \n\nclass Outbox:\n    def __init__(self, path: Path):\n        path.parent.mkdir(parents=True,\
+    \ exist_ok=True)\n        self.path = path\n        with self.connect() as db:\n\
+    \            db.execute(\"PRAGMA journal_mode=WAL\")\n            db.execute(\"\
+    CREATE TABLE IF NOT EXISTS events(event_id TEXT PRIMARY KEY,event_json TEXT NOT\
+    \ NULL,created_at INTEGER NOT NULL,delivered_at INTEGER)\")\n\n    def connect(self):\n\
+    \        return sqlite3.connect(self.path)\n\n    def put(self, event: dict[str,\
+    \ Any]) -> None:\n        with self.connect() as db:\n            db.execute(\"\
+    INSERT OR IGNORE INTO events VALUES(?,?,?,NULL)\", (event[\"eventId\"], json.dumps(event,\
+    \ sort_keys=True), int(time.time())))\n\n    def pending(self, limit: int = 100)\
+    \ -> list[tuple[str, dict[str, Any]]]:\n        with self.connect() as db:\n \
+    \           rows = db.execute(\"SELECT event_id,event_json FROM events WHERE delivered_at\
+    \ IS NULL ORDER BY created_at LIMIT ?\", (limit,)).fetchall()\n        return\
+    \ [(row[0], json.loads(row[1])) for row in rows]\n\n    def delivered(self, event_id_value:\
+    \ str) -> None:\n        with self.connect() as db:\n            db.execute(\"\
+    UPDATE events SET delivered_at=? WHERE event_id=?\", (int(time.time()), event_id_value))\n\
+    \n    def prune(self, retention_days: int) -> None:\n        cutoff = int(time.time())\
+    \ - retention_days * 86400\n        with self.connect() as db:\n            db.execute(\"\
+    DELETE FROM events WHERE delivered_at IS NOT NULL AND delivered_at < ?\", (cutoff,))\n\
+    \n\ndef price(config: dict[str, Any], meter: dict[str, Any], quantity: float)\
+    \ -> tuple[float, bool, str]:\n    pricing = config.get(\"pricing\") or {}\n \
+    \   rate = meter.get(\"pricePerBillingUnit\")\n    unit_size = float(meter.get(\"\
+    billingUnitSize\", 1))\n    applied = bool(pricing.get(\"enabled\")) and rate\
+    \ is not None and unit_size > 0\n    return (quantity / unit_size * float(rate)\
+    \ if applied else 0.0, applied, str(pricing.get(\"currency\", \"CNY\")))\n\n\n\
+    def usage_event(tenant: str, resource: str, domain: str, meter: str, quantity:\
+    \ float, unit: str, start: int, end: int, dimensions: dict[str, Any], cost: float\
+    \ = 0, priced: bool = False, currency: str = \"CNY\", service_class: str | None\
+    \ = None) -> dict[str, Any]:\n    stable = [tenant, resource, domain, meter, start,\
+    \ end]\n    iso = lambda value: time.strftime(\"%Y-%m-%dT%H:%M:%SZ\", time.gmtime(value))\n\
+    \    event = {\n        \"eventId\": event_id(stable), \"tenantRef\": tenant,\
+    \ \"resourceRef\": resource,\n        \"serviceClass\": service_class or {\"compute\"\
+    : \"compute.workload.v1\", \"ceph\": \"storage.volume.v1\", \"pigsty\": \"database.postgresql.shared.v1\"\
+    , \"networks\": \"network.tenant.v1\"}[domain],\n        \"meter\": meter, \"\
+    quantity\": quantity, \"unit\": unit, \"periodStart\": iso(start), \"periodEnd\"\
+    : iso(end),\n        \"regionRef\": \"meter-source\", \"sourceOperationId\": \"\
+    birfucate:\" + event_id(stable)[3:], \"observedAt\": iso(end),\n        \"schemaVersion\"\
+    : \"usage.re8ch.com/v1\", \"dimensions\": dimensions,\n        \"pricingApplied\"\
+    : priced, \"accountingPosted\": False,\n    }\n    if priced:\n        event.update({\"\
+    cost\": cost, \"currency\": currency})\n    return event\n\n\ndef collect_node_cost_allocation(\n\
+    \    config: dict[str, Any], start: int, end: int, queue: Any,\n    tenant_resources:\
+    \ set[tuple[str, str, str]], tenant_costs: dict[tuple[str, str], float],\n) ->\
+    \ None:\n    \"\"\"Allocate contracted node cost from observed CPU/RAM capacity\
+    \ shares.\"\"\"\n    allocation = config.get(\"nodeCostAllocation\") or {}\n \
+    \   if not allocation.get(\"enabled\"):\n        return\n    prom = config[\"\
+    prometheus\"]\n    query_base_url = prom.get(\"queryBaseURL\") or prom[\"baseURL\"\
+    ]\n    timeout = int(prom[\"timeoutSeconds\"])\n    node_label = str(allocation.get(\"\
+    nodeLabel\", \"node\"))\n    tenant_label = str(allocation.get(\"tenantLabel\"\
+    , \"tenant\"))\n    currency_label = str(allocation.get(\"currencyLabel\", \"\
+    currency\"))\n    interval = max(1, end - start)\n    costs = labeled_vector(\n\
+    \        prometheus_query(query_base_url, allocation[\"hourlyCostQuery\"], timeout),\n\
+    \        [node_label, currency_label],\n    )\n    weights = labeled_vector(\n\
+    \        prometheus_query(query_base_url, allocation[\"weightQuery\"], timeout),\n\
+    \        [node_label, \"resource\"],\n    )\n    for resource in allocation.get(\"\
+    resources\", []):\n        resource_name = str(resource[\"name\"])\n        capacities\
+    \ = labeled_vector(\n            prometheus_query(query_base_url, resource[\"\
+    capacityQuery\"], timeout), [node_label]\n        )\n        usages = labeled_vector(\n\
+    \            prometheus_query(query_base_url, resource[\"usageQuery\"], timeout),\
+    \ [node_label, tenant_label]\n        )\n        for (node, currency), hourly_cost\
+    \ in costs.items():\n            capacity = capacities.get((node,), 0.0)\n   \
+    \         weight = weights.get((node, resource_name), 0.0)\n            if hourly_cost\
+    \ <= 0 or capacity <= 0 or weight <= 0:\n                continue\n          \
+    \  node_usages = {tenant: value for (usage_node, tenant), value in usages.items()\
+    \ if usage_node == node}\n            total_usage = sum(node_usages.values())\n\
+    \            # Capacity is the normal denominator. If telemetry briefly exceeds\n\
+    \            # allocatable capacity, normalize by observed total to ensure the\n\
+    \            # cost pool is never over-allocated.\n            denominator = max(capacity,\
+    \ total_usage)\n            pool_cost = hourly_cost * interval / 3600.0 * weight\n\
+    \            allocated_cost = 0.0\n            for tenant, usage in node_usages.items():\n\
+    \                cost = pool_cost * usage / denominator\n                allocated_cost\
+    \ += cost\n                labels = {\n                    \"tenant\": tenant,\
+    \ \"resource_ref\": node, \"domain\": \"compute\",\n                    \"resource_type\"\
+    : f\"node-{resource_name}-cost\", \"purpose\": \"actual-node-cost\",\n       \
+    \             \"meter\": f\"node-{resource_name}-cost-allocation\", \"unit\":\
+    \ resource[\"unit\"],\n                    \"currency\": currency, \"priced\"\
+    : \"true\", \"cost_basis\": \"contracted-node-cost\",\n                }\n   \
+    \             add_metric(\"birfucate_metered_cost_total\", labels, cost)\n   \
+    \             tenant_resources.add((tenant, node, f\"node-{resource_name}-cost\"\
+    ))\n                tenant_costs[(tenant, currency)] = tenant_costs.get((tenant,\
+    \ currency), 0.0) + cost\n                event = usage_event(\n             \
+    \       tenant, node, \"compute\", f\"cost.node-{resource_name}\", usage * interval,\n\
+    \                    resource[\"unit\"], start, end,\n                    {\"\
+    observed\": usage, \"capacity\": capacity, \"share\": usage / denominator,\n \
+    \                    \"allocationWeight\": weight, \"costBasis\": \"contracted-node-cost\"\
+    ,\n                     \"nodeHourlyCost\": hourly_cost, \"resourceType\": f\"\
+    node-{resource_name}-cost\",\n                     \"purpose\": \"actual-node-cost\"\
+    },\n                    service_class=\"compute.workload.v1\",\n             \
+    \   )\n                event.update({\"cost\": cost, \"currency\": currency, \"\
+    costAllocated\": True})\n                queue(event)\n            add_metric(\n\
+    \                \"birfucate_unallocated_cost_total\",\n                {\"node\"\
+    : node, \"resource\": resource_name, \"currency\": currency,\n               \
+    \  \"cost_basis\": \"contracted-node-cost\"},\n                max(0.0, pool_cost\
+    \ - allocated_cost),\n            )\n\n\ndef collect_once(config: dict[str, Any],\
+    \ outbox: Outbox, start: int, end: int) -> None:\n    interval = max(1, end -\
+    \ start)\n    allowed_tenants = set((config.get(\"usageSink\") or {}).get(\"allowedTenants\"\
+    ) or [])\n    def queue(event: dict[str, Any]) -> None:\n        if not allowed_tenants\
+    \ or event[\"tenantRef\"] in allowed_tenants:\n            outbox.put(event)\n\
+    \    prom = config[\"prometheus\"]\n    query_base_url = prom.get(\"queryBaseURL\"\
+    ) or prom[\"baseURL\"]\n    tenant_label = config[\"tenantLabels\"][\"tenant\"\
+    ]\n    resource_label = config[\"tenantLabels\"][\"resource\"]\n    tenant_resources:\
+    \ set[tuple[str, str, str]] = set()\n    tenant_costs: dict[tuple[str, str], float]\
+    \ = {}\n    set_metric(\"birfucate_dependency_up\", {\"dependency\": \"prometheus\"\
+    }, 1)\n    opencost = config.get(\"opencost\") or {}\n    if opencost.get(\"enabled\"\
+    ):\n        request = urllib.request.Request(opencost[\"baseURL\"].rstrip(\"/\"\
+    ) + opencost[\"allocationPath\"], headers={\"Accept\": \"application/json\"})\n\
+    \        try:\n            with urllib.request.urlopen(request, timeout=int(prom[\"\
+    timeoutSeconds\"])) as response:\n                set_metric(\"birfucate_dependency_up\"\
+    , {\"dependency\": \"opencost\"}, 1 if response.status == 200 else 0)\n      \
+    \  except urllib.error.URLError:\n            set_metric(\"birfucate_dependency_up\"\
+    , {\"dependency\": \"opencost\"}, 0)\n    try:\n        collect_node_cost_allocation(config,\
+    \ start, end, queue, tenant_resources, tenant_costs)\n        set_metric(\"birfucate_dependency_up\"\
+    , {\"dependency\": \"node-cost-allocation\"}, 1)\n    except (KeyError, OSError,\
+    \ RuntimeError, urllib.error.URLError):\n        # Cost enrichment must not suppress\
+    \ raw occupancy and bifurcation facts\n        # while its upstream metrics are\
+    \ rolling out or temporarily unavailable.\n        set_metric(\"birfucate_dependency_up\"\
+    , {\"dependency\": \"node-cost-allocation\"}, 0)\n    for meter in config[\"meters\"\
+    ].get(\"occupancy\", []):\n        values = vector(prometheus_query(query_base_url,\
+    \ meter[\"query\"], int(prom[\"timeoutSeconds\"])), meter.get(\"tenantLabel\"\
+    , tenant_label), meter.get(\"resourceLabel\", resource_label))\n        for (tenant,\
+    \ resource), gauge in values.items():\n            quantity = gauge * interval\n\
+    \            resource_type = str(meter.get(\"resourceType\", meter[\"domain\"\
+    ]))\n            purpose = str(meter.get(\"purpose\", meter[\"name\"]))\n    \
+    \        cost, priced, currency = price(config, meter, quantity)\n           \
+    \ labels = {\"tenant\": tenant, \"resource_ref\": resource, \"domain\": meter[\"\
+    domain\"], \"resource_type\": resource_type, \"purpose\": purpose, \"meter\":\
+    \ meter[\"name\"], \"unit\": meter[\"unit\"]}\n            set_metric(\"birfucate_occupancy_current\"\
+    , labels, gauge)\n            add_metric(\"birfucate_occupancy_units_total\",\
+    \ labels, quantity)\n            add_metric(\"birfucate_metered_cost_total\",\
+    \ {**labels, \"currency\": currency, \"priced\": str(priced).lower()}, cost)\n\
+    \            tenant_resources.add((tenant, resource, resource_type))\n       \
+    \     tenant_costs[(tenant, currency)] = tenant_costs.get((tenant, currency),\
+    \ 0) + cost\n            queue(usage_event(tenant, resource, meter[\"domain\"\
+    ], \"occupancy.\" + meter[\"name\"], quantity, meter[\"unit\"], start, end, {\"\
+    gauge\": gauge, \"durationSeconds\": interval, \"resourceType\": resource_type,\
+    \ \"purpose\": purpose}, cost, priced, currency, meter.get(\"serviceClass\")))\n\
+    \    for meter in config[\"meters\"].get(\"usage\", []):\n        values = vector(prometheus_query(query_base_url,\
+    \ meter[\"query\"], int(prom[\"timeoutSeconds\"])), meter.get(\"tenantLabel\"\
+    , tenant_label), meter.get(\"resourceLabel\", resource_label))\n        for (tenant,\
+    \ resource), observed in values.items():\n            quantity = observed * interval\
+    \ if meter.get(\"valueKind\") == \"rate\" else observed\n            resource_type\
+    \ = str(meter.get(\"resourceType\", meter[\"domain\"]))\n            purpose =\
+    \ str(meter.get(\"purpose\", meter[\"name\"]))\n            if meter.get(\"costFromQuantity\"\
+    ):\n                priced = bool((config.get(\"pricing\") or {}).get(\"enabled\"\
+    ))\n                cost, currency = (quantity if priced else 0.0), str(meter.get(\"\
+    currency\", \"USD\"))\n            else:\n                cost, priced, currency\
+    \ = price(config, meter, quantity)\n            labels = {\"tenant\": tenant,\
+    \ \"resource_ref\": resource, \"domain\": meter[\"domain\"], \"resource_type\"\
+    : resource_type, \"purpose\": purpose, \"meter\": meter[\"name\"], \"unit\": meter[\"\
+    unit\"]}\n            add_metric(\"birfucate_usage_total\", labels, quantity)\n\
+    \            add_metric(\"birfucate_metered_cost_total\", {**labels, \"currency\"\
+    : currency, \"priced\": str(priced).lower()}, cost)\n            tenant_resources.add((tenant,\
+    \ resource, resource_type))\n            tenant_costs[(tenant, currency)] = tenant_costs.get((tenant,\
+    \ currency), 0) + cost\n            queue(usage_event(tenant, resource, meter[\"\
+    domain\"], \"usage.\" + meter[\"name\"], quantity, meter[\"unit\"], start, end,\
+    \ {\"resourceType\": resource_type, \"purpose\": purpose}, cost, priced, currency,\
+    \ meter.get(\"serviceClass\")))\n    for meter in config[\"meters\"].get(\"bifurcation\"\
+    , []):\n        counts = vector(prometheus_query(query_base_url, meter[\"countQuery\"\
+    ], int(prom[\"timeoutSeconds\"])), tenant_label, resource_label)\n        intensities\
+    \ = vector(prometheus_query(query_base_url, meter[\"intensityQuery\"], int(prom[\"\
+    timeoutSeconds\"])), tenant_label, resource_label)\n        fanouts = vector(prometheus_query(query_base_url,\
+    \ meter[\"fanoutQuery\"], int(prom[\"timeoutSeconds\"])), tenant_label, resource_label)\n\
+    \        for (tenant, resource), rate in counts.items():\n            occurrences\
+    \ = rate * interval\n            intensity = intensities.get((tenant, resource),\
+    \ 0.0)\n            fanout = max(1.0, fanouts.get((tenant, resource), 1.0))\n\
+    \            reference = max(float(meter.get(\"referenceIntensity\", 1)), 0.000001)\n\
+    \            strength = math.log2(1.0 + intensity / reference)\n            score\
+    \ = occurrences * strength * fanout\n            resource_type = str(meter.get(\"\
+    resourceType\", meter[\"domain\"]))\n            purpose = str(meter.get(\"purpose\"\
+    , meter[\"name\"]))\n            cost, priced, currency = price(config, meter,\
+    \ score)\n            labels = {\"tenant\": tenant, \"resource_ref\": resource,\
+    \ \"domain\": meter[\"domain\"], \"resource_type\": resource_type, \"purpose\"\
+    : purpose, \"meter\": meter[\"name\"]}\n            add_metric(\"birfucate_bifurcation_occurrences_total\"\
+    , {**labels, \"unit\": meter[\"occurrenceUnit\"]}, occurrences)\n            set_metric(\"\
+    birfucate_bifurcation_intensity\", {**labels, \"unit\": meter[\"intensityUnit\"\
+    ]}, intensity)\n            set_metric(\"birfucate_bifurcation_fanout\", labels,\
+    \ fanout)\n            add_metric(\"birfucate_bifurcation_score_total\", labels,\
+    \ score)\n            add_metric(\"birfucate_metered_cost_total\", {**labels,\
+    \ \"unit\": \"bifurcation-point\", \"currency\": currency, \"priced\": str(priced).lower()},\
+    \ cost)\n            tenant_resources.add((tenant, resource, resource_type))\n\
+    \            tenant_costs[(tenant, currency)] = tenant_costs.get((tenant, currency),\
+    \ 0) + cost\n            queue(usage_event(tenant, resource, meter[\"domain\"\
+    ], \"bifurcation.\" + meter[\"name\"], score, \"bifurcation-point\", start, end,\
+    \ {\"occurrences\": occurrences, \"occurrenceUnit\": meter[\"occurrenceUnit\"\
+    ], \"intensity\": intensity, \"intensityUnit\": meter[\"intensityUnit\"], \"referenceIntensity\"\
+    : reference, \"fanout\": fanout, \"strength\": strength, \"resourceType\": resource_type,\
+    \ \"purpose\": purpose}, cost, priced, currency))\n    counts: dict[tuple[str,\
+    \ str], int] = {}\n    for tenant, _resource, resource_type in tenant_resources:\n\
+    \        counts[(tenant, resource_type)] = counts.get((tenant, resource_type),\
+    \ 0) + 1\n    for (tenant, resource_type), count in counts.items():\n        set_metric(\"\
+    birfucate_tenant_resource_count\", {\"tenant\": tenant, \"resource_type\": resource_type},\
+    \ count)\n    for (tenant, currency), cost in tenant_costs.items():\n        add_metric(\"\
+    birfucate_tenant_cost_total\", {\"tenant\": tenant, \"currency\": currency}, cost)\n\
+    \n\ndef deliver(config: dict[str, Any], outbox: Outbox) -> None:\n    sink = config.get(\"\
+    usageSink\") or {}\n    if not sink.get(\"enabled\"):\n        return\n    headers\
+    \ = {\"Content-Type\": \"application/json\"}\n    token = USAGE_TOKEN_PATH.read_text().strip()\n\
+    \    if not token:\n        raise RuntimeError(\"usage service account token is\
+    \ empty\")\n    headers[\"Authorization\"] = \"Bearer \" + token\n    for key,\
+    \ event in outbox.pending():\n        if event.get(\"pricingApplied\"):\n    \
+    \        raise RuntimeError(\"priced events cannot be delivered to the raw usage\
+    \ ledger\")\n        headers[\"Idempotency-Key\"] = key\n        request = urllib.request.Request(sink[\"\
+    url\"], data=json.dumps(event).encode(), headers=headers, method=\"POST\")\n \
+    \       try:\n            with urllib.request.urlopen(request, timeout=int(sink.get(\"\
+    timeoutSeconds\", 10))) as response:\n                if not 200 <= response.status\
+    \ < 300:\n                    break\n            billing = config.get(\"billingSink\"\
+    ) or {}\n            if billing.get(\"enabled\"):\n                mapping = next((item\
+    \ for item in billing.get(\"mappings\", [])\n                    if item[\"serviceClass\"\
+    ] == event[\"serviceClass\"] and item[\"meter\"] == event[\"meter\"]), None)\n\
+    \                if mapping is None:\n                    raise RuntimeError(\"\
+    Catalog billing mapping missing for UsageEvent\")\n                rated = {\"\
+    event\": event, \"service_ref\": mapping[\"serviceRef\"], \"meter_code\": mapping[\"\
+    meterCode\"]}\n                billing_request = urllib.request.Request(billing[\"\
+    url\"], data=json.dumps(rated).encode(), headers=headers, method=\"POST\")\n \
+    \               with urllib.request.urlopen(billing_request, timeout=int(billing.get(\"\
+    timeoutSeconds\", 10))) as response:\n                    if not 200 <= response.status\
+    \ < 300:\n                        break\n            outbox.delivered(key)\n \
+    \       except urllib.error.URLError:\n            break\n\n\ndef render_metrics(timestamp_ms:\
+    \ int | None = None) -> bytes:\n    suffix = f\" {timestamp_ms}\" if timestamp_ms\
+    \ is not None else \"\"\n    lines = [\"# HELP birfucate_up Whether the last collection\
+    \ completed.\", \"# TYPE birfucate_up gauge\", f\"birfucate_up {1 if READY else\
+    \ 0}{suffix}\", \"# HELP birfucate_last_success_unixtime Last successful collection\
+    \ time.\", \"# TYPE birfucate_last_success_unixtime gauge\", f\"birfucate_last_success_unixtime\
+    \ {LAST_SUCCESS}{suffix}\"]\n    with LOCK:\n        items = sorted(METRICS.items())\n\
+    \    for (name, labels), value in items:\n        encoded = \",\".join(f'{key}=\"\
+    {str(val).replace(chr(92), chr(92)+chr(92)).replace(chr(34), chr(92)+chr(34))}\"\
+    ' for key, val in labels)\n        lines.append(f\"{name}{{{encoded}}} {value}{suffix}\"\
+    )\n    return (\"\\n\".join(lines) + \"\\n\").encode()\n\n\ndef publish_metrics(config:\
+    \ dict[str, Any]) -> None:\n    prom = config[\"prometheus\"]\n    path = str(prom.get(\"\
+    writePath\") or \"\").strip()\n    if not path:\n        return\n    request =\
+    \ urllib.request.Request(prom[\"baseURL\"].rstrip(\"/\") + path, data=render_metrics(int(time.time()\
+    \ * 1000)), headers={\"Content-Type\": \"text/plain\"}, method=\"POST\")\n   \
+    \ with urllib.request.urlopen(request, timeout=int(prom[\"timeoutSeconds\"]))\
+    \ as response:\n        if not 200 <= response.status < 300:\n            raise\
+    \ RuntimeError(\"VictoriaMetrics import failed\")\n\n\nclass Handler(BaseHTTPRequestHandler):\n\
+    \    def do_GET(self) -> None:\n        parsed = urllib.parse.urlsplit(self.path)\n\
+    \        if parsed.path == \"/metrics\":\n            body, status, content_type\
+    \ = render_metrics(), 200, \"text/plain; version=0.0.4\"\n        elif parsed.path\
+    \ == \"/healthz\":\n            body, status, content_type = b'{\"status\":\"\
+    ok\"}', 200, \"application/json\"\n        elif parsed.path == \"/readyz\":\n\
+    \            body, status, content_type = (b'{\"status\":\"ready\"}', 200, \"\
+    application/json\") if READY else (b'{\"status\":\"not-ready\"}', 503, \"application/json\"\
+    )\n        elif parsed.path == \"/api/v1/browser/query\":\n            params\
+    \ = urllib.parse.parse_qs(parsed.query)\n            metric = (params.get(\"metric\"\
+    ) or [\"\"])[0]\n            try:\n                body = json.dumps(browser_query(load_config(),\
+    \ metric), separators=(\",\", \":\")).encode()\n                status, content_type\
+    \ = 200, \"application/json\"\n            except PermissionError as exc:\n  \
+    \              body, status, content_type = json.dumps({\"status\": \"error\"\
+    , \"error\": str(exc)}).encode(), 404, \"application/json\"\n            except\
+    \ ValueError as exc:\n                body, status, content_type = json.dumps({\"\
+    status\": \"error\", \"error\": str(exc)}).encode(), 400, \"application/json\"\
+    \n            except (OSError, RuntimeError, urllib.error.URLError) as exc:\n\
+    \                body, status, content_type = json.dumps({\"status\": \"error\"\
+    , \"error\": str(exc)}).encode(), 502, \"application/json\"\n        else:\n \
+    \           body, status, content_type = b'{\"error\":\"not_found\"}', 404, \"\
+    application/json\"\n        self.send_response(status); self.send_header(\"Content-Type\"\
+    , content_type); self.send_header(\"Content-Length\", str(len(body))); self.end_headers();\
+    \ self.wfile.write(body)\n\n    def log_message(self, fmt: str, *args: Any) ->\
+    \ None:\n        return\n\n\ndef loop(config: dict[str, Any], outbox: Outbox)\
+    \ -> None:\n    global READY, LAST_SUCCESS\n    interval = max(10, int(config.get(\"\
+    collectionIntervalSeconds\", 60)))\n    end = int(time.time())\n    while True:\n\
+    \        start, end = end, int(time.time())\n        if end <= start:\n      \
+    \      start = end - interval\n        try:\n            collect_once(config,\
+    \ outbox, start, end)\n            READY, LAST_SUCCESS = True, time.time()\n \
+    \           publish_metrics(config)\n            deliver(config, outbox)\n   \
+    \         outbox.prune(int(config.get(\"outbox\", {}).get(\"retentionDays\", 30)))\n\
+    \        except Exception as exc:\n            READY = False\n            print(json.dumps({\"\
+    level\": \"error\", \"event\": \"collection_failed\", \"error\": str(exc)}), flush=True)\n\
+    \        time.sleep(interval)\n\n\ndef main() -> None:\n    config, outbox = load_config(),\
+    \ Outbox(OUTBOX_PATH)\n    threading.Thread(target=loop, args=(config, outbox),\
+    \ daemon=True).start()\n    ThreadingHTTPServer((\"0.0.0.0\", 9791), Handler).serve_forever()\n\
+    \n\nif __name__ == \"__main__\":\n    main()\n"
+  discovery.json: '{"classifications":{"evaluation-only":["cube-trial","mitos-trial","symphony-trial"],"internal-control-plane":["ai-operations","auth","cert-manager","dex","edge-devices","flux-system","function-routing","headlamp","image","kube-system","mcp-registry","opentelemetry-operator","ops","synthetic-monitoring","toolhive-system"],"shared-infrastructure-product":["among-clusters","egress-fabric","harbor","llm-gateway","netbird-access","observable","observability-ai","opencost","opensandbox-system","pigsty-external","qianwen-ops","regional-routing","rook-ceph","storage-fabric","supabase-pg-re8ch"],"tenant-facing-product":["agent-collab","ai-gateway","anycam","anysite","codex-app-server","codex-platform","comfy-agent","compocv","cosyvoice","dataspace","default","fleet","ledger","neo4j","nuclio","qwen","voice-observability"]},"clusterRef":"re8ch","intervalSeconds":120,"regionRef":"multi-region"}
+
+    '
+  controller.py: "#!/usr/bin/env python3\n\"\"\"Materialize one ServiceShard and BifurcationPath\
+    \ per Kubernetes workload.\"\"\"\n\nimport hashlib\nimport json\nimport os\nimport\
+    \ ssl\nimport time\nimport urllib.error\nimport urllib.parse\nimport urllib.request\n\
+    \n\nGROUP = \"finops.re8ch.com\"\nVERSION = \"v1alpha1\"\nFINALIZER = \"finops.re8ch.com/workload-observed\"\
+    \nWORKLOADS = (\n    (\"apps/v1\", \"deployments\", \"Deployment\"),\n    (\"\
+    apps/v1\", \"statefulsets\", \"StatefulSet\"),\n    (\"apps/v1\", \"daemonsets\"\
+    , \"DaemonSet\"),\n    (\"batch/v1\", \"jobs\", \"Job\"),\n    (\"batch/v1\",\
+    \ \"cronjobs\", \"CronJob\"),\n    (\"nuclio.io/v1beta1\", \"nucliofunctions\"\
+    , \"NuclioFunction\"),\n)\nDIMENSIONS = [\"tenant_ref\", \"service_instance_ref\"\
+    , \"resource_ref\", \"cluster_ref\", \"region_ref\"]\n\n\ndef stable_name(kind,\
+    \ name):\n    base = f\"{kind.lower()}-{name}\".replace(\"_\", \"-\")\n    if\
+    \ len(base) <= 63:\n        return base\n    return base[:54].rstrip(\"-\") +\
+    \ \"-\" + hashlib.sha256(base.encode()).hexdigest()[:8]\n\n\ndef classification(namespace,\
+    \ config):\n    for class_name, namespaces in config[\"classifications\"].items():\n\
+    \        if namespace in namespaces:\n            return class_name\n    return\
+    \ \"evaluation-only\"\n\n\ndef meter_contract(kind, namespace):\n    common =\
+    \ [(\"cpu_core_second\", \"core-second\"), (\"memory_gib_second\", \"GiB-second\"\
+    ), (\"network_egress_byte\", \"byte\")]\n    if kind == \"StatefulSet\":\n   \
+    \     common += [(\"provisioned_gib_second\", \"GiB-second\"), (\"storage_operation\"\
+    , \"operation\"), (\"connection_second\", \"connection-second\")]\n    elif kind\
+    \ == \"DaemonSet\":\n        common += [(\"node_agent_second\", \"agent-second\"\
+    )]\n    elif kind in {\"Job\", \"CronJob\"}:\n        common += [(\"execution_second\"\
+    , \"second\"), (\"execution_result\", \"result\")]\n    else:\n        common\
+    \ += [(\"request\", \"request\"), (\"concurrency_second\", \"concurrent-second\"\
+    )]\n    if namespace == \"harbor\":\n        common += [(\"artifact_gib_second\"\
+    , \"GiB-second\"), (\"pull_byte\", \"byte\"), (\"push_byte\", \"byte\"), (\"scan\"\
+    , \"scan\")]\n    if namespace in {\"qianwen-ops\", \"observability-ai\"}:\n \
+    \       common += [(\"sample_ingested\", \"sample\"), (\"log_byte_ingested\",\
+    \ \"byte\"), (\"retained_gib_second\", \"GiB-second\")]\n    if namespace in {\"\
+    egress-fabric\", \"regional-routing\", \"among-clusters\"}:\n        common +=\
+    \ [(\"path_second\", \"path-second\"), (\"flow\", \"flow\"), (\"route_change\"\
+    , \"change\")]\n    if namespace in {\"llm-gateway\", \"qwen\"}:\n        common\
+    \ += [(\"input_token\", \"token\"), (\"output_token\", \"token\"), (\"gpu_second\"\
+    , \"GPU-second\")]\n    return [{\"name\": name, \"unit\": unit, \"requiredDimensions\"\
+    : DIMENSIONS} for name, unit in dict(common).items()]\n\n\ndef consumable_for(namespace):\n\
+    \    if namespace == \"harbor\": return \"registry-harbor\"\n    if namespace\
+    \ in {\"qianwen-ops\", \"observability-ai\"}: return \"observability-managed\"\
+    \n    if namespace in {\"egress-fabric\", \"regional-routing\", \"among-clusters\"\
+    }: return \"network-among-clusters\"\n    if namespace in {\"rook-ceph\", \"storage-fabric\"\
+    }: return \"storage-volume\"\n    if namespace in {\"pigsty-external\", \"supabase-pg-re8ch\"\
+    }: return \"database-postgresql-shared\"\n    if namespace in {\"llm-gateway\"\
+    , \"qwen\"}: return \"ai-model-gateway\"\n    if namespace in {\"opensandbox-system\"\
+    , \"codex-platform\", \"codex-app-server\"}: return \"sandbox-runtime\"\n    return\
+    \ \"compute-workload\"\n\n\ndef access_valid(binding, consumable):\n    requested\
+    \ = binding.get(\"spec\", {}).get(\"access\", {})\n    contract = (consumable\
+    \ or {}).get(\"spec\", {}).get(\"accessContract\", {})\n    kind = requested.get(\"\
+    type\")\n    if not kind or kind != contract.get(\"type\"):\n        return False,\
+    \ \"AccessContractMismatch\"\n    if kind == \"Grafana\":\n        value = requested.get(\"\
+    grafana\", {})\n        valid = bool(value.get(\"datasourceRefs\")) and bool(value.get(\"\
+    organizationRef\") or value.get(\"folderRefs\")) and value.get(\"role\") in {\"\
+    Viewer\", \"Editor\"}\n    elif kind == \"Harbor\":\n        value = requested.get(\"\
+    harbor\", {})\n        valid = bool(value.get(\"project\")) and value.get(\"permission\"\
+    ) in {\"pull\", \"build-push\", \"project-admin\"} and value.get(\"quotaGiB\"\
+    , 0) > 0 and 0 < value.get(\"robotDurationDays\", 0) <= 365\n    elif kind ==\
+    \ \"Ceph\":\n        value = requested.get(\"ceph\", {})\n        mode = value.get(\"\
+    mode\")\n        valid = (mode in {\"RBD\", \"CephFS\"} and bool(value.get(\"\
+    storageClassName\")) and value.get(\"capacityGiB\", 0) > 0) or (mode == \"S3\"\
+    \ and bool(value.get(\"bucketClass\")))\n    elif kind == \"Cilium\":\n      \
+    \  value = requested.get(\"cilium\", {})\n        connectivity = value.get(\"\
+    connectivity\")\n        valid = bool(value.get(\"namespaceRef\")) and connectivity\
+    \ in {\"ClusterLocal\", \"CrossCluster\", \"PublicEdge\"} and (connectivity !=\
+    \ \"CrossCluster\" or bool(value.get(\"destinationClusters\")))\n    else:\n \
+    \       valid = isinstance(requested.get(\"parameters\", {}), dict)\n    return\
+    \ (True, \"AccessContractValid\") if valid else (False, \"AccessParametersInvalid\"\
+    )\n\n\ndef selectors(workload):\n    spec = workload.get(\"spec\", {})\n    if\
+    \ workload[\"kind\"] == \"CronJob\":\n        return spec.get(\"jobTemplate\"\
+    , {}).get(\"spec\", {}).get(\"template\", {}).get(\"metadata\", {}).get(\"labels\"\
+    , {})\n    return spec.get(\"selector\", {}).get(\"matchLabels\", {})\n\n\ndef\
+    \ matches(labels, wanted):\n    return bool(wanted) and all(labels.get(k) == v\
+    \ for k, v in wanted.items())\n\n\ndef dependencies(workload, resources):\n  \
+    \  meta, ns = workload[\"metadata\"], workload[\"metadata\"][\"namespace\"]\n\
+    \    wanted = selectors(workload)\n    out, ambiguous = [], []\n    pods = [x\
+    \ for x in resources.get(\"pods\", []) if x[\"metadata\"].get(\"namespace\") ==\
+    \ ns and matches(x[\"metadata\"].get(\"labels\", {}), wanted)]\n    for pod in\
+    \ pods:\n        if pod.get(\"spec\", {}).get(\"nodeName\"):\n            out.append((\"\
+    RunsOn\", \"v1\", \"Node\", \"\", pod[\"spec\"][\"nodeName\"]))\n        for volume\
+    \ in pod.get(\"spec\", {}).get(\"volumes\", []):\n            claim = volume.get(\"\
+    persistentVolumeClaim\", {}).get(\"claimName\")\n            resource_claim =\
+    \ volume.get(\"resourceClaim\", {}).get(\"resourceClaimName\")\n            if\
+    \ claim:\n                out.append((\"StoresOn\", \"v1\", \"PersistentVolumeClaim\"\
+    , ns, claim))\n            if resource_claim:\n                out.append((\"\
+    Claims\", \"resource.k8s.io/v1\", \"ResourceClaim\", ns, resource_claim))\n  \
+    \  services = [x for x in resources.get(\"services\", []) if x[\"metadata\"].get(\"\
+    namespace\") == ns and matches(wanted, x.get(\"spec\", {}).get(\"selector\", {}))]\n\
+    \    for service in services:\n        out.append((\"Exposes\", \"v1\", \"Service\"\
+    , ns, service[\"metadata\"][\"name\"]))\n        same_name = [x for x in services\
+    \ if x[\"metadata\"][\"name\"] == service[\"metadata\"][\"name\"]]\n        if\
+    \ len(same_name) > 1:\n            ambiguous.append(f\"Service/{service['metadata']['name']}\"\
+    )\n    service_names = {x[\"metadata\"][\"name\"] for x in services}\n    for\
+    \ route in resources.get(\"httproutes\", []):\n        if route[\"metadata\"].get(\"\
+    namespace\") != ns:\n            continue\n        refs = [b for rule in route.get(\"\
+    spec\", {}).get(\"rules\", []) for b in rule.get(\"backendRefs\", [])]\n     \
+    \   if any(ref.get(\"name\") in service_names for ref in refs):\n            out.append((\"\
+    RoutesTo\", \"gateway.networking.k8s.io/v1\", \"HTTPRoute\", ns, route[\"metadata\"\
+    ][\"name\"]))\n    unique = sorted(set(out))\n    return [{\"relation\": a, \"\
+    apiVersion\": b, \"kind\": c, \"namespace\": d, \"name\": e} for a, b, c, d, e\
+    \ in unique], ambiguous\n\n\ndef shard_for(workload, resources, config):\n   \
+    \ meta, spec = workload[\"metadata\"], workload.get(\"spec\", {})\n    ns, kind\
+    \ = meta[\"namespace\"], workload[\"kind\"]\n    deps, ambiguous = dependencies(workload,\
+    \ resources)\n    claim_uid = meta.get(\"labels\", {}).get(\"tenancy.re8ch.com/claim-uid\"\
+    )\n    cls = \"tenant-facing-product\" if claim_uid else classification(ns, config)\n\
+    \    containers = spec.get(\"template\", {}).get(\"spec\", {}).get(\"containers\"\
+    , [])\n    if kind == \"CronJob\":\n        containers = spec.get(\"jobTemplate\"\
+    , {}).get(\"spec\", {}).get(\"template\", {}).get(\"spec\", {}).get(\"containers\"\
+    , [])\n    requested = {\"containers\": [{\"name\": c.get(\"name\"), \"requests\"\
+    : c.get(\"resources\", {}).get(\"requests\", {})} for c in containers]}\n    meters\
+    \ = meter_contract(kind, ns)\n    if claim_uid:\n        meters = [meter for meter\
+    \ in meters if meter[\"name\"] != \"gpu_second\"]\n    return {\n        \"apiVersion\"\
+    : f\"{GROUP}/{VERSION}\", \"kind\": \"ServiceShard\",\n        \"metadata\": {\"\
+    name\": stable_name(kind, meta[\"name\"]), \"namespace\": ns, \"finalizers\":\
+    \ [FINALIZER], \"labels\": {\"app.kubernetes.io/managed-by\": \"birfucate-discovery\"\
+    , \"finops.re8ch.com/classification\": cls, \"finops.re8ch.com/workload-kind\"\
+    : kind.lower()}},\n        \"spec\": {\"workloadRef\": {\"apiVersion\": workload[\"\
+    apiVersion\"], \"kind\": kind, \"name\": meta[\"name\"], \"uid\": meta[\"uid\"\
+    ]}, \"consumableRef\": \"compute-workload\" if claim_uid else consumable_for(ns),\
+    \ \"clusterRef\": config[\"clusterRef\"], \"regionRef\": meta.get(\"labels\",\
+    \ {}).get(\"topology.kubernetes.io/region\", config[\"regionRef\"]), \"classification\"\
+    : cls, \"consumableIntent\": bool(claim_uid), \"placement\": {\"replicas\": spec.get(\"\
+    replicas\"), \"nodes\": sorted({x[\"name\"] for x in deps if x[\"kind\"] == \"\
+    Node\"})}, \"resources\": requested, \"dependencies\": deps, \"meters\": meters},\n\
+    \        \"status\": {\"observedGeneration\": meta.get(\"generation\", 1), \"\
+    consumable\": bool(claim_uid), \"meterCoveragePercent\": 0, \"conditions\": conditions(ambiguous,\
+    \ bool(claim_uid)), \"ambiguousDependencies\": ambiguous},\n    }\n\n\ndef conditions(ambiguous,\
+    \ autonomous=False):\n    now = time.strftime(\"%Y-%m-%dT%H:%M:%SZ\", time.gmtime())\n\
+    \    def c(t, ok, reason): return {\"type\": t, \"status\": \"True\" if ok else\
+    \ \"False\", \"reason\": reason, \"lastTransitionTime\": now}\n    return [c(\"\
+    Discovered\", True, \"WorkloadObserved\"), c(\"Measurable\", False, \"UsageDimensionsUnverified\"\
+    ), c(\"Isolated\", autonomous, \"TenantClaimPolicy\" if autonomous else \"OwnerApprovalRequired\"\
+    ), c(\"Consumable\", autonomous, \"TenantNamespace\" if autonomous else \"DraftOnly\"\
+    ), c(\"Degraded\", bool(ambiguous), \"AmbiguousDependency\" if ambiguous else\
+    \ \"NoKnownDegradation\")]\n\n\ndef derived_binding(claim, shard):\n    meta,\
+    \ spec = claim[\"metadata\"], claim[\"spec\"]\n    name = \"claim-\" + meta[\"\
+    uid\"][:24].lower()\n    parameters = spec.get(\"parameters\", {})\n    if spec[\"\
+    capability\"] == \"storage.volume.v1\":\n        access = {\"type\": \"Ceph\"\
+    , \"ceph\": {\"mode\": \"RBD\" if parameters.get(\"plan\") == \"rbd\" else \"\
+    CephFS\", \"storageClassName\": parameters.get(\"storageClass\"), \"capacityGiB\"\
+    : parameters.get(\"sizeGiB\"), \"accessModes\": [parameters.get(\"accessMode\"\
+    )]}}\n    else:\n        access = {\"type\": \"Workload\", \"parameters\": {\"\
+    claimName\": meta[\"name\"], \"claimUid\": meta[\"uid\"]}}\n    result = {\n \
+    \       \"apiVersion\": f\"{GROUP}/{VERSION}\", \"kind\": \"ConsumptionBinding\"\
+    ,\n        \"metadata\": {\"name\": name, \"namespace\": meta[\"namespace\"],\
+    \ \"labels\": {\"app.kubernetes.io/managed-by\": \"birfucate-discovery\", \"tenancy.re8ch.com/claim-uid\"\
+    : meta[\"uid\"]}},\n        \"spec\": {\"tenantRef\": spec[\"tenantRef\"], \"\
+    serviceInstanceRef\": meta[\"uid\"], \"consumableRef\": shard[\"spec\"][\"consumableRef\"\
+    ], \"shardRefs\": [shard[\"metadata\"][\"name\"]], \"planRef\": spec[\"capability\"\
+    ], \"quota\": parameters.get(\"resources\", {\"storageGiB\": parameters.get(\"\
+    sizeGiB\")}), \"access\": access, \"startsAt\": meta[\"creationTimestamp\"], \"\
+    sourceClusterRef\": shard[\"spec\"][\"clusterRef\"]},\n    }\n    if spec[\"capability\"\
+    ] != \"storage.volume.v1\" and claim.get(\"status\", {}).get(\"expiresAt\"):\n\
+    \        result[\"spec\"][\"endsAt\"] = claim[\"status\"][\"expiresAt\"]\n   \
+    \ return result\n\n\ndef volume_shard_for(pvc, claim, config):\n    meta = pvc[\"\
+    metadata\"]\n    name = stable_name(\"PersistentVolumeClaim\", meta[\"name\"])\n\
+    \    meters = [\n        {\"name\": \"provisioned_gib_second\", \"unit\": \"GiB-second\"\
+    , \"requiredDimensions\": DIMENSIONS},\n        {\"name\": \"storage_operation\"\
+    , \"unit\": \"operation\", \"requiredDimensions\": DIMENSIONS},\n    ]\n    return\
+    \ {\n        \"apiVersion\": f\"{GROUP}/{VERSION}\", \"kind\": \"ServiceShard\"\
+    ,\n        \"metadata\": {\"name\": name, \"namespace\": meta[\"namespace\"],\
+    \ \"finalizers\": [FINALIZER], \"labels\": {\"app.kubernetes.io/managed-by\":\
+    \ \"birfucate-discovery\", \"finops.re8ch.com/classification\": \"tenant-facing-product\"\
+    , \"finops.re8ch.com/workload-kind\": \"persistentvolumeclaim\", \"tenancy.re8ch.com/claim-uid\"\
+    : claim[\"metadata\"][\"uid\"]}},\n        \"spec\": {\"workloadRef\": {\"apiVersion\"\
+    : \"v1\", \"kind\": \"PersistentVolumeClaim\", \"name\": meta[\"name\"], \"uid\"\
+    : meta[\"uid\"]}, \"consumableRef\": \"storage-volume\", \"clusterRef\": config[\"\
+    clusterRef\"], \"regionRef\": config[\"regionRef\"], \"classification\": \"tenant-facing-product\"\
+    , \"consumableIntent\": True, \"placement\": {}, \"resources\": {\"storage\":\
+    \ pvc.get(\"spec\", {}).get(\"resources\", {}).get(\"requests\", {}).get(\"storage\"\
+    ), \"storageClassName\": pvc.get(\"spec\", {}).get(\"storageClassName\")}, \"\
+    dependencies\": [], \"meters\": meters},\n        \"status\": {\"observedGeneration\"\
+    : meta.get(\"generation\", 1), \"consumable\": True, \"meterCoveragePercent\"\
+    : 0, \"conditions\": conditions([], True), \"ambiguousDependencies\": []},\n \
+    \   }\n\n\ndef path_for(shard, binding=None):\n    ns, name = shard[\"metadata\"\
+    ][\"namespace\"], shard[\"metadata\"][\"name\"]\n    root = f\"shard:{ns}/{name}\"\
+    \n    nodes = [{\"id\": root, \"kind\": \"ServiceShard\", \"namespace\": ns, \"\
+    name\": name, \"state\": \"Consumable\" if shard[\"spec\"].get(\"consumableIntent\"\
+    ) else \"Draft\"}]\n    edges = []\n    for dep in shard[\"spec\"][\"dependencies\"\
+    ]:\n        node_id = f\"{dep['kind']}:{dep['namespace']}/{dep['name']}\"\n  \
+    \      nodes.append({\"id\": node_id, \"kind\": dep[\"kind\"], \"namespace\":\
+    \ dep[\"namespace\"], \"name\": dep[\"name\"], \"state\": \"Observed\"})\n   \
+    \     edges.append({\"from\": root, \"to\": node_id, \"relation\": dep[\"relation\"\
+    ]})\n    spec = {\"shardRef\": name}\n    if binding:\n        spec.update({\"\
+    tenantRef\": binding[\"spec\"][\"tenantRef\"], \"serviceInstanceRef\": binding[\"\
+    spec\"][\"serviceInstanceRef\"], \"bindingRef\": binding[\"metadata\"][\"name\"\
+    ]})\n        instance = f\"instance:{binding['spec']['serviceInstanceRef']}\"\n\
+    \        usage = f\"usage:{binding['spec']['serviceInstanceRef']}\"\n        claim_binding\
+    \ = bool(binding.get(\"metadata\", {}).get(\"labels\", {}).get(\"tenancy.re8ch.com/claim-uid\"\
+    ))\n        nodes += [{\"id\": instance, \"kind\": \"TenantResourceClaim\" if\
+    \ claim_binding else \"TenantServiceInstance\", \"namespace\": ns, \"name\": binding[\"\
+    spec\"][\"serviceInstanceRef\"], \"state\": \"Bound\"}, {\"id\": usage, \"kind\"\
+    : \"UsageEvent\", \"namespace\": \"\", \"name\": binding[\"spec\"][\"serviceInstanceRef\"\
+    ], \"state\": \"PendingMeters\"}]\n        edges += [{\"from\": root, \"to\":\
+    \ instance, \"relation\": \"ConsumedBy\"}, {\"from\": instance, \"to\": usage,\
+    \ \"relation\": \"MeasuredAs\"}]\n    return {\"apiVersion\": f\"{GROUP}/{VERSION}\"\
+    , \"kind\": \"BifurcationPath\", \"metadata\": {\"name\": name, \"namespace\"\
+    : ns, \"labels\": shard[\"metadata\"][\"labels\"]}, \"spec\": spec, \"status\"\
+    : {\"observedGeneration\": 1, \"nodes\": nodes, \"edges\": edges, \"nodeCount\"\
+    : len(nodes), \"edgeCount\": len(edges), \"complete\": False, \"usage\": [], \"\
+    missingMeters\": [x[\"name\"] for x in shard[\"spec\"][\"meters\"]]}}\n\n\nclass\
+    \ Kubernetes:\n    def __init__(self):\n        self.base = os.environ.get(\"\
+    KUBERNETES_SERVICE_HOST\")\n        if not self.base:\n            raise RuntimeError(\"\
+    KUBERNETES_SERVICE_HOST is required\")\n        port = os.environ.get(\"KUBERNETES_SERVICE_PORT_HTTPS\"\
+    , \"443\")\n        self.base = f\"https://{self.base}:{port}\"\n        self.token\
+    \ = open(\"/var/run/secrets/kubernetes.io/serviceaccount/token\").read().strip()\n\
+    \        self.ssl = ssl.create_default_context(cafile=\"/var/run/secrets/kubernetes.io/serviceaccount/ca.crt\"\
+    )\n\n    def request(self, method, path, body=None, content_type=\"application/json\"\
+    ):\n        data = json.dumps(body).encode() if body is not None else None\n \
+    \       req = urllib.request.Request(self.base + path, data=data, method=method,\
+    \ headers={\"Authorization\": f\"Bearer {self.token}\", \"Content-Type\": content_type,\
+    \ \"Accept\": \"application/json\"})\n        try:\n            with urllib.request.urlopen(req,\
+    \ context=self.ssl, timeout=20) as response:\n                return json.load(response)\n\
+    \        except urllib.error.HTTPError as exc:\n            if exc.code == 404:\n\
+    \                return None\n            raise RuntimeError(f\"Kubernetes API\
+    \ {method} {path}: HTTP {exc.code}\") from exc\n\n    def list(self, api, plural):\n\
+    \        prefix = \"/api/\" if api == \"v1\" else \"/apis/\"\n        return (self.request(\"\
+    GET\", f\"{prefix}{api}/{plural}\") or {}).get(\"items\", [])\n\n    def apply(self,\
+    \ plural, obj):\n        ns, name = obj[\"metadata\"].get(\"namespace\"), obj[\"\
+    metadata\"][\"name\"]\n        base = f\"/apis/{GROUP}/{VERSION}\" + (f\"/namespaces/{ns}\"\
+    \ if ns else \"\") + f\"/{plural}\"\n        status = obj.pop(\"status\", None)\n\
+    \        existing = self.request(\"GET\", f\"{base}/{name}\")\n        if existing:\n\
+    \            desired_meta = obj[\"metadata\"]\n            current_meta = existing[\"\
+    metadata\"]\n            unchanged = existing.get(\"spec\") == obj.get(\"spec\"\
+    ) and current_meta.get(\"labels\", {}) == desired_meta.get(\"labels\", {}) and\
+    \ current_meta.get(\"finalizers\", []) == desired_meta.get(\"finalizers\", [])\n\
+    \            if unchanged:\n                saved = existing\n            else:\n\
+    \                obj[\"metadata\"][\"resourceVersion\"] = current_meta[\"resourceVersion\"\
+    ]\n                saved = self.request(\"PUT\", f\"{base}/{name}\", obj)\n  \
+    \      else:\n            saved = self.request(\"POST\", base, obj)\n        if\
+    \ status is not None:\n            current_status = existing.get(\"status\", {})\
+    \ if existing else {}\n            current_conditions = {(x.get(\"type\"), x.get(\"\
+    status\"), x.get(\"reason\")): x.get(\"lastTransitionTime\") for x in current_status.get(\"\
+    conditions\", [])}\n            for item in status.get(\"conditions\", []):\n\
+    \                item[\"lastTransitionTime\"] = current_conditions.get((item.get(\"\
+    type\"), item.get(\"status\"), item.get(\"reason\")), item[\"lastTransitionTime\"\
+    ])\n            if current_status != status:\n                saved = self.request(\"\
+    PATCH\", f\"{base}/{name}/status\", {\"status\": status}, \"application/merge-patch+json\"\
+    )\n        return saved\n\n    def delete(self, plural, namespace, name):\n  \
+    \      base = f\"/apis/{GROUP}/{VERSION}/namespaces/{namespace}/{plural}/{name}\"\
+    \n        return self.request(\"DELETE\", base, {\"apiVersion\": \"v1\", \"kind\"\
+    : \"DeleteOptions\", \"propagationPolicy\": \"Background\"})\n\n    def patch_status(self,\
+    \ plural, namespace, name, status):\n        base = f\"/apis/{GROUP}/{VERSION}/namespaces/{namespace}/{plural}/{name}/status\"\
+    \n        return self.request(\"PATCH\", base, {\"status\": status}, \"application/merge-patch+json\"\
+    )\n\n\ndef reconcile(kube, config):\n    resources = {\"pods\": kube.list(\"v1\"\
+    , \"pods\"), \"services\": kube.list(\"v1\", \"services\"), \"persistentvolumeclaims\"\
+    : kube.list(\"v1\", \"persistentvolumeclaims\"), \"httproutes\": kube.list(\"\
+    gateway.networking.k8s.io/v1\", \"httproutes\")}\n    bindings = kube.list(f\"\
+    {GROUP}/{VERSION}\", \"consumptionbindings\")\n    claims = kube.list(\"tenancy.re8ch.com/v1alpha1\"\
+    , \"tenantresourceclaims\")\n    claims_by_uid = {item[\"metadata\"][\"uid\"]:\
+    \ item for item in claims if item.get(\"spec\", {}).get(\"desiredState\", \"Active\"\
+    ) == \"Active\" or item.get(\"spec\", {}).get(\"capability\") == \"storage.volume.v1\"\
+    }\n    consumables = {x[\"metadata\"][\"name\"]: x for x in kube.list(f\"{GROUP}/{VERSION}\"\
+    , \"consumables\")}\n    count = 0\n    desired = set()\n    for api, plural,\
+    \ kind in WORKLOADS:\n        for workload in kube.list(api, plural):\n      \
+    \      workload[\"kind\"] = kind\n            shard = shard_for(workload, resources,\
+    \ config)\n            claim_uid = workload.get(\"metadata\", {}).get(\"labels\"\
+    , {}).get(\"tenancy.re8ch.com/claim-uid\")\n            if claim_uid in claims_by_uid:\n\
+    \                binding = derived_binding(claims_by_uid[claim_uid], shard)\n\
+    \                binding = kube.apply(\"consumptionbindings\", binding)\n    \
+    \            bindings = [x for x in bindings if x[\"metadata\"][\"name\"] != binding[\"\
+    metadata\"][\"name\"]] + [binding]\n            else:\n                binding\
+    \ = next((x for x in bindings if x[\"metadata\"].get(\"namespace\") == shard[\"\
+    metadata\"][\"namespace\"] and shard[\"metadata\"][\"name\"] in x.get(\"spec\"\
+    , {}).get(\"shardRefs\", [])), None)\n            desired.add((shard[\"metadata\"\
+    ][\"namespace\"], shard[\"metadata\"][\"name\"]))\n            kube.apply(\"serviceshards\"\
+    , shard)\n            kube.apply(\"bifurcationpaths\", path_for(shard, binding))\n\
+    \            count += 1\n    for pvc in resources[\"persistentvolumeclaims\"]:\n\
+    \        claim_uid = pvc.get(\"metadata\", {}).get(\"labels\", {}).get(\"tenancy.re8ch.com/claim-uid\"\
+    )\n        claim = claims_by_uid.get(claim_uid)\n        if not claim or claim.get(\"\
+    spec\", {}).get(\"capability\") != \"storage.volume.v1\":\n            continue\n\
+    \        shard = volume_shard_for(pvc, claim, config)\n        binding = kube.apply(\"\
+    consumptionbindings\", derived_binding(claim, shard))\n        bindings = [x for\
+    \ x in bindings if x[\"metadata\"][\"name\"] != binding[\"metadata\"][\"name\"\
+    ]] + [binding]\n        desired.add((shard[\"metadata\"][\"namespace\"], shard[\"\
+    metadata\"][\"name\"]))\n        kube.apply(\"serviceshards\", shard)\n      \
+    \  kube.apply(\"bifurcationpaths\", path_for(shard, binding))\n        count +=\
+    \ 1\n    for existing in kube.list(f\"{GROUP}/{VERSION}\", \"serviceshards\"):\n\
+    \        meta = existing[\"metadata\"]\n        key = (meta[\"namespace\"], meta[\"\
+    name\"])\n        if meta.get(\"labels\", {}).get(\"app.kubernetes.io/managed-by\"\
+    ) != \"birfucate-discovery\" or key in desired:\n            continue\n      \
+    \  if FINALIZER in meta.get(\"finalizers\", []):\n            kube.request(\"\
+    PATCH\", f\"/apis/{GROUP}/{VERSION}/namespaces/{key[0]}/serviceshards/{key[1]}\"\
+    , {\"metadata\": {\"finalizers\": []}}, \"application/merge-patch+json\")\n  \
+    \      kube.delete(\"bifurcationpaths\", key[0], key[1])\n        kube.delete(\"\
+    serviceshards\", key[0], key[1])\n    now = time.strftime(\"%Y-%m-%dT%H:%M:%SZ\"\
+    , time.gmtime())\n    for binding in bindings:\n        spec, meta = binding.get(\"\
+    spec\", {}), binding[\"metadata\"]\n        consumable = consumables.get(spec.get(\"\
+    consumableRef\"))\n        approved = bool(consumable and consumable.get(\"spec\"\
+    , {}).get(\"lifecycle\") == \"Approved\")\n        resolved = all((meta[\"namespace\"\
+    ], name) in desired for name in spec.get(\"shardRefs\", []))\n        access_ok,\
+    \ access_reason = access_valid(binding, consumable)\n        ready = approved\
+    \ and resolved and access_ok\n        reason = \"Ready\" if ready else \"OfferingNotApproved\"\
+    \ if not approved else \"ShardNotFound\" if not resolved else access_reason\n\
+    \        status = {\"observedGeneration\": meta.get(\"generation\", 1), \"phase\"\
+    : \"Ready\" if ready else \"Pending\", \"conditions\": [{\"type\": \"Ready\",\
+    \ \"status\": \"True\" if ready else \"False\", \"reason\": reason, \"lastTransitionTime\"\
+    : now}]}\n        current = binding.get(\"status\", {})\n        if current.get(\"\
+    phase\") != status[\"phase\"] or [(x.get(\"type\"), x.get(\"status\"), x.get(\"\
+    reason\")) for x in current.get(\"conditions\", [])] != [(\"Ready\", status[\"\
+    conditions\"][0][\"status\"], reason)]:\n            kube.patch_status(\"consumptionbindings\"\
+    , meta[\"namespace\"], meta[\"name\"], status)\n    return count\n\n\ndef main():\n\
+    \    config = json.load(open(os.environ.get(\"BIFURCATE_DISCOVERY_CONFIG\", \"\
+    /etc/birfucate/discovery.json\")))\n    kube = Kubernetes()\n    while True:\n\
+    \        try:\n            count = reconcile(kube, config)\n            print(json.dumps({\"\
+    event\": \"reconciled\", \"workloads\": count}), flush=True)\n        except Exception\
+    \ as exc:\n            print(json.dumps({\"event\": \"reconcile_failed\", \"error\"\
+    : str(exc)}), flush=True)\n        time.sleep(config.get(\"intervalSeconds\",\
+    \ 120))\n\n\nif __name__ == \"__main__\":\n    main()\n"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: birfucate-metering
+  labels:
+    app.kubernetes.io/name: birfucate-metering
+    app.kubernetes.io/instance: birfucate-metering
+    app.kubernetes.io/version: 0.4.0
+    app.kubernetes.io/managed-by: Helm
+  namespace: observability-ai
+spec:
+  selector:
+    app.kubernetes.io/name: birfucate-metering
+    app.kubernetes.io/instance: birfucate-metering
+  ports:
+  - name: metrics
+    port: 9791
+    targetPort: metrics
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: birfucate-metering
+  labels:
+    app.kubernetes.io/name: birfucate-metering
+    app.kubernetes.io/instance: birfucate-metering
+    app.kubernetes.io/version: 0.4.0
+    app.kubernetes.io/managed-by: Helm
+  namespace: observability-ai
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: birfucate-metering-discovery
+  labels:
+    app.kubernetes.io/name: birfucate-metering
+    app.kubernetes.io/instance: birfucate-metering
+    app.kubernetes.io/version: 0.4.0
+    app.kubernetes.io/managed-by: Helm
+  namespace: observability-ai

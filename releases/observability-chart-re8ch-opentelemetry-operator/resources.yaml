@@ -1,0 +1,230 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    helm.sh/chart: opentelemetry-operator-0.115.0
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/version: 0.153.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: opentelemetry-operator
+    app.kubernetes.io/instance: otel-operator
+    app.kubernetes.io/component: controller-manager
+  name: otel-operator-opentelemetry-operator
+  namespace: opentelemetry-operator
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opentelemetry-operator
+      app.kubernetes.io/component: controller-manager
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+      labels:
+        helm.sh/chart: opentelemetry-operator-0.115.0
+        app.kubernetes.io/name: opentelemetry-operator
+        app.kubernetes.io/version: 0.153.0
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/part-of: opentelemetry-operator
+        app.kubernetes.io/instance: otel-operator
+        app.kubernetes.io/component: controller-manager
+    spec:
+      automountServiceAccountToken: true
+      hostNetwork: false
+      containers:
+      - args:
+        - --metrics-addr=0.0.0.0:8443
+        - --metrics-secure=true
+        - --enable-leader-election
+        - --health-probe-addr=:8081
+        - --webhook-port=9443
+        - --collector-image=ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s:0.153.0
+        command:
+        - /manager
+        env:
+        - name: SERVICE_ACCOUNT_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.serviceAccountName
+        - name: ENABLE_WEBHOOKS
+          value: 'true'
+        image: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator@sha256:71c80734e698e0a38039aeb5a6fad7129ca68eaa31eb262752c1e5015b319a24
+        name: manager
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8443
+          name: metrics
+          protocol: TCP
+        - containerPort: 9443
+          name: webhook-server
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 150m
+            memory: 192Mi
+          requests:
+            cpu: 25m
+            memory: 96Mi
+        volumeMounts:
+        - mountPath: /tmp/k8s-webhook-server/serving-certs
+          name: cert
+          readOnly: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+      nodeSelector:
+        kubernetes.io/hostname: r640
+        kubernetes.io/os: linux
+      serviceAccountName: opentelemetry-operator
+      terminationGracePeriodSeconds: 10
+      volumes:
+      - name: cert
+        secret:
+          defaultMode: 420
+          secretName: otel-operator-opentelemetry-operator-controller-manager-service-cert
+      securityContext:
+        fsGroup: 65532
+        runAsGroup: 65532
+        runAsNonRoot: true
+        runAsUser: 65532
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    helm.sh/chart: opentelemetry-operator-0.115.0
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/version: 0.153.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: opentelemetry-operator
+    app.kubernetes.io/instance: otel-operator
+    app.kubernetes.io/component: webhook
+  name: otel-operator-opentelemetry-operator-serving-cert
+  namespace: opentelemetry-operator
+spec:
+  dnsNames:
+  - otel-operator-opentelemetry-operator-webhook.opentelemetry-operator.svc
+  - otel-operator-opentelemetry-operator-webhook.opentelemetry-operator.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: otel-operator-opentelemetry-operator-selfsigned-issuer
+  secretName: otel-operator-opentelemetry-operator-controller-manager-service-cert
+  subject:
+    organizationalUnits:
+    - otel-operator-opentelemetry-operator
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  labels:
+    helm.sh/chart: opentelemetry-operator-0.115.0
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/version: 0.153.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: opentelemetry-operator
+    app.kubernetes.io/instance: otel-operator
+    app.kubernetes.io/component: webhook
+  name: otel-operator-opentelemetry-operator-selfsigned-issuer
+  namespace: opentelemetry-operator
+spec:
+  selfSigned: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    helm.sh/chart: opentelemetry-operator-0.115.0
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/version: 0.153.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: opentelemetry-operator
+    app.kubernetes.io/instance: otel-operator
+    app.kubernetes.io/component: controller-manager
+  name: otel-operator-opentelemetry-operator
+  namespace: opentelemetry-operator
+spec:
+  ports:
+  - name: metrics
+    port: 8443
+    protocol: TCP
+    targetPort: metrics
+  selector:
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/component: controller-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    helm.sh/chart: opentelemetry-operator-0.115.0
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/version: 0.153.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: opentelemetry-operator
+    app.kubernetes.io/instance: otel-operator
+    app.kubernetes.io/component: controller-manager
+  name: otel-operator-opentelemetry-operator-webhook
+  namespace: opentelemetry-operator
+spec:
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: webhook-server
+  selector:
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/component: controller-manager
+---
+apiVersion: v1
+kind: ServiceAccount
+automountServiceAccountToken: true
+metadata:
+  name: opentelemetry-operator
+  namespace: opentelemetry-operator
+  labels:
+    helm.sh/chart: opentelemetry-operator-0.115.0
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/version: 0.153.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: opentelemetry-operator
+    app.kubernetes.io/instance: otel-operator
+    app.kubernetes.io/component: controller-manager
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    helm.sh/chart: opentelemetry-operator-0.115.0
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/version: 0.153.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: opentelemetry-operator
+    app.kubernetes.io/instance: otel-operator
+    app.kubernetes.io/component: controller-manager
+  name: otel-operator-opentelemetry-operator
+  namespace: opentelemetry-operator
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opentelemetry-operator
+      app.kubernetes.io/component: controller-manager

@@ -1,0 +1,171 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: victoria-metrics-operator
+  namespace: observability-system
+  labels:
+    app.kubernetes.io/instance: victoria-metrics-operator
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: victoria-metrics-operator
+    app.kubernetes.io/version: v0.74.0
+    helm.sh/chart: victoria-metrics-operator-0.67.2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: victoria-metrics-operator
+      app.kubernetes.io/name: victoria-metrics-operator
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: victoria-metrics-operator
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: victoria-metrics-operator
+    spec:
+      automountServiceAccountToken: true
+      securityContext:
+        fsGroup: 2000
+        runAsNonRoot: true
+        runAsUser: 1000
+      serviceAccountName: victoria-metrics-operator
+      containers:
+      - name: operator
+        image: docker.io/victoriametrics/operator@sha256:c4fde419a4f03c7c45d7ee554e7039c12c75af161f7f7e1baef1b343015e3df9
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: KUBERNETES_SERVICE_HOST
+          value: 10.250.0.1
+        - name: KUBERNETES_SERVICE_PORT
+          value: '6443'
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: OPERATOR_NAME
+          value: victoria-metrics-operator
+        - name: VM_ENABLEDPROMETHEUSCONVERTER_PODMONITOR
+          value: 'false'
+        - name: VM_ENABLEDPROMETHEUSCONVERTER_SERVICESCRAPE
+          value: 'false'
+        - name: VM_ENABLEDPROMETHEUSCONVERTER_PROMETHEUSRULE
+          value: 'false'
+        - name: VM_ENABLEDPROMETHEUSCONVERTER_PROBE
+          value: 'false'
+        - name: VM_ENABLEDPROMETHEUSCONVERTER_ALERTMANAGERCONFIG
+          value: 'false'
+        - name: VM_ENABLEDPROMETHEUSCONVERTER_SCRAPECONFIG
+          value: 'false'
+        - name: VM_ENABLEDPROMETHEUSCONVERTEROWNERREFERENCES
+          value: 'false'
+        args:
+        - --zap-log-level=info
+        - --leader-elect
+        - --health-probe-bind-address=:8081
+        - --webhook.enable=true
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        - name: probe
+          containerPort: 8081
+          protocol: TCP
+        - name: webhook
+          containerPort: 9443
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health
+            port: probe
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 15
+          timeoutSeconds: 5
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 5
+          periodSeconds: 15
+          tcpSocket:
+            port: probe
+          timeoutSeconds: 5
+        volumeMounts:
+        - mountPath: /tmp/k8s-webhook-server/serving-certs
+          name: cert
+          readOnly: true
+        resources:
+          limits:
+            cpu: 1
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+      terminationGracePeriodSeconds: 30
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - r640
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
+        operator: Equal
+        value: 'true'
+      volumes:
+      - name: cert
+        secret:
+          defaultMode: 420
+          secretName: victoria-metrics-operator-validation
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: observability-system
+  labels:
+    app.kubernetes.io/instance: victoria-metrics-operator
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: victoria-metrics-operator
+    app.kubernetes.io/version: v0.74.0
+    helm.sh/chart: victoria-metrics-operator-0.67.2
+  name: victoria-metrics-operator
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8080
+    targetPort: http
+    protocol: TCP
+  - name: webhook
+    port: 9443
+    targetPort: webhook
+  selector:
+    app.kubernetes.io/instance: victoria-metrics-operator
+    app.kubernetes.io/name: victoria-metrics-operator
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: victoria-metrics-operator
+  namespace: observability-system
+  labels:
+    app.kubernetes.io/instance: victoria-metrics-operator
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: victoria-metrics-operator
+    app.kubernetes.io/version: v0.74.0
+    helm.sh/chart: victoria-metrics-operator-0.67.2
+automountServiceAccountToken: true

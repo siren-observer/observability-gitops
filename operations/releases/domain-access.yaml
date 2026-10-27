@@ -15,16 +15,6 @@ metadata:
   namespace: flux-system
 rules:
 - apiGroups:
-  - batch
-  resources:
-  - jobs
-  resourceNames:
-  - retire-legacy-qianwen-grafana-v2
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
   - ''
   resources:
   - configmaps
@@ -125,16 +115,6 @@ metadata:
   name: observability-domain-incidentrelay
   namespace: incidentrelay
 rules:
-- apiGroups:
-  - batch
-  resources:
-  - jobs
-  resourceNames:
-  - incidentrelay-bootstrap-admin-v3
-  verbs:
-  - get
-  - patch
-  - update
 - apiGroups:
   - cilium.io
   resources:
@@ -620,16 +600,6 @@ metadata:
   name: observability-domain-supabase-pg-re8ch
   namespace: supabase-pg-re8ch
 rules:
-- apiGroups:
-  - batch
-  resources:
-  - jobs
-  resourceNames:
-  - incidentrelay-database-bootstrap-v7
-  verbs:
-  - get
-  - patch
-  - update
 - apiGroups:
   - ''
   resources:

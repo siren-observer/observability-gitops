@@ -23,17 +23,15 @@ spec:
   authorization:
     fieldManager: re8ch-release/observability-domain-supabase-pg-re8ch
     resources:
-    - batch/Job
     - core/ResourceQuota
     objectNames:
-    - incidentrelay-database-bootstrap-v7
     - supabase-one-cpu
     allowClusterScoped: false
+    requireExisting: true
     forceConflictObjects:
-    - batch/Job/supabase-pg-re8ch/incidentrelay-database-bootstrap-v7
     - core/ResourceQuota/supabase-pg-re8ch/supabase-one-cpu
   inventory:
-    digest: sha256:d6611666d752c64a6bbd2b21e6040c6a19a7d84e4af2395636944c531cbebd80
+    digest: sha256:1349fa5e05353328f68dd8acbe6143ab01569592f9babecafc2d257b8a32ddd5
   lifecycle:
     prune: false
     healthTimeoutSeconds: 300

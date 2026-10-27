@@ -1,0 +1,50 @@
+[
+  {
+    "release": "observability-chart-birfucate-metering-kube-system",
+    "contract": "contracts/observability-chart-birfucate-metering-kube-system.yaml",
+    "namespace": "kube-system",
+    "objects": 1
+  },
+  {
+    "release": "observability-chart-birfucate-metering-observability-system",
+    "contract": "contracts/observability-chart-birfucate-metering-observability-system.yaml",
+    "namespace": "observability-system",
+    "objects": 1
+  },
+  {
+    "release": "observability-chart-birfucate-metering-tenant-infrastructure",
+    "contract": "contracts/observability-chart-birfucate-metering-tenant-infrastructure.yaml",
+    "namespace": "tenant-infrastructure",
+    "objects": 25
+  },
+  {
+    "release": "observability-chart-birfucate-metering-toolhive-system",
+    "contract": "contracts/observability-chart-birfucate-metering-toolhive-system.yaml",
+    "namespace": "toolhive-system",
+    "objects": 1
+  },
+  {
+    "release": "observability-chart-birfucate-metering",
+    "contract": "contracts/observability-chart-birfucate-metering.yaml",
+    "namespace": "observability-ai",
+    "objects": 6
+  },
+  {
+    "release": "observability-chart-incidentrelay",
+    "contract": "contracts/observability-chart-incidentrelay.yaml",
+    "namespace": "incidentrelay",
+    "objects": 5
+  },
+  {
+    "release": "observability-chart-re8ch-opentelemetry-operator",
+    "contract": "contracts/observability-chart-re8ch-opentelemetry-operator.yaml",
+    "namespace": "opentelemetry-operator",
+    "objects": 7
+  },
+  {
+    "release": "observability-chart-victoria-metrics-operator",
+    "contract": "contracts/observability-chart-victoria-metrics-operator.yaml",
+    "namespace": "observability-system",
+    "objects": 3
+  }
+]
