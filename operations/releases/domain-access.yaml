@@ -103,6 +103,133 @@ subjects:
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: ssa-state-observability-domain-grafana
+  namespace: observability-system
+  labels:
+    delivery.re8ch.com/state: accepted
+    delivery.re8ch.com/authority-domain: observability-metering
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: observability-domain-grafana
+  namespace: observability-system
+rules:
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  resourceNames:
+  - re8ch-grafana
+  - re8ch-grafana-postgresql
+  - re8ch-grafana-renderer
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - batch
+  resources:
+  - cronjobs
+  resourceNames:
+  - re8ch-grafana-org-sync
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - cilium.io
+  resources:
+  - ciliumnetworkpolicies
+  resourceNames:
+  - re8ch-grafana-from-gateway
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  resourceNames:
+  - re8ch-grafana-dashboard-providers
+  - re8ch-grafana-org-contract
+  - ssa-state-observability-domain-grafana
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - persistentvolumeclaims
+  resourceNames:
+  - re8ch-grafana-postgresql-data-v2
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - serviceaccounts
+  resourceNames:
+  - re8ch-grafana
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - services
+  resourceNames:
+  - re8ch-grafana
+  - re8ch-grafana-postgresql
+  - re8ch-grafana-renderer
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - networkpolicies
+  resourceNames:
+  - re8ch-grafana
+  - re8ch-grafana-postgresql
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - policy
+  resources:
+  - poddisruptionbudgets
+  resourceNames:
+  - re8ch-grafana
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: observability-domain-grafana
+  namespace: observability-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: observability-domain-grafana
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: re8ch:release-executor:observability-metering
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
   name: ssa-state-observability-domain-incidentrelay
   namespace: incidentrelay
   labels:
@@ -255,29 +382,6 @@ rules:
   - deployments
   resourceNames:
   - re8ch-fair-value-controller
-  - re8ch-grafana
-  - re8ch-grafana-postgresql
-  - re8ch-grafana-renderer
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - batch
-  resources:
-  - cronjobs
-  resourceNames:
-  - re8ch-grafana-org-sync
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - cilium.io
-  resources:
-  - ciliumnetworkpolicies
-  resourceNames:
-  - re8ch-grafana-from-gateway
   verbs:
   - get
   - patch
@@ -289,8 +393,6 @@ rules:
   resourceNames:
   - re8ch-fair-value-controller-code
   - re8ch-fair-value-controller-config
-  - re8ch-grafana-dashboard-providers
-  - re8ch-grafana-org-contract
   - re8ch-notification-receiver-catalog
   - re8ch-observability-dashboards
   - re8ch-observability-datasources
@@ -306,7 +408,6 @@ rules:
   - persistentvolumeclaims
   resourceNames:
   - re8ch-fair-value-history
-  - re8ch-grafana-postgresql-data-v2
   verbs:
   - get
   - patch
@@ -318,7 +419,6 @@ rules:
   resourceNames:
   - re8ch-event-collector
   - re8ch-fair-value-controller
-  - re8ch-grafana
   verbs:
   - get
   - patch
@@ -329,21 +429,7 @@ rules:
   - services
   resourceNames:
   - re8ch-fair-value-controller
-  - re8ch-grafana
-  - re8ch-grafana-postgresql
-  - re8ch-grafana-renderer
   - re8ch-node-storage-exporter
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - networking.k8s.io
-  resources:
-  - networkpolicies
-  resourceNames:
-  - re8ch-grafana
-  - re8ch-grafana-postgresql
   verbs:
   - get
   - patch
@@ -517,16 +603,6 @@ rules:
   - vtclusters
   resourceNames:
   - re8ch-traces
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - policy
-  resources:
-  - poddisruptionbudgets
-  resourceNames:
-  - re8ch-grafana
   verbs:
   - get
   - patch

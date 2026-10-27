@@ -1,0 +1,22 @@
+{
+  "grafana": {
+    "namespace": "observability-system",
+    "objects": [
+      "apps/Deployment/observability-system/re8ch-grafana",
+      "apps/Deployment/observability-system/re8ch-grafana-postgresql",
+      "apps/Deployment/observability-system/re8ch-grafana-renderer",
+      "batch/CronJob/observability-system/re8ch-grafana-org-sync",
+      "cilium.io/CiliumNetworkPolicy/observability-system/re8ch-grafana-from-gateway",
+      "core/ConfigMap/observability-system/re8ch-grafana-dashboard-providers",
+      "core/ConfigMap/observability-system/re8ch-grafana-org-contract",
+      "core/PersistentVolumeClaim/observability-system/re8ch-grafana-postgresql-data-v2",
+      "core/Service/observability-system/re8ch-grafana",
+      "core/Service/observability-system/re8ch-grafana-postgresql",
+      "core/Service/observability-system/re8ch-grafana-renderer",
+      "core/ServiceAccount/observability-system/re8ch-grafana",
+      "networking.k8s.io/NetworkPolicy/observability-system/re8ch-grafana",
+      "networking.k8s.io/NetworkPolicy/observability-system/re8ch-grafana-postgresql",
+      "policy/PodDisruptionBudget/observability-system/re8ch-grafana"
+    ]
+  }
+}

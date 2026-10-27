@@ -15,6 +15,12 @@
       "contract": "contracts/observability-domain-globalping-system.yaml"
     },
     {
+      "name": "observability-domain-grafana",
+      "namespace": "observability-system",
+      "objects": 15,
+      "contract": "contracts/observability-domain-grafana.yaml"
+    },
+    {
       "name": "observability-domain-incidentrelay",
       "namespace": "incidentrelay",
       "objects": 8,
@@ -29,7 +35,7 @@
     {
       "name": "observability-domain-observability-system",
       "namespace": "observability-system",
-      "objects": 65,
+      "objects": 50,
       "contract": "contracts/observability-domain-observability-system.yaml"
     },
     {
