@@ -103,7 +103,9 @@ spec:
     requireExisting: true
     forceConflictObjects:
     - apps/Deployment/observability-system/re8ch-fair-value-controller
+    - apps/Deployment/observability-system/re8ch-grafana
     - apps/Deployment/observability-system/re8ch-grafana-postgresql
+    - apps/Deployment/observability-system/re8ch-grafana-renderer
     - batch/CronJob/observability-system/re8ch-grafana-org-sync
     - cilium.io/CiliumNetworkPolicy/observability-system/re8ch-grafana-from-gateway
     - core/ConfigMap/observability-system/re8ch-fair-value-controller-code
@@ -164,7 +166,7 @@ spec:
     - operator.victoriametrics.com/VTCluster/observability-system/re8ch-traces
     - policy/PodDisruptionBudget/observability-system/re8ch-grafana
   inventory:
-    digest: sha256:223b1039e8927162bc4e343ce59ed1510b2d43b4b465ab9a6d18a8248aea7471
+    digest: sha256:d1ec8b3948ff9ce5ab203d136db11afa53749018a5b9280656acf27aecd02dd8
   lifecycle:
     prune: false
     healthTimeoutSeconds: 300

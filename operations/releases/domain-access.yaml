@@ -255,7 +255,9 @@ rules:
   - deployments
   resourceNames:
   - re8ch-fair-value-controller
+  - re8ch-grafana
   - re8ch-grafana-postgresql
+  - re8ch-grafana-renderer
   verbs:
   - get
   - patch
