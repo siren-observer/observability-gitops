@@ -62,7 +62,6 @@ spec:
     - apps/Deployment/tenant-infrastructure/tenant-provider-reconciler
     - cilium.io/CiliumNetworkPolicy/tenant-infrastructure/tenant-api-gateway
     - core/ConfigMap/tenant-infrastructure/tenant-platform-modules
-    - core/PersistentVolumeClaim/tenant-infrastructure/tenant-platform-state
     - core/Service/tenant-infrastructure/admin-api
     - core/Service/tenant-infrastructure/tenant-api
     - core/Service/tenant-infrastructure/tenant-control-controller
