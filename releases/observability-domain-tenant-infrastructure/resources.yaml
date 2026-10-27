@@ -1,0 +1,216 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: harbor-supply-chain
+  namespace: tenant-infrastructure
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: harbor-supply-chain
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: harbor-supply-chain
+        saas.re8ch.com/tenant: platform
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - env:
+        - name: CREDENTIAL_BACKEND
+          value: kubernetes
+        - name: CREDENTIAL_NAMESPACE
+          value: credential-broker
+        - name: BUILDKIT_HOST
+          value: unix:///run/buildkit/buildkitd.sock
+        - name: HARBOR_URL
+          value: http://core.harbor.svc.cluster.local:8080/api/v2.0
+        - name: HARBOR_REGISTRY
+          value: registry.re8ch.com
+        - name: COSIGN_KEY_REF
+          value: /etc/cosign/cosign.key
+        - name: COSIGN_PUBLIC_KEY_REF
+          value: /etc/cosign/cosign.pub
+        - name: COSIGN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: harbor-supply-chain-signing
+        - name: HOME
+          value: /tmp
+        envFrom:
+        - secretRef:
+            name: tenant-registry-supply-chain
+        - secretRef:
+            name: harbor-supply-chain-provider
+        image: registry.re8ch.com/image/re8ch-harbor-supply-chain@sha256:73c704456496e5f94a087223544f31b28530d0b7992aabc38081455e96d9ed48
+        livenessProbe:
+          httpGet:
+            path: /livez
+            port: http
+          periodSeconds: 20
+          timeoutSeconds: 3
+        name: worker
+        ports:
+        - containerPort: 8080
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: http
+          periodSeconds: 15
+          timeoutSeconds: 12
+        resources:
+          limits:
+            cpu: '2'
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsGroup: 101
+          runAsUser: 100
+          seccompProfile:
+            type: RuntimeDefault
+        startupProbe:
+          failureThreshold: 60
+          httpGet:
+            path: /livez
+            port: http
+          periodSeconds: 5
+        volumeMounts:
+        - mountPath: /var/lib/re8ch-supply-chain
+          name: state
+        - mountPath: /tmp
+          name: tmp
+        - mountPath: /run/buildkit
+          name: socket
+        - mountPath: /etc/cosign
+          name: signing
+          readOnly: true
+        - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+          name: api-access
+          readOnly: true
+      - args:
+        - --config
+        - /etc/buildkit/buildkitd.toml
+        - --addr
+        - unix:///run/user/1000/buildkit/buildkitd.sock
+        - --group
+        - '0'
+        - --oci-worker-no-process-sandbox
+        - --oci-worker-snapshotter=native
+        image: moby/buildkit@sha256:995077ff90af1afff56ff23018699d7511d122b2b111041f2011bd12afd5c0fe
+        name: buildkit
+        resources:
+          limits:
+            cpu: '4'
+            memory: 4Gi
+          requests:
+            cpu: 250m
+            memory: 512Mi
+        securityContext:
+          appArmorProfile:
+            type: Unconfined
+          runAsGroup: 1000
+          runAsUser: 1000
+          seccompProfile:
+            type: Unconfined
+        volumeMounts:
+        - mountPath: /run/user/1000/buildkit
+          name: socket
+        - mountPath: /home/user/.local/share/buildkit
+          name: cache
+        - mountPath: /etc/buildkit
+          name: buildkit-config
+          readOnly: true
+      imagePullSecrets:
+      - name: harbor-registry-pull
+      nodeSelector:
+        kubernetes.io/hostname: r640
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        runAsNonRoot: true
+      serviceAccountName: harbor-supply-chain
+      volumes:
+      - configMap:
+          name: harbor-supply-chain-buildkit
+        name: buildkit-config
+      - name: state
+        persistentVolumeClaim:
+          claimName: harbor-supply-chain-state
+      - emptyDir:
+          sizeLimit: 4Gi
+        name: tmp
+      - emptyDir: {}
+        name: socket
+      - emptyDir:
+          sizeLimit: 20Gi
+        name: cache
+      - name: signing
+        secret:
+          defaultMode: 288
+          secretName: harbor-supply-chain-signing
+      - name: api-access
+        projected:
+          defaultMode: 288
+          sources:
+          - serviceAccountToken:
+              expirationSeconds: 3600
+              path: token
+          - configMap:
+              items:
+              - key: ca.crt
+                path: ca.crt
+              name: kube-root-ca.crt
+---
+apiVersion: v1
+data:
+  buildkitd.toml: "[registry.\"docker.io\"]\n  mirrors = [\"registry.re8ch.com/proxy-dockerhub\"\
+    ]\n"
+kind: ConfigMap
+metadata:
+  name: harbor-supply-chain-buildkit
+  namespace: tenant-infrastructure
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: harbor-supply-chain-state
+  namespace: tenant-infrastructure
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: rbd-r640
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: harbor-supply-chain
+  namespace: tenant-infrastructure
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+  selector:
+    app: harbor-supply-chain
+---
+apiVersion: v1
+automountServiceAccountToken: false
+kind: ServiceAccount
+metadata:
+  name: harbor-supply-chain
+  namespace: tenant-infrastructure

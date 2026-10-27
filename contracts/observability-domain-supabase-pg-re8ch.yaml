@@ -1,0 +1,46 @@
+apiVersion: delivery.re8ch.com/v1alpha1
+kind: ReleaseContract
+metadata:
+  name: observability-domain-supabase-pg-re8ch
+spec:
+  authorityDomain: observability-metering
+  target:
+    cluster: re8ch
+    namespace: supabase-pg-re8ch
+  source:
+    renderer: kustomize
+    revision: github-main-reviewed
+    repository: siren-observer/observability-gitops
+    path: releases/observability-domain-supabase-pg-re8ch
+  provenance:
+    repository: siren-observer/observability-gitops
+    workflow: .github/workflows/static-release.yml
+    ref: refs/heads/main
+    environment: release-executor-observability-metering
+    audience: https://kube-api.re8ch.com/release-executor-observability-metering
+    signer: https://github.com/siren-observer/observability-gitops/.github/workflows/static-release.yml@refs/heads/main
+    issuer: https://token.actions.githubusercontent.com
+  authorization:
+    fieldManager: re8ch-release/observability-domain-supabase-pg-re8ch
+    resources:
+    - batch/Job
+    - core/ResourceQuota
+    objectNames:
+    - incidentrelay-database-bootstrap-v7
+    - supabase-one-cpu
+    allowClusterScoped: false
+    forceConflictObjects:
+    - batch/Job/supabase-pg-re8ch/incidentrelay-database-bootstrap-v7
+    - core/ResourceQuota/supabase-pg-re8ch/supabase-one-cpu
+  inventory:
+    digest: sha256:d6611666d752c64a6bbd2b21e6040c6a19a7d84e4af2395636944c531cbebd80
+  lifecycle:
+    prune: false
+    healthTimeoutSeconds: 300
+    protectedKinds:
+    - Namespace
+    - CustomResourceDefinition
+    - PersistentVolume
+    - PersistentVolumeClaim
+    - StorageClass
+    deletionAllowlist: []

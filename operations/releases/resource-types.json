@@ -1,0 +1,17 @@
+{
+  "opentelemetry.io/OpenTelemetryCollector": "opentelemetrycollectors",
+  "operator.victoriametrics.com/VLAgent": "vlagents",
+  "operator.victoriametrics.com/VLSingle": "vlsingles",
+  "operator.victoriametrics.com/VMAgent": "vmagents",
+  "operator.victoriametrics.com/VMAlertmanager": "vmalertmanagers",
+  "operator.victoriametrics.com/VMAlert": "vmalerts",
+  "operator.victoriametrics.com/VMAuth": "vmauths",
+  "operator.victoriametrics.com/VMCluster": "vmclusters",
+  "operator.victoriametrics.com/VMNodeScrape": "vmnodescrapes",
+  "operator.victoriametrics.com/VMPodScrape": "vmpodscrapes",
+  "operator.victoriametrics.com/VMRule": "vmrules",
+  "operator.victoriametrics.com/VMServiceScrape": "vmservicescrapes",
+  "operator.victoriametrics.com/VMSingle": "vmsingles",
+  "operator.victoriametrics.com/VMStaticScrape": "vmstaticscrapes",
+  "operator.victoriametrics.com/VTCluster": "vtclusters"
+}
