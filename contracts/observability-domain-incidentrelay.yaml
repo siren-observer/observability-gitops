@@ -1,0 +1,63 @@
+apiVersion: delivery.re8ch.com/v1alpha1
+kind: ReleaseContract
+metadata:
+  name: observability-domain-incidentrelay
+spec:
+  authorityDomain: observability-metering
+  target:
+    cluster: re8ch
+    namespace: incidentrelay
+  source:
+    renderer: kustomize
+    revision: github-main-reviewed
+    repository: siren-observer/observability-gitops
+    path: releases/observability-domain-incidentrelay
+  provenance:
+    repository: siren-observer/observability-gitops
+    workflow: .github/workflows/static-release.yml
+    ref: refs/heads/main
+    environment: release-executor-observability-metering
+    audience: https://kube-api.re8ch.com/release-executor-observability-metering
+    signer: https://github.com/siren-observer/observability-gitops/.github/workflows/static-release.yml@refs/heads/main
+    issuer: https://token.actions.githubusercontent.com
+  authorization:
+    fieldManager: re8ch-release/observability-domain-incidentrelay
+    resources:
+    - batch/Job
+    - cilium.io/CiliumNetworkPolicy
+    - gateway.networking.k8s.io/HTTPRoute
+    - networking.k8s.io/Ingress
+    - networking.k8s.io/NetworkPolicy
+    objectNames:
+    - incidentrelay-allow-node-proxy
+    - incidentrelay-allow-required
+    - incidentrelay-bootstrap-admin-v3
+    - incidentrelay-default-deny
+    - incidentrelay-from-gateway
+    - incidentrelay-http-redirect
+    - incidentrelay-pigsty
+    - incidentrelay-public
+    - incidentrelay-public-dns-authority
+    allowClusterScoped: false
+    forceConflictObjects:
+    - batch/Job/incidentrelay/incidentrelay-bootstrap-admin-v3
+    - cilium.io/CiliumNetworkPolicy/incidentrelay/incidentrelay-allow-node-proxy
+    - cilium.io/CiliumNetworkPolicy/incidentrelay/incidentrelay-from-gateway
+    - cilium.io/CiliumNetworkPolicy/incidentrelay/incidentrelay-pigsty
+    - gateway.networking.k8s.io/HTTPRoute/incidentrelay/incidentrelay-http-redirect
+    - gateway.networking.k8s.io/HTTPRoute/incidentrelay/incidentrelay-public
+    - networking.k8s.io/Ingress/incidentrelay/incidentrelay-public-dns-authority
+    - networking.k8s.io/NetworkPolicy/incidentrelay/incidentrelay-allow-required
+    - networking.k8s.io/NetworkPolicy/incidentrelay/incidentrelay-default-deny
+  inventory:
+    digest: sha256:587e86974b50839c4afc6287377a34bbabb851b07a7681cd2730d17b24cd34ae
+  lifecycle:
+    prune: false
+    healthTimeoutSeconds: 300
+    protectedKinds:
+    - Namespace
+    - CustomResourceDefinition
+    - PersistentVolume
+    - PersistentVolumeClaim
+    - StorageClass
+    deletionAllowlist: []

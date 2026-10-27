@@ -1,0 +1,171 @@
+{
+  "domain": "observability-metering",
+  "sourceObjects": 117,
+  "releases": [
+    {
+      "name": "observability-domain-credential-broker",
+      "namespace": "credential-broker",
+      "objects": 2,
+      "contract": "contracts/observability-domain-credential-broker.yaml"
+    },
+    {
+      "name": "observability-domain-flux-system",
+      "namespace": "flux-system",
+      "objects": 2,
+      "contract": "contracts/observability-domain-flux-system.yaml"
+    },
+    {
+      "name": "observability-domain-globalping-system",
+      "namespace": "globalping-system",
+      "objects": 2,
+      "contract": "contracts/observability-domain-globalping-system.yaml"
+    },
+    {
+      "name": "observability-domain-incidentrelay",
+      "namespace": "incidentrelay",
+      "objects": 9,
+      "contract": "contracts/observability-domain-incidentrelay.yaml"
+    },
+    {
+      "name": "observability-domain-kube-system",
+      "namespace": "kube-system",
+      "objects": 1,
+      "contract": "contracts/observability-domain-kube-system.yaml"
+    },
+    {
+      "name": "observability-domain-observability-system",
+      "namespace": "observability-system",
+      "objects": 63,
+      "contract": "contracts/observability-domain-observability-system.yaml"
+    },
+    {
+      "name": "observability-domain-opencost",
+      "namespace": "opencost",
+      "objects": 1,
+      "contract": "contracts/observability-domain-opencost.yaml"
+    },
+    {
+      "name": "observability-domain-qianwen-ops",
+      "namespace": "qianwen-ops",
+      "objects": 2,
+      "contract": "contracts/observability-domain-qianwen-ops.yaml"
+    },
+    {
+      "name": "observability-domain-supabase-pg-re8ch",
+      "namespace": "supabase-pg-re8ch",
+      "objects": 2,
+      "contract": "contracts/observability-domain-supabase-pg-re8ch.yaml"
+    },
+    {
+      "name": "observability-domain-synthetic-monitoring",
+      "namespace": "synthetic-monitoring",
+      "objects": 4,
+      "contract": "contracts/observability-domain-synthetic-monitoring.yaml"
+    },
+    {
+      "name": "observability-domain-tenant-infrastructure",
+      "namespace": "tenant-infrastructure",
+      "objects": 5,
+      "contract": "contracts/observability-domain-tenant-infrastructure.yaml"
+    }
+  ],
+  "publishableObjects": 93,
+  "deferred": [
+    {
+      "identity": "apps/DaemonSet/observability-system/re8ch-node-storage-exporter",
+      "reason": "image-digest-required"
+    },
+    {
+      "identity": "apps/Deployment/globalping-system/globalping-probe-icp",
+      "reason": "image-digest-required"
+    },
+    {
+      "identity": "apps/Deployment/globalping-system/globalping-probe-r640",
+      "reason": "image-digest-required"
+    },
+    {
+      "identity": "apps/Deployment/kube-system/kube-state-metrics",
+      "reason": "image-digest-required"
+    },
+    {
+      "identity": "apps/Deployment/observability-system/re8ch-grafana",
+      "reason": "image-digest-required"
+    },
+    {
+      "identity": "apps/Deployment/observability-system/re8ch-grafana-renderer",
+      "reason": "image-digest-required"
+    },
+    {
+      "identity": "core/Secret/globalping-system/globalping-adoption",
+      "reason": "secret-provisioning"
+    },
+    {
+      "identity": "core/Secret/incidentrelay/incidentrelay-bootstrap-admin",
+      "reason": "secret-provisioning"
+    },
+    {
+      "identity": "core/Secret/incidentrelay/incidentrelay-config",
+      "reason": "secret-provisioning"
+    },
+    {
+      "identity": "core/Secret/observability-system/incidentrelay-alertmanager-tokens",
+      "reason": "secret-provisioning"
+    },
+    {
+      "identity": "core/Secret/observability-system/re8ch-alertmanager-base",
+      "reason": "secret-provisioning"
+    },
+    {
+      "identity": "core/Secret/observability-system/re8ch-grafana-admin",
+      "reason": "secret-provisioning"
+    },
+    {
+      "identity": "core/Secret/observability-system/re8ch-grafana-database",
+      "reason": "secret-provisioning"
+    },
+    {
+      "identity": "core/Secret/observability-system/re8ch-grafana-renderer-auth",
+      "reason": "secret-provisioning"
+    },
+    {
+      "identity": "core/Secret/supabase-pg-re8ch/incidentrelay-db-bootstrap",
+      "reason": "secret-provisioning"
+    },
+    {
+      "identity": "helm.toolkit.fluxcd.io/HelmRelease/flux-observability-system/birfucate-metering",
+      "reason": "helm-render"
+    },
+    {
+      "identity": "helm.toolkit.fluxcd.io/HelmRelease/flux-observability-system/incidentrelay",
+      "reason": "helm-render"
+    },
+    {
+      "identity": "helm.toolkit.fluxcd.io/HelmRelease/flux-observability-system/re8ch-kube-state-metrics",
+      "reason": "helm-render"
+    },
+    {
+      "identity": "helm.toolkit.fluxcd.io/HelmRelease/flux-observability-system/re8ch-opentelemetry-operator",
+      "reason": "helm-render"
+    },
+    {
+      "identity": "helm.toolkit.fluxcd.io/HelmRelease/flux-observability-system/victoria-metrics-operator",
+      "reason": "helm-render"
+    },
+    {
+      "identity": "source.toolkit.fluxcd.io/OCIRepository/flux-observability-system/incidentrelay",
+      "reason": "retired-flux-control-resource"
+    },
+    {
+      "identity": "source.toolkit.fluxcd.io/OCIRepository/flux-observability-system/open-telemetry",
+      "reason": "retired-flux-control-resource"
+    },
+    {
+      "identity": "source.toolkit.fluxcd.io/OCIRepository/flux-observability-system/prometheus-community",
+      "reason": "retired-flux-control-resource"
+    },
+    {
+      "identity": "source.toolkit.fluxcd.io/OCIRepository/flux-observability-system/victoriametrics",
+      "reason": "retired-flux-control-resource"
+    }
+  ]
+}

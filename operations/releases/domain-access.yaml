@@ -1,0 +1,933 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ssa-state-observability-domain-credential-broker
+  namespace: credential-broker
+  labels:
+    delivery.re8ch.com/state: accepted
+    delivery.re8ch.com/authority-domain: observability-metering
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: observability-domain-credential-broker
+  namespace: credential-broker
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  resourceNames:
+  - ssa-state-observability-domain-credential-broker
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  resourceNames:
+  - harbor-supply-chain-credentials
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - roles
+  resourceNames:
+  - harbor-supply-chain-credentials
+  verbs:
+  - get
+  - patch
+  - update
+  - escalate
+  - bind
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: observability-domain-credential-broker
+  namespace: credential-broker
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: observability-domain-credential-broker
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: re8ch:release-executor:observability-metering
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ssa-state-observability-domain-flux-system
+  namespace: flux-system
+  labels:
+    delivery.re8ch.com/state: accepted
+    delivery.re8ch.com/authority-domain: observability-metering
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: observability-domain-flux-system
+  namespace: flux-system
+rules:
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  resourceNames:
+  - retire-legacy-qianwen-grafana-v2
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  resourceNames:
+  - ssa-state-observability-domain-flux-system
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - serviceaccounts
+  resourceNames:
+  - retire-legacy-qianwen-grafana
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: observability-domain-flux-system
+  namespace: flux-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: observability-domain-flux-system
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: re8ch:release-executor:observability-metering
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ssa-state-observability-domain-globalping-system
+  namespace: globalping-system
+  labels:
+    delivery.re8ch.com/state: accepted
+    delivery.re8ch.com/authority-domain: observability-metering
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: observability-domain-globalping-system
+  namespace: globalping-system
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  resourceNames:
+  - ssa-state-observability-domain-globalping-system
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - persistentvolumeclaims
+  resourceNames:
+  - globalping-probe-icp-data
+  - globalping-probe-r640-data
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: observability-domain-globalping-system
+  namespace: globalping-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: observability-domain-globalping-system
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: re8ch:release-executor:observability-metering
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ssa-state-observability-domain-incidentrelay
+  namespace: incidentrelay
+  labels:
+    delivery.re8ch.com/state: accepted
+    delivery.re8ch.com/authority-domain: observability-metering
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: observability-domain-incidentrelay
+  namespace: incidentrelay
+rules:
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  resourceNames:
+  - incidentrelay-bootstrap-admin-v3
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - cilium.io
+  resources:
+  - ciliumnetworkpolicies
+  resourceNames:
+  - incidentrelay-allow-node-proxy
+  - incidentrelay-from-gateway
+  - incidentrelay-pigsty
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  resourceNames:
+  - ssa-state-observability-domain-incidentrelay
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - gateway.networking.k8s.io
+  resources:
+  - httproutes
+  resourceNames:
+  - incidentrelay-http-redirect
+  - incidentrelay-public
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  resourceNames:
+  - incidentrelay-public-dns-authority
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - networkpolicies
+  resourceNames:
+  - incidentrelay-allow-required
+  - incidentrelay-default-deny
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: observability-domain-incidentrelay
+  namespace: incidentrelay
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: observability-domain-incidentrelay
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: re8ch:release-executor:observability-metering
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ssa-state-observability-domain-kube-system
+  namespace: kube-system
+  labels:
+    delivery.re8ch.com/state: accepted
+    delivery.re8ch.com/authority-domain: observability-metering
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: observability-domain-kube-system
+  namespace: kube-system
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  resourceNames:
+  - ssa-state-observability-domain-kube-system
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - policy
+  resources:
+  - poddisruptionbudgets
+  resourceNames:
+  - kube-state-metrics
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: observability-domain-kube-system
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: observability-domain-kube-system
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: re8ch:release-executor:observability-metering
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ssa-state-observability-domain-observability-system
+  namespace: observability-system
+  labels:
+    delivery.re8ch.com/state: accepted
+    delivery.re8ch.com/authority-domain: observability-metering
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: observability-domain-observability-system
+  namespace: observability-system
+rules:
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  resourceNames:
+  - re8ch-fair-value-controller
+  - re8ch-grafana-postgresql
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - batch
+  resources:
+  - cronjobs
+  resourceNames:
+  - re8ch-grafana-org-sync
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - cilium.io
+  resources:
+  - ciliumnetworkpolicies
+  resourceNames:
+  - re8ch-grafana-from-gateway
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  resourceNames:
+  - re8ch-fair-value-controller-code
+  - re8ch-fair-value-controller-config
+  - re8ch-grafana-dashboard-providers
+  - re8ch-grafana-org-contract
+  - re8ch-notification-receiver-catalog
+  - re8ch-observability-dashboards
+  - re8ch-observability-datasources
+  - re8ch-observability-grafana-alerts
+  - ssa-state-observability-domain-observability-system
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - persistentvolumeclaims
+  resourceNames:
+  - re8ch-fair-value-history
+  - re8ch-grafana-postgresql-data-v2
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - serviceaccounts
+  resourceNames:
+  - re8ch-event-collector
+  - re8ch-fair-value-controller
+  - re8ch-grafana
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - services
+  resourceNames:
+  - re8ch-fair-value-controller
+  - re8ch-grafana
+  - re8ch-grafana-postgresql
+  - re8ch-grafana-renderer
+  - re8ch-node-storage-exporter
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - networkpolicies
+  resourceNames:
+  - re8ch-grafana
+  - re8ch-grafana-postgresql
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - opentelemetry.io
+  resources:
+  - opentelemetrycollectors
+  resourceNames:
+  - re8ch-event-collector
+  - re8ch-gateway
+  - re8ch-node-agent
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - operator.victoriametrics.com
+  resources:
+  - vlagents
+  resourceNames:
+  - re8ch
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - operator.victoriametrics.com
+  resources:
+  - vlsingles
+  resourceNames:
+  - re8ch-logs
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - operator.victoriametrics.com
+  resources:
+  - vmagents
+  resourceNames:
+  - opencost
+  - re8ch
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - operator.victoriametrics.com
+  resources:
+  - vmalertmanagers
+  resourceNames:
+  - re8ch-alertmanager
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - operator.victoriametrics.com
+  resources:
+  - vmalerts
+  resourceNames:
+  - re8ch
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - operator.victoriametrics.com
+  resources:
+  - vmauths
+  resourceNames:
+  - tenant-metrics
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - operator.victoriametrics.com
+  resources:
+  - vmclusters
+  resourceNames:
+  - re8ch-metrics
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - operator.victoriametrics.com
+  resources:
+  - vmnodescrapes
+  resourceNames:
+  - kubelet
+  - kubelet-cadvisor
+  - opencost-kubelet
+  - opencost-kubelet-cadvisor
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - operator.victoriametrics.com
+  resources:
+  - vmpodscrapes
+  resourceNames:
+  - cilium-agent
+  - cilium-envoy-gateway
+  - cilium-operator
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - operator.victoriametrics.com
+  resources:
+  - vmrules
+  resourceNames:
+  - re8ch-observability
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - operator.victoriametrics.com
+  resources:
+  - vmservicescrapes
+  resourceNames:
+  - advanced-fabric-dns
+  - advanced-fabric-node-measurements
+  - alerting-control-plane
+  - application-critical
+  - application-standard
+  - ceph-exporter
+  - ceph-manager
+  - kube-state-metrics
+  - opencost-exporter
+  - opencost-kube-state-metrics
+  - pigsty-postgresql
+  - re8ch-fair-value-controller
+  - re8ch-node-storage
+  - re8ch-routing-advisor
+  - victoria-logs
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - operator.victoriametrics.com
+  resources:
+  - vmsingles
+  resourceNames:
+  - opencost
+  - re8ch-analytics
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - operator.victoriametrics.com
+  resources:
+  - vmstaticscrapes
+  resourceNames:
+  - hubble-metrics
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - operator.victoriametrics.com
+  resources:
+  - vtclusters
+  resourceNames:
+  - re8ch-traces
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - policy
+  resources:
+  - poddisruptionbudgets
+  resourceNames:
+  - re8ch-grafana
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: observability-domain-observability-system
+  namespace: observability-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: observability-domain-observability-system
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: re8ch:release-executor:observability-metering
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ssa-state-observability-domain-opencost
+  namespace: opencost
+  labels:
+    delivery.re8ch.com/state: accepted
+    delivery.re8ch.com/authority-domain: observability-metering
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: observability-domain-opencost
+  namespace: opencost
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  resourceNames:
+  - opencost-ui-nginx-config
+  - ssa-state-observability-domain-opencost
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: observability-domain-opencost
+  namespace: opencost
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: observability-domain-opencost
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: re8ch:release-executor:observability-metering
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ssa-state-observability-domain-qianwen-ops
+  namespace: qianwen-ops
+  labels:
+    delivery.re8ch.com/state: accepted
+    delivery.re8ch.com/authority-domain: observability-metering
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: observability-domain-qianwen-ops
+  namespace: qianwen-ops
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  resourceNames:
+  - ssa-state-observability-domain-qianwen-ops
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  resourceNames:
+  - retire-legacy-qianwen-grafana
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - roles
+  resourceNames:
+  - retire-legacy-qianwen-grafana
+  verbs:
+  - get
+  - patch
+  - update
+  - escalate
+  - bind
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: observability-domain-qianwen-ops
+  namespace: qianwen-ops
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: observability-domain-qianwen-ops
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: re8ch:release-executor:observability-metering
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ssa-state-observability-domain-supabase-pg-re8ch
+  namespace: supabase-pg-re8ch
+  labels:
+    delivery.re8ch.com/state: accepted
+    delivery.re8ch.com/authority-domain: observability-metering
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: observability-domain-supabase-pg-re8ch
+  namespace: supabase-pg-re8ch
+rules:
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  resourceNames:
+  - incidentrelay-database-bootstrap-v7
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  resourceNames:
+  - ssa-state-observability-domain-supabase-pg-re8ch
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - resourcequotas
+  resourceNames:
+  - supabase-one-cpu
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: observability-domain-supabase-pg-re8ch
+  namespace: supabase-pg-re8ch
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: observability-domain-supabase-pg-re8ch
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: re8ch:release-executor:observability-metering
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ssa-state-observability-domain-synthetic-monitoring
+  namespace: synthetic-monitoring
+  labels:
+    delivery.re8ch.com/state: accepted
+    delivery.re8ch.com/authority-domain: observability-metering
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: observability-domain-synthetic-monitoring
+  namespace: synthetic-monitoring
+rules:
+- apiGroups:
+  - batch
+  resources:
+  - cronjobs
+  resourceNames:
+  - k6-contracts
+  - k6-contracts-fast
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  resourceNames:
+  - k6-contracts-96kmtdg46c
+  - ssa-state-observability-domain-synthetic-monitoring
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - serviceaccounts
+  resourceNames:
+  - k6-contracts
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: observability-domain-synthetic-monitoring
+  namespace: synthetic-monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: observability-domain-synthetic-monitoring
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: re8ch:release-executor:observability-metering
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ssa-state-observability-domain-tenant-infrastructure
+  namespace: tenant-infrastructure
+  labels:
+    delivery.re8ch.com/state: accepted
+    delivery.re8ch.com/authority-domain: observability-metering
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: observability-domain-tenant-infrastructure
+  namespace: tenant-infrastructure
+rules:
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  resourceNames:
+  - harbor-supply-chain
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  resourceNames:
+  - harbor-supply-chain-buildkit
+  - ssa-state-observability-domain-tenant-infrastructure
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - persistentvolumeclaims
+  resourceNames:
+  - harbor-supply-chain-state
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - serviceaccounts
+  resourceNames:
+  - harbor-supply-chain
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - services
+  resourceNames:
+  - harbor-supply-chain
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: observability-domain-tenant-infrastructure
+  namespace: tenant-infrastructure
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: observability-domain-tenant-infrastructure
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: re8ch:release-executor:observability-metering

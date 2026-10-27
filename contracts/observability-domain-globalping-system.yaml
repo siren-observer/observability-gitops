@@ -1,0 +1,45 @@
+apiVersion: delivery.re8ch.com/v1alpha1
+kind: ReleaseContract
+metadata:
+  name: observability-domain-globalping-system
+spec:
+  authorityDomain: observability-metering
+  target:
+    cluster: re8ch
+    namespace: globalping-system
+  source:
+    renderer: kustomize
+    revision: github-main-reviewed
+    repository: siren-observer/observability-gitops
+    path: releases/observability-domain-globalping-system
+  provenance:
+    repository: siren-observer/observability-gitops
+    workflow: .github/workflows/static-release.yml
+    ref: refs/heads/main
+    environment: release-executor-observability-metering
+    audience: https://kube-api.re8ch.com/release-executor-observability-metering
+    signer: https://github.com/siren-observer/observability-gitops/.github/workflows/static-release.yml@refs/heads/main
+    issuer: https://token.actions.githubusercontent.com
+  authorization:
+    fieldManager: re8ch-release/observability-domain-globalping-system
+    resources:
+    - core/PersistentVolumeClaim
+    objectNames:
+    - globalping-probe-icp-data
+    - globalping-probe-r640-data
+    allowClusterScoped: false
+    forceConflictObjects:
+    - core/PersistentVolumeClaim/globalping-system/globalping-probe-icp-data
+    - core/PersistentVolumeClaim/globalping-system/globalping-probe-r640-data
+  inventory:
+    digest: sha256:13630a1ac0ae77e9f24152aafda22f2b9d5f4ef7c40752f1ead33386afe808ab
+  lifecycle:
+    prune: false
+    healthTimeoutSeconds: 300
+    protectedKinds:
+    - Namespace
+    - CustomResourceDefinition
+    - PersistentVolume
+    - PersistentVolumeClaim
+    - StorageClass
+    deletionAllowlist: []

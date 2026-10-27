@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+data:
+  nginx.conf: "upstream model {\n  server opencost.opencost.svc.cluster.local:9003;\n\
+    }\nserver {\n  listen 9090;\n  listen [::]:9090;\n  server_name _;\n  root /var/www;\n\
+    \  index index.html;\n  location /healthz {\n    access_log off;\n    return 200\
+    \ 'OK';\n  }\n  location / {\n    try_files $uri /index.html;\n  }\n  location\
+    \ /model/ {\n    proxy_connect_timeout 180;\n    proxy_send_timeout 180;\n   \
+    \ proxy_read_timeout 180;\n    proxy_pass http://model/;\n    proxy_http_version\
+    \ 1.1;\n    proxy_set_header Connection \"\";\n    proxy_set_header X-Real-IP\
+    \ $remote_addr;\n    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n\
+    \  }\n}\n"
+kind: ConfigMap
+metadata:
+  name: opencost-ui-nginx-config
+  namespace: opencost
