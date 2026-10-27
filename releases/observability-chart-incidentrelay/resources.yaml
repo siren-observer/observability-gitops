@@ -1,0 +1,329 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: scheduler
+    app.kubernetes.io/instance: incidentrelay
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: incidentrelay
+    app.kubernetes.io/version: '2.2'
+    helm.sh/chart: incidentrelay-2.2.0
+  name: incidentrelay-scheduler
+  namespace: incidentrelay
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: scheduler
+      app.kubernetes.io/instance: incidentrelay
+      app.kubernetes.io/name: incidentrelay
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: scheduler
+        app.kubernetes.io/instance: incidentrelay
+        app.kubernetes.io/name: incidentrelay
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - r640
+      containers:
+      - env:
+        - name: INCIDENTRELAY_CONFIG_FILE
+          value: /etc/incidentrelay/incidentrelay.conf
+        - name: INCIDENTRELAY_SERVICE
+          value: scheduler
+        - name: INCIDENTRELAY_RUN_MIGRATIONS
+          value: '0'
+        - name: HTTP_PROXY
+          value: http://mihomos-node-cn-local.egress-fabric.svc.cluster.local:17891
+        - name: HTTPS_PROXY
+          value: http://mihomos-node-cn-local.egress-fabric.svc.cluster.local:17891
+        - name: NO_PROXY
+          value: .svc,.cluster.local,10.0.0.0/8,100.64.0.0/10
+        image: ghcr.io/roxy-wi/incidentrelay@sha256:5d3af4a530dbe38970caf1124133b01d422860893621a7ac8439551afef21b4a
+        imagePullPolicy: IfNotPresent
+        name: scheduler
+        resources:
+          limits:
+            cpu: '1'
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - mountPath: /etc/incidentrelay
+          name: config
+          readOnly: true
+        - mountPath: /var/lib/incidentrelay
+          name: data
+        - mountPath: /var/log/incidentrelay
+          name: logs
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: incidentrelay
+      volumes:
+      - name: config
+        secret:
+          secretName: incidentrelay-config
+      - emptyDir: {}
+        name: data
+      - emptyDir: {}
+        name: logs
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: telegram
+    app.kubernetes.io/instance: incidentrelay
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: incidentrelay
+    app.kubernetes.io/version: '2.2'
+    helm.sh/chart: incidentrelay-2.2.0
+  name: incidentrelay-telegram
+  namespace: incidentrelay
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: telegram
+      app.kubernetes.io/instance: incidentrelay
+      app.kubernetes.io/name: incidentrelay
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: telegram
+        app.kubernetes.io/instance: incidentrelay
+        app.kubernetes.io/name: incidentrelay
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - r640
+      containers:
+      - env:
+        - name: INCIDENTRELAY_CONFIG_FILE
+          value: /etc/incidentrelay/incidentrelay.conf
+        - name: INCIDENTRELAY_SERVICE
+          value: telegram
+        - name: INCIDENTRELAY_RUN_MIGRATIONS
+          value: '0'
+        - name: PYTHONUNBUFFERED
+          value: '1'
+        - name: HTTP_PROXY
+          value: http://mihomos-node-cn-local.egress-fabric.svc.cluster.local:17891
+        - name: HTTPS_PROXY
+          value: http://mihomos-node-cn-local.egress-fabric.svc.cluster.local:17891
+        - name: NO_PROXY
+          value: .svc,.cluster.local,10.0.0.0/8,100.64.0.0/10
+        image: ghcr.io/roxy-wi/incidentrelay@sha256:5d3af4a530dbe38970caf1124133b01d422860893621a7ac8439551afef21b4a
+        imagePullPolicy: IfNotPresent
+        name: telegram
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - mountPath: /etc/incidentrelay
+          name: config
+          readOnly: true
+        - mountPath: /var/lib/incidentrelay
+          name: data
+        - mountPath: /var/log/incidentrelay
+          name: logs
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: incidentrelay
+      volumes:
+      - name: config
+        secret:
+          secretName: incidentrelay-config
+      - emptyDir: {}
+        name: data
+      - emptyDir: {}
+        name: logs
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: web
+    app.kubernetes.io/instance: incidentrelay
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: incidentrelay
+    app.kubernetes.io/version: '2.2'
+    helm.sh/chart: incidentrelay-2.2.0
+  name: incidentrelay-web
+  namespace: incidentrelay
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: web
+      app.kubernetes.io/instance: incidentrelay
+      app.kubernetes.io/name: incidentrelay
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: web
+        app.kubernetes.io/instance: incidentrelay
+        app.kubernetes.io/name: incidentrelay
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - r640
+      containers:
+      - env:
+        - name: INCIDENTRELAY_CONFIG_FILE
+          value: /etc/incidentrelay/incidentrelay.conf
+        - name: INCIDENTRELAY_SERVICE
+          value: web
+        - name: INCIDENTRELAY_RUN_MIGRATIONS
+          value: '1'
+        - name: INCIDENTRELAY_PORT
+          value: '8080'
+        - name: INCIDENTRELAY_WEB_WORKERS
+          value: '1'
+        - name: INCIDENTRELAY_WEB_THREADS
+          value: '4'
+        - name: INCIDENTRELAY_WEB_TIMEOUT
+          value: '120'
+        - name: HTTP_PROXY
+          value: http://mihomos-node-cn-local.egress-fabric.svc.cluster.local:17891
+        - name: HTTPS_PROXY
+          value: http://mihomos-node-cn-local.egress-fabric.svc.cluster.local:17891
+        - name: NO_PROXY
+          value: .svc,.cluster.local,10.0.0.0/8,100.64.0.0/10
+        image: ghcr.io/roxy-wi/incidentrelay@sha256:5d3af4a530dbe38970caf1124133b01d422860893621a7ac8439551afef21b4a
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+          periodSeconds: 15
+          timeoutSeconds: 5
+        name: web
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: http
+          periodSeconds: 10
+          timeoutSeconds: 5
+        resources:
+          limits:
+            cpu: '1'
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        startupProbe:
+          failureThreshold: 60
+          httpGet:
+            path: /healthz
+            port: http
+          periodSeconds: 5
+        volumeMounts:
+        - mountPath: /etc/incidentrelay
+          name: config
+          readOnly: true
+        - mountPath: /var/lib/incidentrelay
+          name: data
+        - mountPath: /var/log/incidentrelay
+          name: logs
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: incidentrelay
+      volumes:
+      - name: config
+        secret:
+          secretName: incidentrelay-config
+      - emptyDir: {}
+        name: data
+      - emptyDir: {}
+        name: logs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/instance: incidentrelay
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: incidentrelay
+    app.kubernetes.io/version: '2.2'
+    helm.sh/chart: incidentrelay-2.2.0
+  name: incidentrelay
+  namespace: incidentrelay
+spec:
+  ports:
+  - name: http
+    port: 8080
+    protocol: TCP
+    targetPort: http
+  selector:
+    app.kubernetes.io/component: web
+    app.kubernetes.io/instance: incidentrelay
+    app.kubernetes.io/name: incidentrelay
+  type: ClusterIP
+---
+apiVersion: v1
+automountServiceAccountToken: false
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/instance: incidentrelay
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: incidentrelay
+    app.kubernetes.io/version: '2.2'
+    helm.sh/chart: incidentrelay-2.2.0
+  name: incidentrelay
+  namespace: incidentrelay

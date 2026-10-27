@@ -1,0 +1,65 @@
+apiVersion: delivery.re8ch.com/locked-helm-render/v1alpha1
+kind: LockedHelmRender
+metadata:
+  name: observability-chart-re8ch-opentelemetry-operator
+spec:
+  chart: oci://ghcr.io/open-telemetry/opentelemetry-helm-charts/opentelemetry-operator@sha256:9e3b657e793e7e7f69b7770de46851aebc5fc2fe00c1866ddee999ad61cb73dc
+  version: 0.115.0
+  releaseName: otel-operator
+  namespace: opentelemetry-operator
+  releaseNamespace: opentelemetry-operator
+  values: values.yaml
+  valuesDigest: sha256:f75f6b4bb678f1e64908fb6b807c5c89bd5cdf4dcc8580203433658dfb9324f3
+  renderedResources: resources.yaml
+  renderedResourcesDigest: sha256:35ad31dd2e5bab48d31fc46f796cf177f1628ef9b8db14a08c3ad82dbe6526b3
+  helmRelease:
+    namespace: flux-observability-system
+    name: re8ch-opentelemetry-operator
+  helmDeclarationDigest: sha256:01e964dce6972950257b9e872ec24ee16130276be3110706ce1f7565cd99ef4f
+  imagePins:
+    registry.k8s.io/pause:3.10.1: registry.k8s.io/pause@sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c
+    ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.153.0: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator@sha256:71c80734e698e0a38039aeb5a6fad7129ca68eaa31eb262752c1e5015b319a24
+    victoriametrics/operator:v0.74.0: docker.io/victoriametrics/operator@sha256:c4fde419a4f03c7c45d7ee554e7039c12c75af161f7f7e1baef1b343015e3df9
+  deferred:
+  - kind: CustomResourceDefinition
+    name: opampbridges.opentelemetry.io
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: targetallocators.opentelemetry.io
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: opentelemetrycollectors.opentelemetry.io
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: instrumentations.opentelemetry.io
+    reason: platform-bootstrap
+  - kind: ClusterRole
+    name: otel-operator-opentelemetry-operator-manager
+    reason: platform-owned-rbac
+  - kind: ClusterRole
+    name: otel-operator-opentelemetry-operator-metrics
+    reason: platform-owned-rbac
+  - kind: ClusterRoleBinding
+    name: otel-operator-opentelemetry-operator-manager
+    reason: platform-owned-rbac
+  - kind: Role
+    name: otel-operator-opentelemetry-operator-leader-election
+    reason: platform-owned-rbac
+  - kind: RoleBinding
+    name: otel-operator-opentelemetry-operator-leader-election
+    reason: platform-owned-rbac
+  - kind: MutatingWebhookConfiguration
+    name: otel-operator-opentelemetry-operator-mutation
+    reason: platform-bootstrap
+  - kind: ValidatingWebhookConfiguration
+    name: otel-operator-opentelemetry-operator-validation
+    reason: platform-bootstrap
+  - kind: Pod
+    name: otel-operator-opentelemetry-operator-cert-manager
+    reason: helm-hook
+  - kind: Pod
+    name: otel-operator-opentelemetry-operator-metrics
+    reason: helm-hook
+  - kind: Pod
+    name: otel-operator-opentelemetry-operator-webhook
+    reason: helm-hook

@@ -27,3 +27,25 @@ cloud adoption still requires the platform access seed and a successful release
 run; generated bundles alone do not establish runtime ownership.
 
 Role and RoleBinding desired objects remain platform-owned until admission can enforce their exact reviewed contents. Runtime groups receive no RBAC writes, bind, escalate or impersonate permission. Exact role names alone are not an escalation boundary.
+
+## Remaining Helm runtime adoption
+
+Four remaining Helm declarations have digest-locked runtime snapshots under
+`releases/observability-chart-*`: IncidentRelay, OpenTelemetry operator,
+VictoriaMetrics operator and the local Birfucate chart. Birfucate's cross-namespace
+output is split into five contracts. The existing kube-state-metrics snapshot
+remains a separate contract. `compile_chart_access.py` emits exact namespace
+access in `chart-access.yaml`, with no RBAC writes or Secret access.
+
+`lock_chart_runtimes.py` explicitly refreshes snapshots from pinned charts;
+normal publish/reconcile uses those snapshots without downloading charts again.
+Values, render bytes, local-chart contents and Helm declaration digests are
+checked before release. Operator image pins retain the observed running image
+IDs. The resolved tenant image input is an immutable digest with platform audit
+reference. Updating that input requires a reviewed snapshot refresh.
+
+CRDs, RBAC, webhook configurations, generated TLS Secrets and Helm hook Pods are
+listed as platform-owned in `helm-cohort.json`; their current runtime objects are
+retained. These snapshots do not claim to implement their lifecycle or upgrades.
+
+Adoption contracts set `authorization.requireExisting=true`: the executor verifies the artifact, reads each exact object's resourceVersion and sends it as the SSA precondition. Missing objects and concurrent changes fail closed; adoption never silently recreates a deleted object. Ordinary release contracts without this flag retain creation behavior. One-shot Jobs are platform-owned and excluded from replay, and protected storage objects are excluded from force-conflict requests.

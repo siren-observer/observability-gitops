@@ -23,17 +23,15 @@ spec:
   authorization:
     fieldManager: re8ch-release/observability-domain-flux-system
     resources:
-    - batch/Job
     - core/ServiceAccount
     objectNames:
     - retire-legacy-qianwen-grafana
-    - retire-legacy-qianwen-grafana-v2
     allowClusterScoped: false
+    requireExisting: true
     forceConflictObjects:
-    - batch/Job/flux-system/retire-legacy-qianwen-grafana-v2
     - core/ServiceAccount/flux-system/retire-legacy-qianwen-grafana
   inventory:
-    digest: sha256:64e4c4ba0cbeb663d0293ee4c9515a1311ecf13913121c26f8463624dbb339f3
+    digest: sha256:8e08de1877517dbca8f769abd930efb1d41fcf6bc980c32878a6a753061237cd
   lifecycle:
     prune: false
     healthTimeoutSeconds: 300

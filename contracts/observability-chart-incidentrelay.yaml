@@ -1,0 +1,57 @@
+apiVersion: delivery.re8ch.com/v1alpha1
+kind: ReleaseContract
+metadata:
+  name: observability-chart-incidentrelay
+spec:
+  authorityDomain: observability-metering
+  target:
+    cluster: re8ch
+    namespace: incidentrelay
+  source:
+    renderer: kustomize
+    revision: helm-oci@sha256:8bb521139db33f008c2a3c35546dcf2d5a583017b9487f6e9c8657124d43fdc9
+    repository: siren-observer/observability-gitops
+    path: releases/observability-chart-incidentrelay
+    values:
+    - path: releases/observability-chart-incidentrelay/values.yaml
+      digest: sha256:3852edbf6bee5225c7bda613179b1974e2939359e6930e9e0afbcbd13f4c586f
+    chartOCI: oci://ghcr.io/roxy-wi/incidentrelay-charts/incidentrelay@sha256:8bb521139db33f008c2a3c35546dcf2d5a583017b9487f6e9c8657124d43fdc9
+  provenance:
+    repository: siren-observer/observability-gitops
+    workflow: .github/workflows/static-release.yml
+    ref: refs/heads/main
+    environment: release-executor-observability-metering
+    audience: https://kube-api.re8ch.com/release-executor-observability-metering
+    signer: https://github.com/siren-observer/observability-gitops/.github/workflows/static-release.yml@refs/heads/main
+    issuer: https://token.actions.githubusercontent.com
+  authorization:
+    fieldManager: re8ch-release/observability-chart-incidentrelay
+    resources:
+    - apps/Deployment
+    - core/Service
+    - core/ServiceAccount
+    objectNames:
+    - incidentrelay
+    - incidentrelay-scheduler
+    - incidentrelay-telegram
+    - incidentrelay-web
+    allowClusterScoped: false
+    forceConflictObjects:
+    - apps/Deployment/incidentrelay/incidentrelay-scheduler
+    - apps/Deployment/incidentrelay/incidentrelay-telegram
+    - apps/Deployment/incidentrelay/incidentrelay-web
+    - core/Service/incidentrelay/incidentrelay
+    - core/ServiceAccount/incidentrelay/incidentrelay
+    requireExisting: true
+  inventory:
+    digest: sha256:535076d9b7e19161a50594e827173f1b4ac96b1d50b9868becf0645341917266
+  lifecycle:
+    prune: false
+    healthTimeoutSeconds: 300
+    protectedKinds:
+    - Namespace
+    - CustomResourceDefinition
+    - PersistentVolume
+    - PersistentVolumeClaim
+    - StorageClass
+    deletionAllowlist: []

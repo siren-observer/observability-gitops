@@ -100,6 +100,7 @@ spec:
     - tenant-metrics
     - victoria-logs
     allowClusterScoped: false
+    requireExisting: true
     forceConflictObjects:
     - apps/Deployment/observability-system/re8ch-fair-value-controller
     - apps/Deployment/observability-system/re8ch-grafana-postgresql
@@ -113,8 +114,6 @@ spec:
     - core/ConfigMap/observability-system/re8ch-observability-dashboards
     - core/ConfigMap/observability-system/re8ch-observability-datasources
     - core/ConfigMap/observability-system/re8ch-observability-grafana-alerts
-    - core/PersistentVolumeClaim/observability-system/re8ch-fair-value-history
-    - core/PersistentVolumeClaim/observability-system/re8ch-grafana-postgresql-data-v2
     - core/Service/observability-system/re8ch-fair-value-controller
     - core/Service/observability-system/re8ch-grafana
     - core/Service/observability-system/re8ch-grafana-postgresql

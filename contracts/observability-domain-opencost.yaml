@@ -27,6 +27,7 @@ spec:
     objectNames:
     - opencost-ui-nginx-config
     allowClusterScoped: false
+    requireExisting: true
     forceConflictObjects:
     - core/ConfigMap/opencost/opencost-ui-nginx-config
   inventory:

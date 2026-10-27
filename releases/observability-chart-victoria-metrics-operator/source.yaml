@@ -1,0 +1,122 @@
+apiVersion: delivery.re8ch.com/locked-helm-render/v1alpha1
+kind: LockedHelmRender
+metadata:
+  name: observability-chart-victoria-metrics-operator
+spec:
+  chart: oci://ghcr.io/victoriametrics/helm-charts/victoria-metrics-operator@sha256:454e94bbc58a44edf760c69d69d3e2cbc4a355b90b5adda2dcc28069213fb442
+  version: 0.67.2
+  releaseName: victoria-metrics-operator
+  namespace: observability-system
+  releaseNamespace: observability-system
+  values: values.yaml
+  valuesDigest: sha256:dcbf9bd08cd54fd74d9da807cf5fe926f2dde4ecc187094b78827bb1f7418297
+  renderedResources: resources.yaml
+  renderedResourcesDigest: sha256:c4e032df7891e2b5aaf7edb087fa37b6b66159d756c8650ff4d79ceabdacb548
+  helmRelease:
+    namespace: flux-observability-system
+    name: victoria-metrics-operator
+  helmDeclarationDigest: sha256:d8664bf732db5db4893242132457f24a7ad7660e2dd3e7a951412a892146176f
+  imagePins:
+    registry.k8s.io/pause:3.10.1: registry.k8s.io/pause@sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c
+    ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.153.0: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator@sha256:71c80734e698e0a38039aeb5a6fad7129ca68eaa31eb262752c1e5015b319a24
+    victoriametrics/operator:v0.74.0: docker.io/victoriametrics/operator@sha256:c4fde419a4f03c7c45d7ee554e7039c12c75af161f7f7e1baef1b343015e3df9
+  deferred:
+  - kind: Secret
+    name: victoria-metrics-operator-validation
+    reason: secret-provisioning
+  - kind: CustomResourceDefinition
+    name: vlagents.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vlclusters.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vldistributed.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vlogs.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vlsingles.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vmagents.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vmalertmanagerconfigs.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vmalertmanagers.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vmalerts.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vmanomalies.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vmanomalyconfigs.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vmauths.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vmclusters.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vmdistributed.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vmnodescrapes.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vmpodscrapes.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vmprobes.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vmrules.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vmscrapeconfigs.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vmservicescrapes.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vmsingles.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vmstaticscrapes.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vmusers.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vtclusters.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: vtsingles.operator.victoriametrics.com
+    reason: platform-bootstrap
+  - kind: ClusterRole
+    name: victoria-metrics-operator
+    reason: platform-owned-rbac
+  - kind: ClusterRole
+    name: victoria-metrics-operator-victoriametrics-admin
+    reason: platform-owned-rbac
+  - kind: ClusterRole
+    name: victoria-metrics-operator-victoriametrics-view
+    reason: platform-owned-rbac
+  - kind: ClusterRoleBinding
+    name: victoria-metrics-operator
+    reason: platform-owned-rbac
+  - kind: Role
+    name: victoria-metrics-operator
+    reason: platform-owned-rbac
+  - kind: RoleBinding
+    name: victoria-metrics-operator
+    reason: platform-owned-rbac
+  - kind: ValidatingWebhookConfiguration
+    name: victoria-metrics-operator-admission
+    reason: platform-bootstrap

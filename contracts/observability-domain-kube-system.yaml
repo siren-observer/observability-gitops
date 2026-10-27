@@ -27,6 +27,7 @@ spec:
     objectNames:
     - kube-state-metrics
     allowClusterScoped: false
+    requireExisting: true
     forceConflictObjects:
     - policy/PodDisruptionBudget/kube-system/kube-state-metrics
   inventory:

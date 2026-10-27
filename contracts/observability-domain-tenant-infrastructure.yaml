@@ -33,10 +33,10 @@ spec:
     - harbor-supply-chain-buildkit
     - harbor-supply-chain-state
     allowClusterScoped: false
+    requireExisting: true
     forceConflictObjects:
     - apps/Deployment/tenant-infrastructure/harbor-supply-chain
     - core/ConfigMap/tenant-infrastructure/harbor-supply-chain-buildkit
-    - core/PersistentVolumeClaim/tenant-infrastructure/harbor-supply-chain-state
     - core/Service/tenant-infrastructure/harbor-supply-chain
     - core/ServiceAccount/tenant-infrastructure/harbor-supply-chain
   inventory:

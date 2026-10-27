@@ -28,9 +28,8 @@ spec:
     - globalping-probe-icp-data
     - globalping-probe-r640-data
     allowClusterScoped: false
-    forceConflictObjects:
-    - core/PersistentVolumeClaim/globalping-system/globalping-probe-icp-data
-    - core/PersistentVolumeClaim/globalping-system/globalping-probe-r640-data
+    requireExisting: true
+    forceConflictObjects: []
   inventory:
     digest: sha256:13630a1ac0ae77e9f24152aafda22f2b9d5f4ef7c40752f1ead33386afe808ab
   lifecycle:

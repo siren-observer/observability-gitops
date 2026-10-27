@@ -23,7 +23,6 @@ spec:
   authorization:
     fieldManager: re8ch-release/observability-domain-incidentrelay
     resources:
-    - batch/Job
     - cilium.io/CiliumNetworkPolicy
     - gateway.networking.k8s.io/HTTPRoute
     - networking.k8s.io/Ingress
@@ -31,7 +30,6 @@ spec:
     objectNames:
     - incidentrelay-allow-node-proxy
     - incidentrelay-allow-required
-    - incidentrelay-bootstrap-admin-v3
     - incidentrelay-default-deny
     - incidentrelay-from-gateway
     - incidentrelay-http-redirect
@@ -39,8 +37,8 @@ spec:
     - incidentrelay-public
     - incidentrelay-public-dns-authority
     allowClusterScoped: false
+    requireExisting: true
     forceConflictObjects:
-    - batch/Job/incidentrelay/incidentrelay-bootstrap-admin-v3
     - cilium.io/CiliumNetworkPolicy/incidentrelay/incidentrelay-allow-node-proxy
     - cilium.io/CiliumNetworkPolicy/incidentrelay/incidentrelay-from-gateway
     - cilium.io/CiliumNetworkPolicy/incidentrelay/incidentrelay-pigsty
@@ -50,7 +48,7 @@ spec:
     - networking.k8s.io/NetworkPolicy/incidentrelay/incidentrelay-allow-required
     - networking.k8s.io/NetworkPolicy/incidentrelay/incidentrelay-default-deny
   inventory:
-    digest: sha256:587e86974b50839c4afc6287377a34bbabb851b07a7681cd2730d17b24cd34ae
+    digest: sha256:235ca617b9a26a831a2a9340a9137e665bd2627045fc880a0238124a8553d7c8
   lifecycle:
     prune: false
     healthTimeoutSeconds: 300

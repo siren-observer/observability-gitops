@@ -1,0 +1,100 @@
+existingConfigSecret: incidentrelay-config
+ingress:
+  enabled: false
+persistence:
+  enabled: false
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+scheduler:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: NotIn
+            values:
+            - r640
+  enabled: true
+  extraEnv:
+  - name: HTTP_PROXY
+    value: http://mihomos-node-cn-local.egress-fabric.svc.cluster.local:17891
+  - name: HTTPS_PROXY
+    value: http://mihomos-node-cn-local.egress-fabric.svc.cluster.local:17891
+  - name: NO_PROXY
+    value: .svc,.cluster.local,10.0.0.0/8,100.64.0.0/10
+  resources:
+    limits:
+      cpu: '1'
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  strategy:
+    type: Recreate
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+service:
+  port: 8080
+  type: ClusterIP
+slack:
+  enabled: false
+telegram:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: NotIn
+            values:
+            - r640
+  enabled: true
+  extraEnv:
+  - name: HTTP_PROXY
+    value: http://mihomos-node-cn-local.egress-fabric.svc.cluster.local:17891
+  - name: HTTPS_PROXY
+    value: http://mihomos-node-cn-local.egress-fabric.svc.cluster.local:17891
+  - name: NO_PROXY
+    value: .svc,.cluster.local,10.0.0.0/8,100.64.0.0/10
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+  strategy:
+    type: Recreate
+web:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: NotIn
+            values:
+            - r640
+  extraEnv:
+  - name: HTTP_PROXY
+    value: http://mihomos-node-cn-local.egress-fabric.svc.cluster.local:17891
+  - name: HTTPS_PROXY
+    value: http://mihomos-node-cn-local.egress-fabric.svc.cluster.local:17891
+  - name: NO_PROXY
+    value: .svc,.cluster.local,10.0.0.0/8,100.64.0.0/10
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: '1'
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  runMigrations: true
+  strategy:
+    type: Recreate

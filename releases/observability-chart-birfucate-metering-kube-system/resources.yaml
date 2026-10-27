@@ -1,0 +1,26 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: birfucate-r640-dns
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: birfucate-metering
+    app.kubernetes.io/instance: birfucate-metering
+    app.kubernetes.io/version: 0.4.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: local-dns
+spec:
+  clusterIP: 10.43.0.53
+  internalTrafficPolicy: Local
+  selector:
+    app.kubernetes.io/name: advanced-fabric-doh
+  ports:
+  - name: dns
+    port: 53
+    protocol: UDP
+    targetPort: dns
+  - name: dns-tcp
+    port: 53
+    protocol: TCP
+    targetPort: dns-tcp

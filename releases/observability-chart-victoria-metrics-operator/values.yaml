@@ -1,0 +1,44 @@
+admissionWebhooks:
+  enabled: true
+  policy: Ignore
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - r640
+crds:
+  cleanup:
+    enabled: false
+  enabled: true
+  plain: false
+env:
+- name: KUBERNETES_SERVICE_HOST
+  value: 10.250.0.1
+- name: KUBERNETES_SERVICE_PORT
+  value: '6443'
+operator:
+  disable_prometheus_converter: true
+podDisruptionBudget:
+  enabled: false
+replicaCount: 1
+resources:
+  limits:
+    cpu: 1
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+strategy:
+  rollingUpdate:
+    maxSurge: 0
+    maxUnavailable: 1
+  type: RollingUpdate
+tolerations:
+- effect: NoSchedule
+  key: node-role.kubernetes.io/control-plane
+  operator: Equal
+  value: 'true'

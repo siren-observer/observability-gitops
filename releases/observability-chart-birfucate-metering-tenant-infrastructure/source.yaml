@@ -1,0 +1,310 @@
+apiVersion: delivery.re8ch.com/locked-helm-render/v1alpha1
+kind: LockedHelmRender
+metadata:
+  name: observability-chart-birfucate-metering-tenant-infrastructure
+spec:
+  chart: clusters/re8ch/charts/birfucate-metering
+  version: 0.4.0
+  releaseName: birfucate-metering
+  namespace: tenant-infrastructure
+  releaseNamespace: observability-ai
+  values: values.yaml
+  valuesDigest: sha256:f792eca3c1a7055c2de15372ce894c071ab4fc4caead09a39828ec3d7a460aaf
+  renderedResources: resources.yaml
+  renderedResourcesDigest: sha256:8427825b11040ceaadc68841f68fca428f227a8a3bb11e797b1b65aca2bc73e0
+  helmRelease:
+    namespace: flux-observability-system
+    name: birfucate-metering
+  helmDeclarationDigest: sha256:cb9b286928282b8431a68fa969e661b1ffb2a29819a7ad6a107745227dedbdfe
+  imagePins:
+    registry.k8s.io/pause:3.10.1: registry.k8s.io/pause@sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c
+    ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.153.0: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator@sha256:71c80734e698e0a38039aeb5a6fad7129ca68eaa31eb262752c1e5015b319a24
+    victoriametrics/operator:v0.74.0: docker.io/victoriametrics/operator@sha256:c4fde419a4f03c7c45d7ee554e7039c12c75af161f7f7e1baef1b343015e3df9
+  deferred:
+  - kind: CustomResourceDefinition
+    name: clusterregistrations.finops.re8ch.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: clusterconnections.finops.re8ch.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: consumables.finops.re8ch.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: serviceshards.finops.re8ch.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: consumptionbindings.finops.re8ch.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: bifurcationpaths.finops.re8ch.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: tenants.finops.re8ch.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: tenants.tenancy.re8ch.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: tenantnamespaces.tenancy.re8ch.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: tenantidentitybindings.tenancy.re8ch.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: tenantserviceinstances.tenancy.re8ch.com
+    reason: platform-bootstrap
+  - kind: CustomResourceDefinition
+    name: tenantresourceclaims.tenancy.re8ch.com
+    reason: platform-bootstrap
+  - kind: ClusterRole
+    name: birfucate-metering-discovery
+    reason: platform-owned-rbac
+  - kind: ClusterRole
+    name: tenant-control-controller
+    reason: platform-owned-rbac
+  - kind: ClusterRole
+    name: tenant-resource-provisioner
+    reason: platform-owned-rbac
+  - kind: ClusterRole
+    name: tenant-provider-reconciler
+    reason: platform-owned-rbac
+  - kind: ClusterRole
+    name: tenant-usage-token-reviewer
+    reason: platform-owned-rbac
+  - kind: ClusterRoleBinding
+    name: birfucate-metering-discovery
+    reason: platform-owned-rbac
+  - kind: ClusterRoleBinding
+    name: tenant-control-controller
+    reason: platform-owned-rbac
+  - kind: ClusterRoleBinding
+    name: tenant-provider-reconciler
+    reason: platform-owned-rbac
+  - kind: ClusterRoleBinding
+    name: tenant-usage-token-reviewer
+    reason: platform-owned-rbac
+  - kind: Role
+    name: tenant-provider-database-metrics-anysite
+    reason: platform-owned-rbac
+  - kind: Role
+    name: tenant-provider-database-metrics-secretary
+    reason: platform-owned-rbac
+  - kind: Role
+    name: tenant-provider-harbor-read
+    reason: platform-owned-rbac
+  - kind: Role
+    name: tenant-provider-grafana-read
+    reason: platform-owned-rbac
+  - kind: Role
+    name: tenant-provider-credential-write
+    reason: platform-owned-rbac
+  - kind: Role
+    name: tenant-platform-tool-upstream-read
+    reason: platform-owned-rbac
+  - kind: Role
+    name: tenant-native-platform-tool-read
+    reason: platform-owned-rbac
+  - kind: Role
+    name: tenant-api-credential-read
+    reason: platform-owned-rbac
+  - kind: RoleBinding
+    name: tenant-provider-database-metrics-anysite
+    reason: platform-owned-rbac
+  - kind: RoleBinding
+    name: tenant-provider-database-metrics-secretary
+    reason: platform-owned-rbac
+  - kind: RoleBinding
+    name: tenant-provider-harbor-read
+    reason: platform-owned-rbac
+  - kind: RoleBinding
+    name: tenant-provider-grafana-read
+    reason: platform-owned-rbac
+  - kind: RoleBinding
+    name: tenant-provider-credential-write
+    reason: platform-owned-rbac
+  - kind: RoleBinding
+    name: tenant-resource-provisioner
+    reason: platform-owned-rbac
+  - kind: RoleBinding
+    name: tenant-resource-provisioner
+    reason: platform-owned-rbac
+  - kind: RoleBinding
+    name: tenant-resource-provisioner
+    reason: platform-owned-rbac
+  - kind: RoleBinding
+    name: tenant-platform-tool-upstream-read
+    reason: platform-owned-rbac
+  - kind: RoleBinding
+    name: tenant-native-platform-tool-read
+    reason: platform-owned-rbac
+  - kind: RoleBinding
+    name: tenant-api-credential-read
+    reason: platform-owned-rbac
+  - kind: Consumable
+    name: compute-workload
+    reason: platform-bootstrap
+  - kind: Consumable
+    name: storage-volume
+    reason: platform-bootstrap
+  - kind: Consumable
+    name: storage-bucket
+    reason: platform-bootstrap
+  - kind: Consumable
+    name: network-tenant
+    reason: platform-bootstrap
+  - kind: Consumable
+    name: network-among-clusters
+    reason: platform-bootstrap
+  - kind: Consumable
+    name: registry-harbor
+    reason: platform-bootstrap
+  - kind: Consumable
+    name: observability-managed
+    reason: platform-bootstrap
+  - kind: Consumable
+    name: database-postgresql-shared
+    reason: platform-bootstrap
+  - kind: Consumable
+    name: ai-model-gateway
+    reason: platform-bootstrap
+  - kind: Consumable
+    name: sandbox-runtime
+    reason: platform-bootstrap
+  - kind: MCPExternalAuthConfig
+    name: admin-vmcp-backend-auth
+    reason: platform-bootstrap
+  - kind: MCPExternalAuthConfig
+    name: tenant-vmcp-backend-auth
+    reason: platform-bootstrap
+  - kind: MCPServerEntry
+    name: admin-api-backend
+    reason: platform-bootstrap
+  - kind: MCPServerEntry
+    name: tenant-api-backend
+    reason: platform-bootstrap
+  - kind: Tenant
+    name: personal-standard
+    reason: platform-bootstrap
+  - kind: Tenant
+    name: personal-6a68c4a3-96e6-44ef-a0fd-c39fadd4ee38
+    reason: platform-bootstrap
+  - kind: Tenant
+    name: admin
+    reason: platform-bootstrap
+  - kind: Tenant
+    name: artchais
+    reason: platform-bootstrap
+  - kind: Tenant
+    name: re8ch
+    reason: platform-bootstrap
+  - kind: Tenant
+    name: tenant-ci
+    reason: platform-bootstrap
+  - kind: Tenant
+    name: admin
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: admin-github-k8s-admins
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: admin-vmcp-service
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: admin-github-k8s-admins-auth
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: admin-vmcp-service-auth
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: artchais-github-members
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: artchais-github-admins
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: artchais-github-operators
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: artchais-github-viewers
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: artchais-dex-external-operator-v2
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: re8ch-tenant-admins-as-operators
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: re8ch-github-k8s-admins-as-operators
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: re8ch-tenant-admins-as-operators-auth
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: re8ch-github-k8s-admins-as-operators-auth
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: re8ch-dex-woomou-subject-operator
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: re8ch-auth-woomou-subject-operator
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: re8ch-auth-admins
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: re8ch-auth-operators
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: re8ch-auth-billing
+    reason: platform-bootstrap
+  - kind: TenantIdentityBinding
+    name: tenant-ci-github-actions
+    reason: platform-bootstrap
+  - kind: TenantNamespace
+    name: personal-standard-8c4ce4f0e48a9db1
+    reason: platform-bootstrap
+  - kind: TenantNamespace
+    name: personal-6a68c4a3-96e6-44ef-a0fd-c39fadd4ee38-9d95c3998f7a3adb
+    reason: platform-bootstrap
+  - kind: TenantNamespace
+    name: artchais-5fc63c403b8e8eff
+    reason: platform-bootstrap
+  - kind: TenantNamespace
+    name: re8ch-2417027baeb6d005
+    reason: platform-bootstrap
+  - kind: TenantNamespace
+    name: re8ch-316ffc6fb7c4a822
+    reason: platform-bootstrap
+  - kind: TenantNamespace
+    name: re8ch-dbd837096de449de
+    reason: platform-bootstrap
+  - kind: TenantNamespace
+    name: re8ch-66da3fb26238b2cb
+    reason: platform-bootstrap
+  - kind: TenantNamespace
+    name: re8ch-2a0d2434fd138800
+    reason: platform-bootstrap
+  - kind: TenantNamespace
+    name: re8ch-a63905b113ca9169
+    reason: platform-bootstrap
+  - kind: TenantNamespace
+    name: re8ch-867c561a96f9de2f
+    reason: platform-bootstrap
+  - kind: TenantNamespace
+    name: re8ch-051dc66f5b3b5e90
+    reason: platform-bootstrap
+  - kind: TenantNamespace
+    name: re8ch-40b6628f0a5e08ef
+    reason: platform-bootstrap
+  - kind: TenantNamespace
+    name: re8ch-0ebcf50c181340ba
+    reason: platform-bootstrap
+  - kind: TenantNamespace
+    name: tenant-ci-4d8e6b2e153260b9
+    reason: platform-bootstrap
+  chartDigest: sha256:84b58a64c3429793e421fbb39550302544536ebbec5e52635653e2abdec41dc0
+  valuesFromEvidence:
+    configMap: flux-observability-system/tenant-mcp-image
+    key: image
+    auditRef: audit://operations/op_28b7d00621ca4b94949567b9304858eb
