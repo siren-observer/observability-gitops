@@ -55,6 +55,12 @@ def rendered(path):
     return [d for d in yaml.safe_load_all(subprocess.check_output(['kubectl','kustomize',str(path)],cwd=ROOT,text=True)) if d]
 
 def compile_outputs():
+    cohorts=json.loads((ROOT/'operations/releases/independent-cohorts.json').read_text())
+    cohort_by_object={}
+    for cohort, definition in cohorts.items():
+        for identity in definition['objects']:
+            if identity in cohort_by_object:raise ValueError('object belongs to multiple release cohorts')
+            cohort_by_object[identity]=cohort
     reserved=set()
     for path in sorted((ROOT/'contracts').glob('*.yaml')):
         if path.stem.startswith(PREFIX):continue
@@ -67,10 +73,13 @@ def compile_outputs():
         if ident in seen:raise ValueError('duplicate object: '+ident)
         seen.add(ident); reason=classify(item,reserved)
         if reason:deferred.append({'identity':ident,'reason':reason})
-        else:by_namespace[item['metadata']['namespace']].append(item)
+        else:by_namespace[cohort_by_object.get(ident,item['metadata']['namespace'])].append(item)
     files={}; access=[]; releases=[]
-    for namespace,objects in sorted(by_namespace.items()):
-        objects.sort(key=object_identity);name=release_name(namespace);package=ROOT/'releases'/name
+    for cohort,objects in sorted(by_namespace.items()):
+        namespace=cohorts[cohort]['namespace'] if cohort in cohorts else cohort
+        if any(d['metadata']['namespace'] != namespace for d in objects):raise ValueError('cohort crosses its reviewed namespace')
+        if cohort in cohorts and set(map(object_identity,objects)) != set(cohorts[cohort]['objects']):raise ValueError('independent cohort inventory differs from reviewed objects')
+        objects.sort(key=object_identity);name=release_name(cohort);package=ROOT/'releases'/name
         inventory=sorted(object_identity(d) for d in objects)
         contract={'apiVersion':'delivery.re8ch.com/v1alpha1','kind':'ReleaseContract','metadata':{'name':name},'spec':{
             'authorityDomain':DOMAIN,'target':{'cluster':'re8ch','namespace':namespace},

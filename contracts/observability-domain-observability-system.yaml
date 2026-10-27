@@ -24,13 +24,10 @@ spec:
     fieldManager: re8ch-release/observability-domain-observability-system
     resources:
     - apps/Deployment
-    - batch/CronJob
-    - cilium.io/CiliumNetworkPolicy
     - core/ConfigMap
     - core/PersistentVolumeClaim
     - core/Service
     - core/ServiceAccount
-    - networking.k8s.io/NetworkPolicy
     - opentelemetry.io/OpenTelemetryCollector
     - operator.victoriametrics.com/VLAgent
     - operator.victoriametrics.com/VLSingle
@@ -46,7 +43,6 @@ spec:
     - operator.victoriametrics.com/VMSingle
     - operator.victoriametrics.com/VMStaticScrape
     - operator.victoriametrics.com/VTCluster
-    - policy/PodDisruptionBudget
     objectNames:
     - advanced-fabric-dns
     - advanced-fabric-node-measurements
@@ -77,14 +73,6 @@ spec:
     - re8ch-fair-value-controller-config
     - re8ch-fair-value-history
     - re8ch-gateway
-    - re8ch-grafana
-    - re8ch-grafana-dashboard-providers
-    - re8ch-grafana-from-gateway
-    - re8ch-grafana-org-contract
-    - re8ch-grafana-org-sync
-    - re8ch-grafana-postgresql
-    - re8ch-grafana-postgresql-data-v2
-    - re8ch-grafana-renderer
     - re8ch-logs
     - re8ch-metrics
     - re8ch-node-agent
@@ -103,27 +91,16 @@ spec:
     requireExisting: true
     forceConflictObjects:
     - apps/Deployment/observability-system/re8ch-fair-value-controller
-    - apps/Deployment/observability-system/re8ch-grafana-postgresql
-    - batch/CronJob/observability-system/re8ch-grafana-org-sync
-    - cilium.io/CiliumNetworkPolicy/observability-system/re8ch-grafana-from-gateway
     - core/ConfigMap/observability-system/re8ch-fair-value-controller-code
     - core/ConfigMap/observability-system/re8ch-fair-value-controller-config
-    - core/ConfigMap/observability-system/re8ch-grafana-dashboard-providers
-    - core/ConfigMap/observability-system/re8ch-grafana-org-contract
     - core/ConfigMap/observability-system/re8ch-notification-receiver-catalog
     - core/ConfigMap/observability-system/re8ch-observability-dashboards
     - core/ConfigMap/observability-system/re8ch-observability-datasources
     - core/ConfigMap/observability-system/re8ch-observability-grafana-alerts
     - core/Service/observability-system/re8ch-fair-value-controller
-    - core/Service/observability-system/re8ch-grafana
-    - core/Service/observability-system/re8ch-grafana-postgresql
-    - core/Service/observability-system/re8ch-grafana-renderer
     - core/Service/observability-system/re8ch-node-storage-exporter
     - core/ServiceAccount/observability-system/re8ch-event-collector
     - core/ServiceAccount/observability-system/re8ch-fair-value-controller
-    - core/ServiceAccount/observability-system/re8ch-grafana
-    - networking.k8s.io/NetworkPolicy/observability-system/re8ch-grafana
-    - networking.k8s.io/NetworkPolicy/observability-system/re8ch-grafana-postgresql
     - opentelemetry.io/OpenTelemetryCollector/observability-system/re8ch-event-collector
     - opentelemetry.io/OpenTelemetryCollector/observability-system/re8ch-gateway
     - opentelemetry.io/OpenTelemetryCollector/observability-system/re8ch-node-agent
@@ -162,9 +139,8 @@ spec:
     - operator.victoriametrics.com/VMSingle/observability-system/re8ch-analytics
     - operator.victoriametrics.com/VMStaticScrape/observability-system/hubble-metrics
     - operator.victoriametrics.com/VTCluster/observability-system/re8ch-traces
-    - policy/PodDisruptionBudget/observability-system/re8ch-grafana
   inventory:
-    digest: sha256:223b1039e8927162bc4e343ce59ed1510b2d43b4b465ab9a6d18a8248aea7471
+    digest: sha256:dfb23c29cfc4173baa40530773ed8e1db7dfd6b7f361306965fdc5c958f4d6fe
   lifecycle:
     prune: false
     healthTimeoutSeconds: 300

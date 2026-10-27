@@ -15,6 +15,12 @@
       "contract": "contracts/observability-domain-globalping-system.yaml"
     },
     {
+      "name": "observability-domain-grafana",
+      "namespace": "observability-system",
+      "objects": 15,
+      "contract": "contracts/observability-domain-grafana.yaml"
+    },
+    {
       "name": "observability-domain-incidentrelay",
       "namespace": "incidentrelay",
       "objects": 8,
@@ -29,7 +35,7 @@
     {
       "name": "observability-domain-observability-system",
       "namespace": "observability-system",
-      "objects": 63,
+      "objects": 50,
       "contract": "contracts/observability-domain-observability-system.yaml"
     },
     {
@@ -57,7 +63,7 @@
       "contract": "contracts/observability-domain-tenant-infrastructure.yaml"
     }
   ],
-  "publishableObjects": 86,
+  "publishableObjects": 88,
   "deferred": [
     {
       "identity": "apps/DaemonSet/observability-system/re8ch-node-storage-exporter",
@@ -73,14 +79,6 @@
     },
     {
       "identity": "apps/Deployment/kube-system/kube-state-metrics",
-      "reason": "image-digest-required"
-    },
-    {
-      "identity": "apps/Deployment/observability-system/re8ch-grafana",
-      "reason": "image-digest-required"
-    },
-    {
-      "identity": "apps/Deployment/observability-system/re8ch-grafana-renderer",
       "reason": "image-digest-required"
     },
     {

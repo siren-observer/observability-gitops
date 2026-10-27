@@ -1707,7 +1707,7 @@ spec:
           value: victoriametrics-metrics-datasource@0.18.0,victoriametrics-logs-datasource@0.17.0,yesoreyeram-infinity-datasource@3.8.0,marcusolsson-static-datasource@1.6.0
         - name: GF_PLUGINS_PREINSTALL_AUTO_UPDATE
           value: 'false'
-        image: grafana/grafana:13.0.1
+        image: docker.io/grafana/grafana@sha256:0f86bada30d65ef9d0183b90c1e2682ac92d53d95da8bed322b984ea78a4a73a
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -1874,7 +1874,7 @@ spec:
             secretKeyRef:
               key: token
               name: re8ch-grafana-renderer-auth
-        image: grafana/grafana-image-renderer:v5.12.1-amd64
+        image: docker.io/grafana/grafana-image-renderer@sha256:1ce46b1c24c873f637e69ed36e55553ab4e81373590f71c9ff52af134b715e4d
         livenessProbe:
           httpGet:
             path: /render/version

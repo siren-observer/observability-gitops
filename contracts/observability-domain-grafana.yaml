@@ -1,0 +1,72 @@
+apiVersion: delivery.re8ch.com/v1alpha1
+kind: ReleaseContract
+metadata:
+  name: observability-domain-grafana
+spec:
+  authorityDomain: observability-metering
+  target:
+    cluster: re8ch
+    namespace: observability-system
+  source:
+    renderer: kustomize
+    revision: github-main-reviewed
+    repository: siren-observer/observability-gitops
+    path: releases/observability-domain-grafana
+  provenance:
+    repository: siren-observer/observability-gitops
+    workflow: .github/workflows/static-release.yml
+    ref: refs/heads/main
+    environment: release-executor-observability-metering
+    audience: https://kube-api.re8ch.com/release-executor-observability-metering
+    signer: https://github.com/siren-observer/observability-gitops/.github/workflows/static-release.yml@refs/heads/main
+    issuer: https://token.actions.githubusercontent.com
+  authorization:
+    fieldManager: re8ch-release/observability-domain-grafana
+    resources:
+    - apps/Deployment
+    - batch/CronJob
+    - cilium.io/CiliumNetworkPolicy
+    - core/ConfigMap
+    - core/PersistentVolumeClaim
+    - core/Service
+    - core/ServiceAccount
+    - networking.k8s.io/NetworkPolicy
+    - policy/PodDisruptionBudget
+    objectNames:
+    - re8ch-grafana
+    - re8ch-grafana-dashboard-providers
+    - re8ch-grafana-from-gateway
+    - re8ch-grafana-org-contract
+    - re8ch-grafana-org-sync
+    - re8ch-grafana-postgresql
+    - re8ch-grafana-postgresql-data-v2
+    - re8ch-grafana-renderer
+    allowClusterScoped: false
+    requireExisting: true
+    forceConflictObjects:
+    - apps/Deployment/observability-system/re8ch-grafana
+    - apps/Deployment/observability-system/re8ch-grafana-postgresql
+    - apps/Deployment/observability-system/re8ch-grafana-renderer
+    - batch/CronJob/observability-system/re8ch-grafana-org-sync
+    - cilium.io/CiliumNetworkPolicy/observability-system/re8ch-grafana-from-gateway
+    - core/ConfigMap/observability-system/re8ch-grafana-dashboard-providers
+    - core/ConfigMap/observability-system/re8ch-grafana-org-contract
+    - core/Service/observability-system/re8ch-grafana
+    - core/Service/observability-system/re8ch-grafana-postgresql
+    - core/Service/observability-system/re8ch-grafana-renderer
+    - core/ServiceAccount/observability-system/re8ch-grafana
+    - networking.k8s.io/NetworkPolicy/observability-system/re8ch-grafana
+    - networking.k8s.io/NetworkPolicy/observability-system/re8ch-grafana-postgresql
+    - policy/PodDisruptionBudget/observability-system/re8ch-grafana
+  inventory:
+    digest: sha256:c8c4351bddf868e7de9343bffe1b55187489aa65833e6c931a86a271b89c0f87
+  lifecycle:
+    prune: false
+    healthTimeoutSeconds: 300
+    protectedKinds:
+    - Namespace
+    - CustomResourceDefinition
+    - PersistentVolume
+    - PersistentVolumeClaim
+    - StorageClass
+    deletionAllowlist: []
