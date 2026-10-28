@@ -9,14 +9,14 @@ spec:
     namespace: tenant-infrastructure
   source:
     renderer: kustomize
-    revision: git-chart@sha256:84b58a64c3429793e421fbb39550302544536ebbec5e52635653e2abdec41dc0
+    revision: git-chart@sha256:e22f2fdb3f9498261c976c3fcf42ae4eefc2aa551c1607956f2bc06864e6e1f6
     repository: siren-observer/observability-gitops
     path: releases/observability-chart-birfucate-metering-tenant-infrastructure
     values:
     - path: releases/observability-chart-birfucate-metering-tenant-infrastructure/values.yaml
-      digest: sha256:f792eca3c1a7055c2de15372ce894c071ab4fc4caead09a39828ec3d7a460aaf
+      digest: sha256:03e02c60233f1037780418e369bdefa6d300971c1aa9e7080e95d192ca1ce696
     chart: clusters/re8ch/charts/birfucate-metering
-    chartDigest: sha256:84b58a64c3429793e421fbb39550302544536ebbec5e52635653e2abdec41dc0
+    chartDigest: sha256:e22f2fdb3f9498261c976c3fcf42ae4eefc2aa551c1607956f2bc06864e6e1f6
   provenance:
     repository: siren-observer/observability-gitops
     workflow: .github/workflows/static-release.yml
@@ -54,6 +54,7 @@ spec:
     - tenant-runtime-image-cache
     - tenant-self-service-capabilities
     allowClusterScoped: false
+    requireExisting: true
     forceConflictObjects:
     - apps/DaemonSet/tenant-infrastructure/tenant-runtime-image-cache
     - apps/Deployment/tenant-infrastructure/admin-api
@@ -79,7 +80,6 @@ spec:
     - networking.k8s.io/NetworkPolicy/tenant-infrastructure/tenant-api
     - networking.k8s.io/NetworkPolicy/tenant-infrastructure/tenant-control-controller
     - policy/PodDisruptionBudget/tenant-infrastructure/tenant-control-controller
-    requireExisting: true
   inventory:
     digest: sha256:134524e110c168e571af8474924081cbdd7d213ff5f915e1702eddba409420a9
   lifecycle:
