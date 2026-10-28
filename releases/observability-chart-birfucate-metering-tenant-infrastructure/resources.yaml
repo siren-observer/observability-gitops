@@ -258,7 +258,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: runtime
-        image: registry.re8ch.com/image/re8ch-tenant-mcp@sha256:829abf6ae6a4088bdaaf7e6f694e00b85a45704eba5b7769c43bc0c74ab43796
+        image: registry.re8ch.com/image/re8ch-tenant-mcp@sha256:7cfaa26752de996f30f4aacc1a955ca43c93a2c0800be5b3a9b3f0b0fc7ec2c8
         imagePullPolicy: IfNotPresent
         envFrom:
         - secretRef:
@@ -1165,7 +1165,27 @@ spec:
   - matches:
     - path:
         type: Exact
+        value: /tenant-self-service/mcp
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplaceFullPath
+          replaceFullPath: /self-service/mcp
+    backendRefs:
+    - name: tenant-api
+      port: 80
+  - matches:
+    - path:
+        type: Exact
         value: /.well-known/oauth-protected-resource/tenant-native/mcp
+    backendRefs:
+    - name: tenant-api
+      port: 80
+  - matches:
+    - path:
+        type: Exact
+        value: /.well-known/oauth-protected-resource/tenant-self-service/mcp
     backendRefs:
     - name: tenant-api
       port: 80
