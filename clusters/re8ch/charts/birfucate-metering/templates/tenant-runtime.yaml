@@ -8,10 +8,15 @@ kind: ConfigMap
 metadata: {name: tenant-platform-modules, namespace: tenant-infrastructure}
 data:
   modules.json: |
-{{- if .Values.tenantPlatform.tenantAPI.stalwartAdminEnabled }}
+{{- if or .Values.tenantPlatform.tenantAPI.stalwartAdminEnabled .Values.tenantPlatform.tenantAPI.stalwartBootstrapEnabled }}
 {{- $modules := .Files.Get "files/tenant-platform-modules.json" | fromJson }}
+{{- if .Values.tenantPlatform.tenantAPI.stalwartAdminEnabled }}
 {{- range $tool := list "stalwart.admin.read" "stalwart.admin.plan" "stalwart.admin.apply" }}
 {{- $_ := set $modules.backends.native.allowed $tool true }}
+{{- end }}
+{{- end }}
+{{- if .Values.tenantPlatform.tenantAPI.stalwartBootstrapEnabled }}
+{{- $_ := set $modules.backends.native.allowed "credentials.stalwart.ensure" true }}
 {{- end }}
 {{ $modules | toPrettyJson | indent 4 }}
 {{- else }}

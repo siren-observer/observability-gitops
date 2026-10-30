@@ -3,25 +3,30 @@
 Tracking: https://github.com/siren-observer/observability-gitops/issues/50
 
 This repository owns tenant-api deployment, module registration and self-service
-routing. The chart now prepares two independent switches, both off by default:
-`tenantPlatform.tenantAPI.collaboration.enabled` and `stalwartAdminEnabled`.
+routing. The chart now prepares three independent switches, all off by default:
+`tenantPlatform.tenantAPI.collaboration.enabled`, `stalwartAdminEnabled`, and
+`stalwartBootstrapEnabled`.
 No user connection, tenant grant or management credential is created by this PR.
 
 ## Release evidence and prerequisites
 
 The disabled runtime snapshot consumes the already published tenant image
-`registry.re8ch.com/image/re8ch-tenant-mcp@sha256:52448f2e026c928579a3ecb986fe88ca279adb5e667881b384629e92de0112a0`.
-It came from source `ee126a1dd398ab41e83b04f4aab6e4a773de1dde`, GitHub Actions
-[41028840498](https://github.com/re8ch/service-backend/actions/runs/41028840498),
-artifact `tenant-go-release-ee126a1dd398ab41e83b04f4aab6e4a773de1dde/tenant-mcp.image`.
-It predates the isolation fix and MUST NOT be enabled with the new credential role.
-Before enabling, consume the verified image from the merged namespace isolation
-fix https://github.com/re8ch/service-backend/pull/2524 (or a descendant containing
-it). Build only once per new source revision; reuse the existing published digest.
+`registry.re8ch.com/image/re8ch-tenant-mcp@sha256:7086e02a406465b3035895898d3112c65a4ac8b74db551c1521802518a9504ab`.
+It came from source `dd5acdbec289082c5c5a561fcf68e797d484c9e8`, GitHub Actions
+[41032678518](https://github.com/re8ch/service-backend/actions/runs/41032678518),
+artifact `tenant-go-release-dd5acdbec289082c5c5a561fcf68e797d484c9e8/tenant-mcp.image`.
+The release and finalized artifacts contain the same digest. The finalized
+Sigstore bundle was independently verified with `cosign verify-blob-attestation`
+using this digest, SHA-256, SLSA provenance v1, exact identity
+`https://github.com/re8ch/service-backend/.github/workflows/tenant-go-release.yml@refs/heads/main`,
+GitHub Actions OIDC issuer, and source SHA `dd5acdbec289082c5c5a561fcf68e797d484c9e8`:
+`Verified OK`. It includes namespace isolation #2524, diagnostics #2525 and DAV
+encoding #2526. The attested invocation is run 41032678518, attempt 1. No image
+was rebuilt for this runtime change.
 
 The Git-declared Stalwart v0.16.18 is not verified to support the required
-scoped OAuthClient contract; the actual runtime version still requires authenticated
-verification. OAuth readiness is tracked in
+scoped OAuthClient contract; authenticated runtime inspection also confirmed
+v0.16.18. Provider migration/acceptance remains a separate gate. OAuth readiness is tracked in
 https://github.com/8iops/agent-gitops/issues/39. A newer provider may require a
 breaking database migration; this configuration does not authorize an in-place
 upgrade or an unscoped OAuth fallback.
@@ -95,3 +100,26 @@ provider account through user consent. The generic service-instance API is not
 used. The application currently checks the active Tenant grant directly, so a
 Draft Consumable by itself is not an enforcement gate; leaving the grant absent
 or Suspended and `collaboration.enabled=false` is essential until validation.
+
+## Read-only runtime evidence before this change
+
+Authenticated platform audits confirmed tenant-api still runs digest
+`7cfaa26752de996f30f4aacc1a955ca43c93a2c0800be5b3a9b3f0b0fc7ec2c8`, without
+collaboration environment settings (`op_4fa9214239f3422abbe4f433b11b1d17`).
+Cloud Platform still runs `779465757b402159dd8586d7707af8da114dfee44c56e3f40e88c4fb040ab943`
+and has no management mounts (`op_12f3cc0d74c24fbb833a5c3c02a20d43`). Shared broker
+Role is get-only (`op_49d2c54de50b417da115b1fa8914c3fa`). The dedicated admin
+Secret and both management ConfigMaps are absent (`op_5a4b3afe7fe8414aa708ee3349d67ec1`,
+`op_dc27d6240f714aa9b1c2ce238d340f45`). No credential values were read.
+
+## Temporary bootstrap catalog publication
+
+`stalwartBootstrapEnabled` publishes only `credentials.stalwart.ensure`, separately
+from the three steady-state management tools. Keep it false until the verified
+Cloud Platform image containing service-backend #2531 and its reviewed
+`STALWART_BOOTSTRAP_CONFIG`/bootstrap-token mounts exist. That source repository
+owns the temporary mounts and their removal; no credentials are declared here.
+The backend fails closed if configuration is missing. Use the platform operation's
+plan/apply flow once the v1 provider is verified, then remove the temporary mount
+and disable this catalog switch after provisioning. This switch does not publish
+mailbox creation, arbitrary JMAP operations, or any tenant-facing tool.

@@ -26,6 +26,7 @@
           "properties": {
             "enabled": {"type": "boolean"},
             "stalwartAdminEnabled": {"type": "boolean"},
+            "stalwartBootstrapEnabled": {"type": "boolean"},
             "collaboration": {
               "type": "object", "additionalProperties": false,
               "properties": {

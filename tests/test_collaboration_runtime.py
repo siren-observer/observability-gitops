@@ -27,7 +27,9 @@ def test_disabled_collaboration_has_no_credential_write_or_admin_publication():
     shared = next(d for d in docs if d['kind'] == 'Role' and d['metadata']['name'] == 'tenant-api-credential-read')
     assert shared['rules'] == [{'apiGroups': [''], 'resources': ['secrets'], 'verbs': ['get']}]
     modules = next(d for d in docs if d['kind'] == 'ConfigMap' and d['metadata']['name'] == 'tenant-platform-modules')
-    assert not any(k.startswith('stalwart.') for k in json.loads(modules['data']['modules.json'])['backends']['native']['allowed'])
+    allowed = json.loads(modules['data']['modules.json'])['backends']['native']['allowed']
+    assert not any(k.startswith('stalwart.') for k in allowed)
+    assert 'credentials.stalwart.ensure' not in allowed
 
 
 def test_enabled_credentials_have_only_namespaced_lifecycle_permissions():
@@ -89,3 +91,12 @@ def test_discovery_controller_does_not_provision_or_ready_draft_collaboration():
     assert len(kube.statuses) == 1
     assert kube.statuses[0]['phase'] == 'Pending'
     assert kube.statuses[0]['conditions'][0]['reason'] == 'OfferingNotApproved'
+
+
+def test_bootstrap_publication_is_exact_and_does_not_enable_steady_state_admin():
+    docs = render('--set', 'tenantPlatform.tenantAPI.stalwartBootstrapEnabled=true')
+    modules = next(d for d in docs if d['kind'] == 'ConfigMap' and d['metadata']['name'] == 'tenant-platform-modules')
+    allowed = json.loads(modules['data']['modules.json'])['backends']['native']['allowed']
+    assert allowed['credentials.stalwart.ensure'] is True
+    assert not any(k.startswith('stalwart.admin.') for k in allowed)
+    assert not any(d['metadata'].get('namespace') == 'stalwart-credentials' for d in docs)
