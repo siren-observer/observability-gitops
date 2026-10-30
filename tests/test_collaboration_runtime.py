@@ -129,5 +129,5 @@ def test_production_activation_enables_user_collaboration_and_closes_bootstrap_w
     assert env['COLLABORATION_ENABLED'] == 'true'
     assert env['STALWART_URL'] == 'https://id.re8ch.com'
     assert env['STALWART_CLIENT_ID'] == 're8ch-self-service'
-    assert dep['spec']['template']['spec']['containers'][0]['image'].endswith('@sha256:df879fbda961e4d0692b4c736144b1fd91424c09c58be4e62128fefca5212a37')
+    assert dep['spec']['template']['spec']['containers'][0]['image'].endswith('@sha256:1d8f82753a2be7407bbaf16c68577f03cd5ef199da7acc686d3c3fc2b3b4d605')
     assert not any(d['kind'] in {'Secret', 'Role', 'RoleBinding', 'Namespace'} for d in docs)

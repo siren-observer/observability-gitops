@@ -9,13 +9,13 @@ spec:
   namespace: kube-system
   releaseNamespace: observability-ai
   values: values.yaml
-  valuesDigest: sha256:44d71b57691c0ae023be315bea26660c8aece61177a717269437a3a5f45e266e
+  valuesDigest: sha256:9c6a902e92a09b25f0d03871410fdb5a6f6c10fd9851cd8520abb413ff03f782
   renderedResources: resources.yaml
   renderedResourcesDigest: sha256:12bfea17dfe1a9611ede9900e25a605a29ff3ff9ebfd17e11c552264b385600b
   helmRelease:
     namespace: flux-observability-system
     name: birfucate-metering
-  helmDeclarationDigest: sha256:c5b24561d96452fda86663f23c6865d2399186728fac554d26b68db188120720
+  helmDeclarationDigest: sha256:df1cc85df29496fb4373b692b16e04c2c5f8a7c98af83f6c926769d0f266662c
   imagePins:
     registry.k8s.io/pause:3.10.1: registry.k8s.io/pause@sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c
     ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.153.0: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator@sha256:71c80734e698e0a38039aeb5a6fad7129ca68eaa31eb262752c1e5015b319a24
@@ -316,5 +316,5 @@ spec:
   valuesFromEvidence:
     configMap: flux-observability-system/tenant-mcp-image
     key: image
-    releaseRun: https://github.com/re8ch/service-backend/actions/runs/41113387450
-    sourceRevision: b306df5bb57fa037281f7bc0d4020c2de306998a
+    releaseRun: https://github.com/re8ch/service-backend/actions/runs/41118913571
+    sourceRevision: 2de90682b88011b72bc32d130c22627ab6438c15
