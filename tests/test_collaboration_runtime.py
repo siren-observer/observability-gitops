@@ -18,7 +18,7 @@ def render(*extra, success=True):
 
 
 def test_disabled_collaboration_has_no_credential_write_or_admin_publication():
-    docs = render()
+    docs = render('--set', 'tenantPlatform.tenantAPI.stalwartBootstrapEnabled=false')
     assert not any(d['metadata'].get('namespace') == 'stalwart-credentials' for d in docs)
     dep = next(d for d in docs if d['kind'] == 'Deployment' and d['metadata']['name'] == 'tenant-api')
     env = {e['name']: e.get('value') for e in dep['spec']['template']['spec']['containers'][0]['env']}
@@ -101,3 +101,14 @@ def test_bootstrap_publication_is_exact_and_does_not_enable_steady_state_admin()
         'credentials.stalwart.ensure', 'credentials.stalwart.authority.ensure'}
     assert not any(k.startswith('stalwart.admin.') for k in allowed)
     assert not any(d['metadata'].get('namespace') == 'stalwart-credentials' for d in docs)
+
+
+def test_production_bootstrap_window_has_exact_two_tools_and_no_other_object_change():
+    docs = list(yaml.safe_load_all((ROOT / 'releases/observability-chart-birfucate-metering-tenant-infrastructure/resources.yaml').read_text()))
+    modules = next(d for d in docs if d['kind'] == 'ConfigMap' and d['metadata']['name'] == 'tenant-platform-modules')
+    allowed = json.loads(modules['data']['modules.json'])['backends']['native']['allowed']
+    assert {k for k in allowed if 'stalwart' in k} == {'credentials.stalwart.ensure', 'credentials.stalwart.authority.ensure'}
+    dep = next(d for d in docs if d['kind'] == 'Deployment' and d['metadata']['name'] == 'tenant-api')
+    env = {e['name']: e.get('value') for e in dep['spec']['template']['spec']['containers'][0]['env']}
+    assert env['COLLABORATION_ENABLED'] == 'false'
+    assert not any(d['kind'] in {'Secret', 'Role', 'RoleBinding', 'Namespace'} for d in docs)
