@@ -50,12 +50,12 @@ tenantPlatform:
       enabled: true
       origin: https://id.re8ch.com
       clientID: re8ch-self-service
-      validationRef: service-backend-run-41095140323;cloud-platform-run-41097289672;stalwart-audit-op_1915898582e246efbeda8fef864cf27a
+      validationRef: service-backend-run-41113387450;cloud-platform-run-41097289672;stalwart-audit-op_1915898582e246efbeda8fef864cf27a
     openAIAppsChallengeToken: 6n3O48vy3O89euYVrri4aHJMeUJ_vkofxLpzxv-6TTE
     organizationsURL: https://api.re8ch.com/auth/v2/organizations
     platformSessionURL: ''
     usersURL: https://api.re8ch.com/auth/v2/users
-    image: registry.re8ch.com/image/re8ch-tenant-mcp@sha256:b632741280a7c67c226d45d82db2bd94a1ef1026b4d0cce940233cb9b99fb0c7
+    image: registry.re8ch.com/image/re8ch-tenant-mcp@sha256:df879fbda961e4d0692b4c736144b1fd91424c09c58be4e62128fefca5212a37
   tenantReadinessPath: /readyz
   tenants:
   - byocAllowed: true
