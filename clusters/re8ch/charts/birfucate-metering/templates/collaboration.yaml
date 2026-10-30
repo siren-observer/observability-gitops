@@ -1,0 +1,31 @@
+{{- if and .Values.tenantPlatform.enabled .Values.tenantPlatform.tenantAPI.enabled .Values.tenantPlatform.tenantAPI.collaboration.enabled }}
+{{- if not .Values.tenantPlatform.tenantAPI.collaboration.validationRef }}
+{{- fail "collaboration requires reviewed scoped-OAuth and isolated-credential-image validationRef" }}
+{{- end }}
+{{- if not (regexMatch "^https://[a-zA-Z0-9.-]+(:[0-9]+)?$" .Values.tenantPlatform.tenantAPI.collaboration.origin) }}
+{{- fail "collaboration.origin must be one HTTPS origin" }}
+{{- end }}
+# Platform bootstrap authority must install these objects before activation.
+# Runtime release executors must not acquire namespace/RBAC management rights.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: stalwart-credentials
+  labels:
+    credentials.re8ch.com/provider: stalwart
+    pod-security.kubernetes.io/enforce: restricted
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata: {name: tenant-api-stalwart-credentials, namespace: stalwart-credentials}
+rules:
+  # Dynamic Secret names make resourceNames unsuitable for create. Isolation is
+  # at namespace level; application checks additionally bind tenant and subject.
+  - {apiGroups: [""], resources: [secrets], verbs: [get, create, update, delete]}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: {name: tenant-api-stalwart-credentials, namespace: stalwart-credentials}
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: Role, name: tenant-api-stalwart-credentials}
+subjects: [{kind: ServiceAccount, name: tenant-api, namespace: tenant-infrastructure}]
+{{- end }}

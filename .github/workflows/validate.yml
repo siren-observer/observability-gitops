@@ -11,6 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: azure/setup-kubectl@c0c8b32d33a5244f1e5947304550403b63930415 # v4
+      - uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4.3.1
       - run: python -m pip install 'PyYAML>=6.0.2' 'jsonschema>=4.23' 'pytest>=8.3'
       - run: kubectl kustomize clusters/re8ch >/dev/null
       - run: python3 policies/validate.py
@@ -20,7 +21,7 @@ jobs:
           kubectl kustomize releases/observability-kube-state-metrics > "$RUNNER_TEMP/rendered.yaml"
           python operations/releases/unified_bundle.py --contract contracts/observability-kube-state-metrics.yaml \
             --rendered "$RUNNER_TEMP/rendered.yaml" --output "$RUNNER_TEMP/release.bundle"
-          python -m pytest -q tests/test_ssa_release_executor.py tests/test_unified_release_bundle.py tests/test_fair_value_runtime.py tests/test_domain_compiler.py tests/test_existing_objects.py tests/test_reuse_published_digest.py tests/test_locked_chart_profiles.py
+          python -m pytest -q tests/test_ssa_release_executor.py tests/test_unified_release_bundle.py tests/test_fair_value_runtime.py tests/test_domain_compiler.py tests/test_existing_objects.py tests/test_reuse_published_digest.py tests/test_locked_chart_profiles.py tests/test_collaboration_runtime.py
       - name: Check complete native domain cohort
         run: python operations/releases/compile_domain.py --check
       - name: Check locked Helm runtime contracts

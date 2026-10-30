@@ -37,6 +37,14 @@ tenantPlatform:
     organizationsURL: ""
     usersURL: ""
     openAIAppsChallengeToken: ""
+    # Enable only after scoped provider OAuth and the isolated credential image
+    # have been verified. Evidence references are reviewed release prerequisites.
+    collaboration:
+      enabled: false
+      origin: ""
+      clientID: ""
+      validationRef: ""
+    stalwartAdminEnabled: false
   provider:
     enabled: false
     image: registry.re8ch.com/image/re8ch-ai-operations@sha256:IMAGE_REQUIRES_VERIFIED_DIGEST

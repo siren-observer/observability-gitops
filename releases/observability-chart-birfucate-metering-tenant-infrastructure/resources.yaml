@@ -258,7 +258,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: runtime
-        image: registry.re8ch.com/image/re8ch-tenant-mcp@sha256:7cfaa26752de996f30f4aacc1a955ca43c93a2c0800be5b3a9b3f0b0fc7ec2c8
+        image: registry.re8ch.com/image/re8ch-tenant-mcp@sha256:52448f2e026c928579a3ecb986fe88ca279adb5e667881b384629e92de0112a0
         imagePullPolicy: IfNotPresent
         envFrom:
         - secretRef:
@@ -322,6 +322,10 @@ spec:
           value: https://api.re8ch.com/auth/v2/users
         - name: PLATFORM_ORGANIZATIONS_URL
           value: https://api.re8ch.com/auth/v2/organizations
+        - name: COLLABORATION_ENABLED
+          value: 'false'
+        - name: COLLABORATION_CREDENTIAL_NAMESPACE
+          value: stalwart-credentials
         - name: PLATFORM_MODULE_REGISTRY
           value: /etc/re8ch/modules/modules.json
         - name: DYNAMIC_SKILL_DB

@@ -352,6 +352,7 @@ spec:
                     - PostgreSQL
                     - ModelGateway
                     - Sandbox
+                    - Collaboration
                   isolationUnit:
                     type: string
                     minLength: 1
