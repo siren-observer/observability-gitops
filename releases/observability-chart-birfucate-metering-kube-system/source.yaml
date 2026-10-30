@@ -303,7 +303,7 @@ spec:
   - kind: TenantNamespace
     name: tenant-ci-4d8e6b2e153260b9
     reason: platform-bootstrap
-  chartDigest: sha256:76887164dd3b6aa76ed624118397b99b36700b81cddd69935530739af255be7b
+  chartDigest: sha256:afd81df9a1548614889a601bd608bd410f24f95d135ba732408e5eb474f0fe47
   valuesFromEvidence:
     configMap: flux-observability-system/tenant-mcp-image
     key: image
