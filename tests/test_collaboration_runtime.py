@@ -46,6 +46,16 @@ def test_activation_requires_reviewed_evidence():
     assert 'validationRef' in render('--set', 'tenantPlatform.tenantAPI.collaboration.enabled=true', '--set', 'tenantPlatform.tenantAPI.collaboration.origin=https://provider.example', '--set', 'tenantPlatform.tenantAPI.collaboration.clientID=fixture', '--set-string', 'tenantPlatform.tenantAPI.collaboration.validationRef=', success=False)
 
 
+def test_userhub_authorization_requires_exact_endpoints():
+    error = render('--set', 'tenantPlatform.tenantAPI.collaboration.enabled=true',
+                   '--set', 'tenantPlatform.tenantAPI.collaboration.origin=https://provider.example',
+                   '--set', 'tenantPlatform.tenantAPI.collaboration.clientID=stalwart-webui',
+                   '--set', 'tenantPlatform.tenantAPI.collaboration.authorizationMode=auth-hub-pkce',
+                   '--set-string', 'tenantPlatform.tenantAPI.collaboration.authorizationURL=',
+                   '--set', 'tenantPlatform.tenantAPI.collaboration.validationRef=fixture', success=False)
+    assert 'collaboration.authorizationURL is required' in error
+
+
 def test_management_allowlist_is_exact_and_separate_from_collaboration():
     docs = render('--set', 'tenantPlatform.tenantAPI.stalwartAdminEnabled=true',
                   '--set', 'tenantPlatform.tenantAPI.collaboration.enabled=false')
@@ -128,6 +138,13 @@ def test_production_activation_enables_user_collaboration_and_closes_bootstrap_w
     env = {e['name']: e.get('value') for e in dep['spec']['template']['spec']['containers'][0]['env']}
     assert env['COLLABORATION_ENABLED'] == 'true'
     assert env['STALWART_URL'] == 'https://id.re8ch.com'
-    assert env['STALWART_CLIENT_ID'] == 're8ch-self-service'
-    assert dep['spec']['template']['spec']['containers'][0]['image'].endswith('@sha256:1d8f82753a2be7407bbaf16c68577f03cd5ef199da7acc686d3c3fc2b3b4d605')
+    assert env['STALWART_CLIENT_ID'] == 'stalwart-webui'
+    assert env['COLLABORATION_AUTH_MODE'] == 'auth-hub-pkce'
+    assert env['STALWART_AUTHORIZATION_URL'] == 'https://auth.re8ch.com/authorize'
+    assert env['STALWART_TOKEN_URL'] == 'https://auth.re8ch.com/token'
+    assert env['STALWART_REDIRECT_URI'] == 'https://tools.service.re8ch.com/collaboration/oauth/callback'
+    route = next(d for d in docs if d['kind'] == 'HTTPRoute' and d['metadata']['name'] == 'tenant-native-mcp')
+    paths = {m['path']['value'] for rule in route['spec']['rules'] for m in rule.get('matches', [])}
+    assert '/collaboration/oauth/callback' in paths
+    assert dep['spec']['template']['spec']['containers'][0]['image'].endswith('@sha256:a7ee41eb49dcbfa6bedb9202df63e2716fed532a33ac25b8ed35933bf1afc8f0')
     assert not any(d['kind'] in {'Secret', 'Role', 'RoleBinding', 'Namespace'} for d in docs)

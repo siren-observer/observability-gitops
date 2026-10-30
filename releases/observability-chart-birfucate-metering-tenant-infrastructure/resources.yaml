@@ -258,7 +258,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: runtime
-        image: registry.re8ch.com/image/re8ch-tenant-mcp@sha256:1d8f82753a2be7407bbaf16c68577f03cd5ef199da7acc686d3c3fc2b3b4d605
+        image: registry.re8ch.com/image/re8ch-tenant-mcp@sha256:a7ee41eb49dcbfa6bedb9202df63e2716fed532a33ac25b8ed35933bf1afc8f0
         imagePullPolicy: IfNotPresent
         envFrom:
         - secretRef:
@@ -329,7 +329,15 @@ spec:
         - name: STALWART_URL
           value: https://id.re8ch.com
         - name: STALWART_CLIENT_ID
-          value: re8ch-self-service
+          value: stalwart-webui
+        - name: COLLABORATION_AUTH_MODE
+          value: auth-hub-pkce
+        - name: STALWART_AUTHORIZATION_URL
+          value: https://auth.re8ch.com/authorize
+        - name: STALWART_TOKEN_URL
+          value: https://auth.re8ch.com/token
+        - name: STALWART_REDIRECT_URI
+          value: https://tools.service.re8ch.com/collaboration/oauth/callback
         - name: PLATFORM_MODULE_REGISTRY
           value: /etc/re8ch/modules/modules.json
         - name: DYNAMIC_SKILL_DB
@@ -1180,6 +1188,13 @@ spec:
         path:
           type: ReplaceFullPath
           replaceFullPath: /self-service/mcp
+    backendRefs:
+    - name: tenant-api
+      port: 80
+  - matches:
+    - path:
+        type: Exact
+        value: /collaboration/oauth/callback
     backendRefs:
     - name: tenant-api
       port: 80

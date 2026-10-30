@@ -49,13 +49,17 @@ tenantPlatform:
     collaboration:
       enabled: true
       origin: https://id.re8ch.com
-      clientID: re8ch-self-service
-      validationRef: service-backend-run-41118913571;cloud-platform-run-41097289672;stalwart-audit-op_1915898582e246efbeda8fef864cf27a
+      clientID: stalwart-webui
+      authorizationMode: auth-hub-pkce
+      authorizationURL: https://auth.re8ch.com/authorize
+      tokenURL: https://auth.re8ch.com/token
+      redirectURI: https://tools.service.re8ch.com/collaboration/oauth/callback
+      validationRef: service-backend-run-41130844949;service-backend-domain-run-41130844961;cloud-platform-run-41097289672;stalwart-audit-op_1915898582e246efbeda8fef864cf27a
     openAIAppsChallengeToken: 6n3O48vy3O89euYVrri4aHJMeUJ_vkofxLpzxv-6TTE
     organizationsURL: https://api.re8ch.com/auth/v2/organizations
     platformSessionURL: ''
     usersURL: https://api.re8ch.com/auth/v2/users
-    image: registry.re8ch.com/image/re8ch-tenant-mcp@sha256:1d8f82753a2be7407bbaf16c68577f03cd5ef199da7acc686d3c3fc2b3b4d605
+    image: registry.re8ch.com/image/re8ch-tenant-mcp@sha256:a7ee41eb49dcbfa6bedb9202df63e2716fed532a33ac25b8ed35933bf1afc8f0
   tenantReadinessPath: /readyz
   tenants:
   - byocAllowed: true

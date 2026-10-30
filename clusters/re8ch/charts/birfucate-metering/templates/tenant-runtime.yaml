@@ -222,6 +222,12 @@ spec:
             {{- if .Values.tenantPlatform.tenantAPI.collaboration.enabled }}
             - {name: STALWART_URL, value: {{ required "collaboration.origin is required" .Values.tenantPlatform.tenantAPI.collaboration.origin | quote }}}
             - {name: STALWART_CLIENT_ID, value: {{ required "collaboration.clientID is required" .Values.tenantPlatform.tenantAPI.collaboration.clientID | quote }}}
+            - {name: COLLABORATION_AUTH_MODE, value: {{ required "collaboration.authorizationMode is required" .Values.tenantPlatform.tenantAPI.collaboration.authorizationMode | quote }}}
+            {{- if eq .Values.tenantPlatform.tenantAPI.collaboration.authorizationMode "auth-hub-pkce" }}
+            - {name: STALWART_AUTHORIZATION_URL, value: {{ required "collaboration.authorizationURL is required" .Values.tenantPlatform.tenantAPI.collaboration.authorizationURL | quote }}}
+            - {name: STALWART_TOKEN_URL, value: {{ required "collaboration.tokenURL is required" .Values.tenantPlatform.tenantAPI.collaboration.tokenURL | quote }}}
+            - {name: STALWART_REDIRECT_URI, value: {{ required "collaboration.redirectURI is required" .Values.tenantPlatform.tenantAPI.collaboration.redirectURI | quote }}}
+            {{- end }}
             {{- end }}
             - {name: PLATFORM_MODULE_REGISTRY, value: /etc/re8ch/modules/modules.json}
             - {name: DYNAMIC_SKILL_DB, value: /var/lib/tenant-platform/dynamic-skills.db}
@@ -294,6 +300,8 @@ spec:
       filters:
         - type: URLRewrite
           urlRewrite: {path: {type: ReplaceFullPath, replaceFullPath: /self-service/mcp}}
+      backendRefs: [{name: tenant-api, port: 80}]
+    - matches: [{path: {type: Exact, value: /collaboration/oauth/callback}}]
       backendRefs: [{name: tenant-api, port: 80}]
     - matches: [{path: {type: Exact, value: /.well-known/oauth-protected-resource/tenant-native/mcp}}]
       backendRefs: [{name: tenant-api, port: 80}]

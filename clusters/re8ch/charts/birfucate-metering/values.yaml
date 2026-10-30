@@ -43,6 +43,10 @@ tenantPlatform:
       enabled: false
       origin: ""
       clientID: ""
+      authorizationMode: device
+      authorizationURL: ""
+      tokenURL: ""
+      redirectURI: ""
       validationRef: ""
     stalwartAdminEnabled: false
     stalwartBootstrapEnabled: false

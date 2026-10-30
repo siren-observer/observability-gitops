@@ -2919,8 +2919,12 @@ spec:
         collaboration:
           enabled: true
           origin: https://id.re8ch.com
-          clientID: re8ch-self-service
-          validationRef: service-backend-run-41118913571;cloud-platform-run-41097289672;stalwart-audit-op_1915898582e246efbeda8fef864cf27a
+          clientID: stalwart-webui
+          authorizationMode: auth-hub-pkce
+          authorizationURL: https://auth.re8ch.com/authorize
+          tokenURL: https://auth.re8ch.com/token
+          redirectURI: https://tools.service.re8ch.com/collaboration/oauth/callback
+          validationRef: service-backend-run-41130844949;service-backend-domain-run-41130844961;cloud-platform-run-41097289672;stalwart-audit-op_1915898582e246efbeda8fef864cf27a
         openAIAppsChallengeToken: 6n3O48vy3O89euYVrri4aHJMeUJ_vkofxLpzxv-6TTE
         organizationsURL: https://api.re8ch.com/auth/v2/organizations
         platformSessionURL: ''

@@ -31,7 +31,12 @@
               "type": "object", "additionalProperties": false,
               "properties": {
                 "enabled": {"type": "boolean"}, "origin": {"type": "string"},
-                "clientID": {"type": "string"}, "validationRef": {"type": "string"}
+                "clientID": {"type": "string"},
+                "authorizationMode": {"type": "string", "enum": ["device", "auth-hub-pkce"]},
+                "authorizationURL": {"type": "string", "pattern": "^$|^https://[^ ]+$"},
+                "tokenURL": {"type": "string", "pattern": "^$|^https://[^ ]+$"},
+                "redirectURI": {"type": "string", "pattern": "^$|^https://[^ ]+$"},
+                "validationRef": {"type": "string"}
               }
             },
             "openAIAppsChallengeToken": {"type": "string", "pattern": "^$|^[A-Za-z0-9_-]{16,256}$"},
