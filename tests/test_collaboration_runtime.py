@@ -64,7 +64,20 @@ def test_draft_consumable_candidate_and_suspended_grant_match_owned_schemas():
     docs = list(yaml.safe_load_all((CHART / 'crds/tenancy.re8ch.com.yaml').read_text()))
     crd = next(d for d in docs if d['metadata']['name'] == 'tenants.tenancy.re8ch.com')
     grant_schema = crd['spec']['versions'][0]['schema']['openAPIV3Schema']['properties']['spec']['properties']['grants']['items']
-    jsonschema.validate({'name': 'collaboration-stalwart', 'consumableRef': 'collaboration.stalwart.v1', 'roleRef': 'operator', 'lifecycle': 'Suspended'}, grant_schema)
+    jsonschema.validate({'name': 'collaboration-stalwart', 'consumableRef': 'collaboration.stalwart.v1', 'roleRef': 'viewer', 'lifecycle': 'Suspended'}, grant_schema)
+
+
+def test_staged_personal_grant_is_exactly_re8ch_viewer_only():
+    source = [d for d in yaml.safe_load_all((ROOT / 'clusters/re8ch/resources.yaml').read_text()) if d]
+    release = next(d for d in source if d['kind'] == 'HelmRelease' and d['metadata']['name'] == 'birfucate-metering')
+    tenants = release['spec']['values']['tenantPlatform']['tenants']
+    candidate = {'name': 're8ch-stalwart-personal-consent', 'consumableRef': 'collaboration.stalwart.v1',
+                 'roleRef': 'viewer', 'lifecycle': 'Active'}
+    assert [g for t in tenants for g in t['grants'] if g['consumableRef'] == 'collaboration.stalwart.v1'] == [candidate]
+    assert [g for t in tenants if t['name'] == 're8ch' for g in t['grants'] if g['consumableRef'] == 'collaboration.stalwart.v1'] == [candidate]
+    for values in (ROOT / 'releases').glob('observability-chart-birfucate-metering*/values.yaml'):
+        tenants = yaml.safe_load(values.read_text())['tenantPlatform']['tenants']
+        assert [g for t in tenants if t['name'] == 're8ch' for g in t['grants'] if g['consumableRef'] == 'collaboration.stalwart.v1'] == [candidate]
 
 
 def test_discovery_controller_does_not_provision_or_ready_draft_collaboration():
