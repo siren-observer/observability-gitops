@@ -258,7 +258,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: runtime
-        image: registry.re8ch.com/image/re8ch-tenant-mcp@sha256:7086e02a406465b3035895898d3112c65a4ac8b74db551c1521802518a9504ab
+        image: registry.re8ch.com/image/re8ch-tenant-mcp@sha256:b632741280a7c67c226d45d82db2bd94a1ef1026b4d0cce940233cb9b99fb0c7
         imagePullPolicy: IfNotPresent
         envFrom:
         - secretRef:
@@ -323,9 +323,13 @@ spec:
         - name: PLATFORM_ORGANIZATIONS_URL
           value: https://api.re8ch.com/auth/v2/organizations
         - name: COLLABORATION_ENABLED
-          value: 'false'
+          value: 'true'
         - name: COLLABORATION_CREDENTIAL_NAMESPACE
           value: stalwart-credentials
+        - name: STALWART_URL
+          value: https://id.re8ch.com
+        - name: STALWART_CLIENT_ID
+          value: re8ch-self-service
         - name: PLATFORM_MODULE_REGISTRY
           value: /etc/re8ch/modules/modules.json
         - name: DYNAMIC_SKILL_DB
@@ -617,135 +621,101 @@ metadata:
   name: tenant-platform-modules
   namespace: tenant-infrastructure
 data:
-  modules.json: "{\n  \"backends\": {\n    \"admin\": {\n      \"allowed\": {\n  \
-    \      \"create_dex_user\": true,\n        \"ensure_harbor_tenant\": true,\n \
-    \       \"ensure_tenant_access\": true,\n        \"ensure_tenant_database_bundle\"\
-    : true,\n        \"ensure_tenant_database_secrets\": true,\n        \"generate_pg_tenant_database_plan\"\
-    : true,\n        \"get_dex_hash_instructions\": true,\n        \"get_tenancy_admin_workflow\"\
-    : true,\n        \"get_tenant_secret_refs\": true,\n        \"grant_user_namespace\"\
-    : true,\n        \"list_dex_users\": true,\n        \"postgres_admin_sql\": true,\n\
-    \        \"set_tool_publication_stage\": true\n      },\n      \"header\": \"\
-    X-Ops-Token\",\n      \"namespace\": \"toolhive-system\",\n      \"secret\": \"\
-    ops-mcp-admin-upstream\",\n      \"secretKey\": \"x-ops-token\",\n      \"url\"\
-    : \"http://mcp-ops-admin-vmcp-internal.toolhive-system.svc.cluster.local:8088/mcp\"\
-    \n    },\n    \"cloud\": {\n      \"allowed\": {\n        \"diagnose_nuclio_function\"\
-    : true,\n        \"get_agent_runtime_status\": true,\n        \"get_artifact_platform_status\"\
-    : true,\n        \"get_ceph_storage_status\": true,\n        \"get_database_routing_status\"\
-    : true,\n        \"get_external_publication_readiness\": true,\n        \"get_grafana_links\"\
-    : true,\n        \"get_identity_platform_status\": true,\n        \"get_litellm_gateway_status\"\
-    : true,\n        \"get_neo4j_platform_status\": true,\n        \"get_nuclio_capacity_status\"\
-    : true,\n        \"get_nuclio_function_status\": true,\n        \"get_observability_platform_status\"\
-    : true,\n        \"get_platform_access_posture\": true,\n        \"get_platform_permission_coverage\"\
-    : true,\n        \"get_platform_service_catalog\": true,\n        \"get_platform_service_health\"\
-    : true,\n        \"get_ready_node_storage_inventory\": true,\n        \"get_registry_info\"\
-    : true,\n        \"get_runtime_storage_analyses\": true,\n        \"get_supabase_platform_status\"\
-    : true,\n        \"get_tenant_context\": true,\n        \"get_tenant_metrics_summary\"\
-    : true,\n        \"get_tenant_resource_catalog\": true,\n        \"get_usage_guide\"\
-    : true,\n        \"list_k8s_resources\": true\n      },\n      \"header\": \"\
-    X-Ops-Token\",\n      \"namespace\": \"toolhive-system\",\n      \"secret\": \"\
-    ops-mcp-observe-upstream\",\n      \"secretKey\": \"x-ops-token\",\n      \"url\"\
-    : \"http://mcp-ops-observe-vmcp-internal.toolhive-system.svc.cluster.local:8088/mcp\"\
-    \n    },\n    \"infra\": {\n      \"allowed\": {\n        \"get_ceph_recovery_status\"\
-    : true,\n        \"get_managed_platform_operation_status\": true,\n        \"\
-    restart_ceph_osd_1\": true,\n        \"restart_managed_platform_deployment\":\
-    \ true,\n        \"scale_managed_platform_deployment\": true\n      },\n     \
-    \ \"header\": \"X-Ops-Token\",\n      \"namespace\": \"toolhive-system\",\n  \
-    \    \"secret\": \"ops-mcp-admin-upstream\",\n      \"secretKey\": \"x-ops-token\"\
-    ,\n      \"url\": \"http://mcp-ops-operate-vmcp-internal.toolhive-system.svc.cluster.local:8088/mcp\"\
-    \n    },\n    \"native\": {\n      \"allowed\": {\n        \"advfab-legacy.advancedfabric.delete.61a88efea3fe\"\
-    : true,\n        \"advfab-legacy.advancedfabric.get.98c75b6bc14f\": true,\n  \
-    \      \"advfab-legacy.advancedfabric.get.caad28e28f90\": true,\n        \"advfab-legacy.advancedfabric.list.0b76245edb89\"\
-    : true,\n        \"advfab-legacy.advancedfabric.patch.01a438a66db8\": true,\n\
-    \        \"advfab-legacy.advancedfabric.post.5b09ae1f8f1a\": true,\n        \"\
-    advfab-legacy.advancedfabric.put.bd134ca6e525\": true,\n        \"advfab-legacy.networkintervention.delete.f41c1a3adac8\"\
-    : true,\n        \"advfab-legacy.networkintervention.get.e71532affab2\": true,\n\
-    \        \"advfab-legacy.networkintervention.get.f1e551c1176e\": true,\n     \
-    \   \"advfab-legacy.networkintervention.list.86bd2131221a\": true,\n        \"\
-    advfab-legacy.networkintervention.patch.7f380710e538\": true,\n        \"advfab-legacy.networkintervention.post.6b24961b5d3a\"\
-    : true,\n        \"advfab-legacy.networkintervention.put.8dedeeda154d\": true,\n\
-    \        \"advfab-legacy.networkobservationepisode.delete.6757cd743ada\": true,\n\
-    \        \"advfab-legacy.networkobservationepisode.get.40e65210a244\": true,\n\
-    \        \"advfab-legacy.networkobservationepisode.get.9951246bfdf0\": true,\n\
-    \        \"advfab-legacy.networkobservationepisode.list.7b471347fb7e\": true,\n\
-    \        \"advfab-legacy.networkobservationepisode.patch.acc536745ea5\": true,\n\
-    \        \"advfab-legacy.networkobservationepisode.post.d63d83f91dd1\": true,\n\
-    \        \"advfab-legacy.networkobservationepisode.put.6cd27c41966b\": true,\n\
-    \        \"advfab-legacy.networkpathassessment.delete.4983757e35f3\": true,\n\
-    \        \"advfab-legacy.networkpathassessment.delete.ba1140040448\": true,\n\
+  modules.json: "{\n  \"version\": 1,\n  \"backends\": {\n    \"cloud\": {\n     \
+    \ \"namespace\": \"toolhive-system\",\n      \"secret\": \"ops-mcp-observe-upstream\"\
+    ,\n      \"secretKey\": \"x-ops-token\",\n      \"header\": \"X-Ops-Token\",\n\
+    \      \"url\": \"http://mcp-ops-observe-vmcp-internal.toolhive-system.svc.cluster.local:8088/mcp\"\
+    ,\n      \"allowed\": {\n        \"get_usage_guide\": true,\n        \"get_tenant_context\"\
+    : true,\n        \"list_k8s_resources\": true,\n        \"get_registry_info\"\
+    : true,\n        \"get_tenant_resource_catalog\": true,\n        \"get_grafana_links\"\
+    : true,\n        \"get_tenant_metrics_summary\": true,\n        \"get_platform_service_health\"\
+    : true,\n        \"get_platform_service_catalog\": true,\n        \"get_platform_permission_coverage\"\
+    : true,\n        \"get_platform_access_posture\": true,\n        \"get_ceph_storage_status\"\
+    : true,\n        \"get_ready_node_storage_inventory\": true,\n        \"get_runtime_storage_analyses\"\
+    : true,\n        \"get_nuclio_function_status\": true,\n        \"diagnose_nuclio_function\"\
+    : true,\n        \"get_nuclio_capacity_status\": true,\n        \"get_litellm_gateway_status\"\
+    : true,\n        \"get_supabase_platform_status\": true,\n        \"get_neo4j_platform_status\"\
+    : true,\n        \"get_identity_platform_status\": true,\n        \"get_agent_runtime_status\"\
+    : true,\n        \"get_observability_platform_status\": true,\n        \"get_artifact_platform_status\"\
+    : true,\n        \"get_database_routing_status\": true,\n        \"get_external_publication_readiness\"\
+    : true\n      }\n    },\n    \"infra\": {\n      \"namespace\": \"toolhive-system\"\
+    ,\n      \"secret\": \"ops-mcp-admin-upstream\",\n      \"secretKey\": \"x-ops-token\"\
+    ,\n      \"header\": \"X-Ops-Token\",\n      \"url\": \"http://mcp-ops-operate-vmcp-internal.toolhive-system.svc.cluster.local:8088/mcp\"\
+    ,\n      \"allowed\": {\n        \"get_managed_platform_operation_status\": true,\n\
+    \        \"restart_managed_platform_deployment\": true,\n        \"scale_managed_platform_deployment\"\
+    : true,\n        \"get_ceph_recovery_status\": true,\n        \"restart_ceph_osd_1\"\
+    : true\n      }\n    },\n    \"admin\": {\n      \"namespace\": \"toolhive-system\"\
+    ,\n      \"secret\": \"ops-mcp-admin-upstream\",\n      \"secretKey\": \"x-ops-token\"\
+    ,\n      \"header\": \"X-Ops-Token\",\n      \"url\": \"http://mcp-ops-admin-vmcp-internal.toolhive-system.svc.cluster.local:8088/mcp\"\
+    ,\n      \"allowed\": {\n        \"list_dex_users\": true,\n        \"get_dex_hash_instructions\"\
+    : true,\n        \"create_dex_user\": true,\n        \"grant_user_namespace\"\
+    : true,\n        \"get_tenancy_admin_workflow\": true,\n        \"generate_pg_tenant_database_plan\"\
+    : true,\n        \"ensure_tenant_database_secrets\": true,\n        \"ensure_tenant_database_bundle\"\
+    : true,\n        \"postgres_admin_sql\": true,\n        \"ensure_tenant_access\"\
+    : true,\n        \"ensure_harbor_tenant\": true,\n        \"set_tool_publication_stage\"\
+    : true,\n        \"get_tenant_secret_refs\": true\n      }\n    },\n    \"native\"\
+    : {\n      \"namespace\": \"ai-operations\",\n      \"secret\": \"cluster-infra-service-auth\"\
+    ,\n      \"secretKey\": \"token\",\n      \"header\": \"Authorization\",\n   \
+    \   \"url\": \"http://re8ch-cloud-platform.ai-operations.svc.cluster.local:19443/mcp\"\
+    ,\n      \"allowed\": {\n        \"nodes.list\": true,\n        \"nodes.get\"\
+    : true,\n        \"nodes.reachability\": true,\n        \"node.ssh.exec\": true,\n\
+    \        \"kubectl.exec\": true,\n        \"kube.nodes\": true,\n        \"kube.namespaces\"\
+    : true,\n        \"kube.pods\": true,\n        \"kube.deployments\": true,\n \
+    \       \"kube.services\": true,\n        \"kube.endpoints\": true,\n        \"\
+    kube.secrets\": true,\n        \"kube.resource.get\": true,\n        \"kube.resource.list\"\
+    : true,\n        \"kube.resource.watch\": true,\n        \"kube.resource.apply\"\
+    : true,\n        \"kube.resource.patch\": true,\n        \"kube.resource.delete\"\
+    : true,\n        \"kube.events.query\": true,\n        \"kube.events.watch\":\
+    \ true,\n        \"workspace.list\": true,\n        \"workspace.status\": true,\n\
+    \        \"workspace.scan\": true,\n        \"workspace.doctor\": true,\n    \
+    \    \"workspace.index\": true,\n        \"workspace.sync\": true,\n        \"\
+    workspace.context\": true,\n        \"workspace.memory-audit\": true,\n      \
+    \  \"plugin.capabilities.list\": true,\n        \"plugin.openapi.get\": true,\n\
+    \        \"plugin.operations.list\": true,\n        \"plugin.operation.read\"\
+    : true,\n        \"plugin.operation.http-check\": true,\n        \"advfab-legacy.advancedfabric.get.98c75b6bc14f\"\
+    : true,\n        \"advfab-legacy.advancedfabric.get.caad28e28f90\": true,\n  \
+    \      \"advfab-legacy.advancedfabric.list.0b76245edb89\": true,\n        \"advfab-legacy.networkintervention.get.e71532affab2\"\
+    : true,\n        \"advfab-legacy.networkintervention.get.f1e551c1176e\": true,\n\
+    \        \"advfab-legacy.networkintervention.list.86bd2131221a\": true,\n    \
+    \    \"advfab-legacy.networkobservationepisode.get.40e65210a244\": true,\n   \
+    \     \"advfab-legacy.networkobservationepisode.get.9951246bfdf0\": true,\n  \
+    \      \"advfab-legacy.networkobservationepisode.list.7b471347fb7e\": true,\n\
     \        \"advfab-legacy.networkpathassessment.get.0923e5d2622d\": true,\n   \
     \     \"advfab-legacy.networkpathassessment.get.7bd96e1a92bc\": true,\n      \
     \  \"advfab-legacy.networkpathassessment.get.ccd2c0d1a0d4\": true,\n        \"\
     advfab-legacy.networkpathassessment.get.da59c7301752\": true,\n        \"advfab-legacy.networkpathassessment.list.238c4db7c198\"\
     : true,\n        \"advfab-legacy.networkpathassessment.list.531441095c59\": true,\n\
-    \        \"advfab-legacy.networkpathassessment.patch.56a1ebdc4593\": true,\n \
-    \       \"advfab-legacy.networkpathassessment.patch.78cdc91bcb3a\": true,\n  \
-    \      \"advfab-legacy.networkpathassessment.post.4e61891c1ebd\": true,\n    \
-    \    \"advfab-legacy.networkpathassessment.post.9471fc00be67\": true,\n      \
-    \  \"advfab-legacy.networkpathassessment.put.617c0df701aa\": true,\n        \"\
-    advfab-legacy.networkpathassessment.put.eeb99644dde1\": true,\n        \"advfab-legacy.networktradeoffestimate.delete.9fb6c9b2a3af\"\
-    : true,\n        \"advfab-legacy.networktradeoffestimate.get.718cc827cef1\": true,\n\
-    \        \"advfab-legacy.networktradeoffestimate.list.2cd12b2f2cda\": true,\n\
-    \        \"advfab-legacy.networktradeoffestimate.patch.75077ae29281\": true,\n\
-    \        \"advfab-legacy.networktradeoffestimate.post.e10a04f2d88e\": true,\n\
-    \        \"advfab-legacy.networktradeoffestimate.put.16300027eba4\": true,\n \
+    \        \"advfab-legacy.networktradeoffestimate.get.718cc827cef1\": true,\n \
+    \       \"advfab-legacy.networktradeoffestimate.list.2cd12b2f2cda\": true,\n \
     \       \"advfab-legacy.routerosnode.get.3b2c2f113b83\": true,\n        \"advfab-legacy.routerosnode.get.a985e29f3805\"\
     : true,\n        \"advfab-legacy.routerosnode.get.b8c2b07d6755\": true,\n    \
     \    \"advfab-legacy.routerosnode.get.e3b727c720db\": true,\n        \"advfab-legacy.routerosnode.list.43618d0be251\"\
     : true,\n        \"advfab-legacy.routerosnode.list.b172062613c5\": true,\n   \
-    \     \"advfab-legacy.tradeofftriangle.delete.7b5502223676\": true,\n        \"\
-    advfab-legacy.tradeofftriangle.get.5a5fd55e6355\": true,\n        \"advfab-legacy.tradeofftriangle.get.af756987e107\"\
+    \     \"advfab-legacy.tradeofftriangle.get.5a5fd55e6355\": true,\n        \"advfab-legacy.tradeofftriangle.get.af756987e107\"\
     : true,\n        \"advfab-legacy.tradeofftriangle.list.9a34583ebe42\": true,\n\
-    \        \"advfab-legacy.tradeofftriangle.patch.54c8df1ae271\": true,\n      \
-    \  \"advfab-legacy.tradeofftriangle.post.c64766ccd1c1\": true,\n        \"advfab-legacy.tradeofftriangle.put.fbc8fdac6ba9\"\
-    : true,\n        \"advfab-legacy.trafficpolicy.delete.34c3b6929b67\": true,\n\
     \        \"advfab-legacy.trafficpolicy.get.0b8e1bf1958d\": true,\n        \"advfab-legacy.trafficpolicy.get.69dbd4f22487\"\
     : true,\n        \"advfab-legacy.trafficpolicy.list.a59cb4a70175\": true,\n  \
-    \      \"advfab-legacy.trafficpolicy.list.ce8bad46d3d2\": true,\n        \"advfab-legacy.trafficpolicy.patch.0d3890796d6c\"\
-    : true,\n        \"advfab-legacy.trafficpolicy.post.c52cc2ef3bd6\": true,\n  \
-    \      \"advfab-legacy.trafficpolicy.put.64a170ac5c63\": true,\n        \"advfab.advancedfabric.delete.bf7cc8eb9395\"\
-    : true,\n        \"advfab.advancedfabric.get.d09bee342ee5\": true,\n        \"\
-    advfab.advancedfabric.get.fef91f7ea9f2\": true,\n        \"advfab.advancedfabric.list.ac8c4fcdc5d0\"\
-    : true,\n        \"advfab.advancedfabric.patch.62de7e6473ab\": true,\n       \
-    \ \"advfab.advancedfabric.post.15e1ec96e0fa\": true,\n        \"advfab.advancedfabric.put.f378820e80c3\"\
-    : true,\n        \"advfab.networkintervention.delete.4d5c82868a9c\": true,\n \
-    \       \"advfab.networkintervention.get.8915088b46f8\": true,\n        \"advfab.networkintervention.get.9b7b9cf31644\"\
-    : true,\n        \"advfab.networkintervention.list.683c91a26456\": true,\n   \
-    \     \"advfab.networkintervention.patch.81cf1fc59558\": true,\n        \"advfab.networkintervention.post.c56d940daf83\"\
-    : true,\n        \"advfab.networkintervention.put.81bb1c4fb459\": true,\n    \
-    \    \"advfab.networkobservationepisode.delete.a4e0ab7526fa\": true,\n       \
-    \ \"advfab.networkobservationepisode.get.4ad786fce9bd\": true,\n        \"advfab.networkobservationepisode.get.e3e4140ace69\"\
-    : true,\n        \"advfab.networkobservationepisode.list.534292221df9\": true,\n\
-    \        \"advfab.networkobservationepisode.patch.c715f0886d81\": true,\n    \
-    \    \"advfab.networkobservationepisode.post.11e41420175c\": true,\n        \"\
-    advfab.networkobservationepisode.put.1c00ce57d6de\": true,\n        \"advfab.networkpathassessment.delete.6c68329892ba\"\
-    : true,\n        \"advfab.networkpathassessment.delete.a48abb6bbd59\": true,\n\
-    \        \"advfab.networkpathassessment.get.191a07a2ff7f\": true,\n        \"\
-    advfab.networkpathassessment.get.1bcc8a218597\": true,\n        \"advfab.networkpathassessment.get.1d1c2f550ef7\"\
-    : true,\n        \"advfab.networkpathassessment.get.c3b45ad4f3fa\": true,\n  \
-    \      \"advfab.networkpathassessment.list.93dd96fa051c\": true,\n        \"advfab.networkpathassessment.list.dd6d744781cf\"\
-    : true,\n        \"advfab.networkpathassessment.patch.208dce28c63f\": true,\n\
-    \        \"advfab.networkpathassessment.patch.f79538d8915b\": true,\n        \"\
-    advfab.networkpathassessment.post.27f09e50798d\": true,\n        \"advfab.networkpathassessment.post.d212f59867ab\"\
-    : true,\n        \"advfab.networkpathassessment.put.25383ae95196\": true,\n  \
-    \      \"advfab.networkpathassessment.put.51a615e1f3f0\": true,\n        \"advfab.networktradeoffestimate.delete.90cad95f2068\"\
-    : true,\n        \"advfab.networktradeoffestimate.get.e2122198faf5\": true,\n\
-    \        \"advfab.networktradeoffestimate.list.32639e3ac1e4\": true,\n       \
-    \ \"advfab.networktradeoffestimate.patch.433a5bcf82cf\": true,\n        \"advfab.networktradeoffestimate.post.0f1fa9d9446b\"\
-    : true,\n        \"advfab.networktradeoffestimate.put.5e3da23ab61d\": true,\n\
-    \        \"advfab.routerosnode.get.395cc5b79508\": true,\n        \"advfab.routerosnode.get.3c0188aa8754\"\
-    : true,\n        \"advfab.routerosnode.get.a765ac6ce6c9\": true,\n        \"advfab.routerosnode.get.af6ef3eb4b4c\"\
-    : true,\n        \"advfab.routerosnode.list.47422a25686f\": true,\n        \"\
-    advfab.routerosnode.list.4ed474d75622\": true,\n        \"advfab.tradeofftriangle.delete.c74f3227691e\"\
-    : true,\n        \"advfab.tradeofftriangle.get.9a6e8b31bf82\": true,\n       \
-    \ \"advfab.tradeofftriangle.get.db480dd694ec\": true,\n        \"advfab.tradeofftriangle.list.f725a4ac03b1\"\
-    : true,\n        \"advfab.tradeofftriangle.patch.aac1ccbf1e24\": true,\n     \
-    \   \"advfab.tradeofftriangle.post.f07c66c5d525\": true,\n        \"advfab.tradeofftriangle.put.615e6a9b28b3\"\
-    : true,\n        \"advfab.trafficpolicy.delete.52f7b14a754f\": true,\n       \
-    \ \"advfab.trafficpolicy.get.2ca3cfdb0fd7\": true,\n        \"advfab.trafficpolicy.get.82152f127468\"\
+    \      \"advfab-legacy.trafficpolicy.list.ce8bad46d3d2\": true,\n        \"advfab.advancedfabric.get.d09bee342ee5\"\
+    : true,\n        \"advfab.advancedfabric.get.fef91f7ea9f2\": true,\n        \"\
+    advfab.advancedfabric.list.ac8c4fcdc5d0\": true,\n        \"advfab.networkintervention.get.8915088b46f8\"\
+    : true,\n        \"advfab.networkintervention.get.9b7b9cf31644\": true,\n    \
+    \    \"advfab.networkintervention.list.683c91a26456\": true,\n        \"advfab.networkobservationepisode.get.4ad786fce9bd\"\
+    : true,\n        \"advfab.networkobservationepisode.get.e3e4140ace69\": true,\n\
+    \        \"advfab.networkobservationepisode.list.534292221df9\": true,\n     \
+    \   \"advfab.networkpathassessment.get.191a07a2ff7f\": true,\n        \"advfab.networkpathassessment.get.1bcc8a218597\"\
+    : true,\n        \"advfab.networkpathassessment.get.1d1c2f550ef7\": true,\n  \
+    \      \"advfab.networkpathassessment.get.c3b45ad4f3fa\": true,\n        \"advfab.networkpathassessment.list.93dd96fa051c\"\
+    : true,\n        \"advfab.networkpathassessment.list.dd6d744781cf\": true,\n \
+    \       \"advfab.networktradeoffestimate.get.e2122198faf5\": true,\n        \"\
+    advfab.networktradeoffestimate.list.32639e3ac1e4\": true,\n        \"advfab.routerosnode.get.395cc5b79508\"\
+    : true,\n        \"advfab.routerosnode.get.3c0188aa8754\": true,\n        \"advfab.routerosnode.get.a765ac6ce6c9\"\
+    : true,\n        \"advfab.routerosnode.get.af6ef3eb4b4c\": true,\n        \"advfab.routerosnode.list.47422a25686f\"\
+    : true,\n        \"advfab.routerosnode.list.4ed474d75622\": true,\n        \"\
+    advfab.tradeofftriangle.get.9a6e8b31bf82\": true,\n        \"advfab.tradeofftriangle.get.db480dd694ec\"\
+    : true,\n        \"advfab.tradeofftriangle.list.f725a4ac03b1\": true,\n      \
+    \  \"advfab.trafficpolicy.get.2ca3cfdb0fd7\": true,\n        \"advfab.trafficpolicy.get.82152f127468\"\
     : true,\n        \"advfab.trafficpolicy.list.4eae1d6681e2\": true,\n        \"\
-    advfab.trafficpolicy.list.afd1a2d3d556\": true,\n        \"advfab.trafficpolicy.patch.ad15dfc5372a\"\
-    : true,\n        \"advfab.trafficpolicy.post.1941de605fc9\": true,\n        \"\
-    advfab.trafficpolicy.put.cd92b2feff5f\": true,\n        \"anatomy.runtime.get.1a33c3ef06b7\"\
+    advfab.trafficpolicy.list.afd1a2d3d556\": true,\n        \"anatomy.runtime.get.1a33c3ef06b7\"\
     : true,\n        \"anatomy.runtime.get.7e9890ef54e7\": true,\n        \"anatomy.runtime.list.4cb4a3ffd8a1\"\
     : true,\n        \"anatomy.runtime.list.e9f51c1e8781\": true,\n        \"anatomy.runtimeanalysis.get.0f0f7997c270\"\
     : true,\n        \"anatomy.runtimeanalysis.get.e7d689a70ac5\": true,\n       \
@@ -758,30 +728,28 @@ data:
     \  \"anatomy.runtimecheckout.list.d6bbbb9bf32d\": true,\n        \"anatomy.runtimecommit.get.a8a125c9821c\"\
     : true,\n        \"anatomy.runtimecommit.get.caf0d1e5c9af\": true,\n        \"\
     anatomy.runtimecommit.list.70a17685b38c\": true,\n        \"anatomy.runtimecommit.list.dbbe868d26c9\"\
-    : true,\n        \"anatomy.runtimediff.create\": true,\n        \"anatomy.runtimediff.delete\"\
     : true,\n        \"anatomy.runtimediff.get.57a46f9022ae\": true,\n        \"anatomy.runtimediff.get.ad1bb1f25065\"\
     : true,\n        \"anatomy.runtimediff.list.16f95e88720d\": true,\n        \"\
     anatomy.runtimediff.list.20bcbfc19d5b\": true,\n        \"anatomy.runtimegarbagecollection.get.2390c4a596d2\"\
     : true,\n        \"anatomy.runtimegarbagecollection.get.84e0d01ccc6b\": true,\n\
     \        \"anatomy.runtimegarbagecollection.list.550bfb8a1e1f\": true,\n     \
     \   \"anatomy.runtimegarbagecollection.list.e464849e47e9\": true,\n        \"\
-    cilium.cidrgroup.create\": true,\n        \"cilium.cidrgroup.delete\": true,\n\
-    \        \"cilium.ciliumbgpadvertisement.get.0f66f44058ee\": true,\n        \"\
-    cilium.ciliumbgpadvertisement.get.6050ff99f93d\": true,\n        \"cilium.ciliumbgpadvertisement.list.8ce4de5d7c3f\"\
-    : true,\n        \"cilium.ciliumbgpadvertisement.list.d829993dea2f\": true,\n\
-    \        \"cilium.ciliumbgpclusterconfig.get.4134d9f9609b\": true,\n        \"\
-    cilium.ciliumbgpclusterconfig.get.598bb080df43\": true,\n        \"cilium.ciliumbgpclusterconfig.get.873d7eb7aa8a\"\
-    : true,\n        \"cilium.ciliumbgpclusterconfig.get.d01cdf6e326e\": true,\n \
-    \       \"cilium.ciliumbgpclusterconfig.list.7f864027628f\": true,\n        \"\
-    cilium.ciliumbgpclusterconfig.list.87db6a1d50b3\": true,\n        \"cilium.ciliumbgpnodeconfig.get.03b1dbbdf36b\"\
-    : true,\n        \"cilium.ciliumbgpnodeconfig.get.211c6ac4411f\": true,\n    \
-    \    \"cilium.ciliumbgpnodeconfig.get.96a9ee5012eb\": true,\n        \"cilium.ciliumbgpnodeconfig.get.df59a3a94155\"\
-    : true,\n        \"cilium.ciliumbgpnodeconfig.list.8f2829242771\": true,\n   \
-    \     \"cilium.ciliumbgpnodeconfig.list.d64f5557c209\": true,\n        \"cilium.ciliumbgpnodeconfigoverride.get.79b49268d1c6\"\
-    : true,\n        \"cilium.ciliumbgpnodeconfigoverride.get.e832a0fb6bc4\": true,\n\
-    \        \"cilium.ciliumbgpnodeconfigoverride.list.0719f79cc205\": true,\n   \
-    \     \"cilium.ciliumbgpnodeconfigoverride.list.60b2edcd2b77\": true,\n      \
-    \  \"cilium.ciliumbgppeerconfig.get.04b4b78218d1\": true,\n        \"cilium.ciliumbgppeerconfig.get.4e1d7f8b6f5a\"\
+    cilium.ciliumbgpadvertisement.get.0f66f44058ee\": true,\n        \"cilium.ciliumbgpadvertisement.get.6050ff99f93d\"\
+    : true,\n        \"cilium.ciliumbgpadvertisement.list.8ce4de5d7c3f\": true,\n\
+    \        \"cilium.ciliumbgpadvertisement.list.d829993dea2f\": true,\n        \"\
+    cilium.ciliumbgpclusterconfig.get.4134d9f9609b\": true,\n        \"cilium.ciliumbgpclusterconfig.get.598bb080df43\"\
+    : true,\n        \"cilium.ciliumbgpclusterconfig.get.873d7eb7aa8a\": true,\n \
+    \       \"cilium.ciliumbgpclusterconfig.get.d01cdf6e326e\": true,\n        \"\
+    cilium.ciliumbgpclusterconfig.list.7f864027628f\": true,\n        \"cilium.ciliumbgpclusterconfig.list.87db6a1d50b3\"\
+    : true,\n        \"cilium.ciliumbgpnodeconfig.get.03b1dbbdf36b\": true,\n    \
+    \    \"cilium.ciliumbgpnodeconfig.get.211c6ac4411f\": true,\n        \"cilium.ciliumbgpnodeconfig.get.96a9ee5012eb\"\
+    : true,\n        \"cilium.ciliumbgpnodeconfig.get.df59a3a94155\": true,\n    \
+    \    \"cilium.ciliumbgpnodeconfig.list.8f2829242771\": true,\n        \"cilium.ciliumbgpnodeconfig.list.d64f5557c209\"\
+    : true,\n        \"cilium.ciliumbgpnodeconfigoverride.get.79b49268d1c6\": true,\n\
+    \        \"cilium.ciliumbgpnodeconfigoverride.get.e832a0fb6bc4\": true,\n    \
+    \    \"cilium.ciliumbgpnodeconfigoverride.list.0719f79cc205\": true,\n       \
+    \ \"cilium.ciliumbgpnodeconfigoverride.list.60b2edcd2b77\": true,\n        \"\
+    cilium.ciliumbgppeerconfig.get.04b4b78218d1\": true,\n        \"cilium.ciliumbgppeerconfig.get.4e1d7f8b6f5a\"\
     : true,\n        \"cilium.ciliumbgppeerconfig.get.87e0f371a6dd\": true,\n    \
     \    \"cilium.ciliumbgppeerconfig.get.9adc58cdb536\": true,\n        \"cilium.ciliumbgppeerconfig.list.0c40b9f1941b\"\
     : true,\n        \"cilium.ciliumbgppeerconfig.list.6eb4f1d5f773\": true,\n   \
@@ -828,41 +796,15 @@ data:
     \  \"cilium.ciliumnodeconfig.list.c3fda608220d\": true,\n        \"cilium.ciliumpodippool.get.ab54966d4656\"\
     : true,\n        \"cilium.ciliumpodippool.list.54fa976c82c0\": true,\n       \
     \ \"cilium.ciliumresourceippool.get.ee82d5641f1d\": true,\n        \"cilium.ciliumresourceippool.list.d4395c419132\"\
-    : true,\n        \"credentials.stalwart.authority.ensure\": true,\n        \"\
-    credentials.stalwart.ensure\": true,\n        \"kube.deployments\": true,\n  \
-    \      \"kube.endpoints\": true,\n        \"kube.events.query\": true,\n     \
-    \   \"kube.events.watch\": true,\n        \"kube.namespaces\": true,\n       \
-    \ \"kube.nodes\": true,\n        \"kube.pods\": true,\n        \"kube.resource.apply\"\
-    : true,\n        \"kube.resource.delete\": true,\n        \"kube.resource.get\"\
-    : true,\n        \"kube.resource.list\": true,\n        \"kube.resource.patch\"\
-    : true,\n        \"kube.resource.watch\": true,\n        \"kube.secrets\": true,\n\
-    \        \"kube.services\": true,\n        \"kubectl.exec\": true,\n        \"\
-    mihomos.configs.get\": true,\n        \"mihomos.connections.snapshot\": true,\n\
-    \        \"mihomos.controller.hello\": true,\n        \"mihomos.controller.version\"\
-    : true,\n        \"mihomos.controllers.list\": true,\n        \"mihomos.groups.get\"\
-    : true,\n        \"mihomos.groups.list\": true,\n        \"mihomos.provider-proxies.get\"\
-    : true,\n        \"mihomos.proxies.get\": true,\n        \"mihomos.proxies.list\"\
-    : true,\n        \"mihomos.proxy-providers.get\": true,\n        \"mihomos.proxy-providers.list\"\
-    : true,\n        \"mihomos.rule-providers.list\": true,\n        \"mihomos.rules.list\"\
-    : true,\n        \"mihomos.workloads.list\": true,\n        \"mobile-egress.mobileegress.delete.75bfa5f6daac\"\
     : true,\n        \"mobile-egress.mobileegress.get.98aafa994029\": true,\n    \
     \    \"mobile-egress.mobileegress.get.c1422d3f888a\": true,\n        \"mobile-egress.mobileegress.list.16c30591d35d\"\
-    : true,\n        \"mobile-egress.mobileegress.patch.b8b95ff07998\": true,\n  \
-    \      \"mobile-egress.mobileegress.post.462d4b4effbe\": true,\n        \"mobile-egress.mobileegress.put.152109cbc59a\"\
-    : true,\n        \"node.ssh.exec\": true,\n        \"nodes.get\": true,\n    \
-    \    \"nodes.list\": true,\n        \"nodes.reachability\": true,\n        \"\
-    object-bucket.objectbucket.get.ab61dd63f479\": true,\n        \"object-bucket.objectbucket.get.f999eaf2ebcc\"\
-    : true,\n        \"object-bucket.objectbucket.list.1e3095710fc3\": true,\n   \
-    \     \"object-bucket.objectbucketclaim.get.32b36d26385a\": true,\n        \"\
-    object-bucket.objectbucketclaim.get.70a6ada6e2e2\": true,\n        \"object-bucket.objectbucketclaim.list.291a31f4602b\"\
-    : true,\n        \"object-bucket.objectbucketclaim.list.a6fac329642d\": true,\n\
-    \        \"plugin.capabilities.list\": true,\n        \"plugin.openapi.get\":\
-    \ true,\n        \"plugin.operation.http-check\": true,\n        \"plugin.operation.read\"\
-    : true,\n        \"plugin.operations.list\": true,\n        \"public-edge.publicedge.delete.c967aef6a0c7\"\
+    : true,\n        \"object-bucket.objectbucket.get.ab61dd63f479\": true,\n    \
+    \    \"object-bucket.objectbucket.get.f999eaf2ebcc\": true,\n        \"object-bucket.objectbucket.list.1e3095710fc3\"\
+    : true,\n        \"object-bucket.objectbucketclaim.get.32b36d26385a\": true,\n\
+    \        \"object-bucket.objectbucketclaim.get.70a6ada6e2e2\": true,\n       \
+    \ \"object-bucket.objectbucketclaim.list.291a31f4602b\": true,\n        \"object-bucket.objectbucketclaim.list.a6fac329642d\"\
     : true,\n        \"public-edge.publicedge.get.1f5a3a3e14aa\": true,\n        \"\
     public-edge.publicedge.get.e1e3c5e99b21\": true,\n        \"public-edge.publicedge.list.093405d0d4e4\"\
-    : true,\n        \"public-edge.publicedge.patch.843ed2ca541e\": true,\n      \
-    \  \"public-edge.publicedge.post.5c7b156c0412\": true,\n        \"public-edge.publicedge.put.4598f1918b1a\"\
     : true,\n        \"rook-ceph-csi.cephconnection.get.719dccd75071\": true,\n  \
     \      \"rook-ceph-csi.cephconnection.get.8ab6e1868bd1\": true,\n        \"rook-ceph-csi.cephconnection.list.7f1bccacac95\"\
     : true,\n        \"rook-ceph-csi.cephconnection.list.c6d7b9cbf45c\": true,\n \
@@ -931,23 +873,80 @@ data:
     rook-ceph.cephobjectzonegroup.list.e7b894d9e39c\": true,\n        \"rook-ceph.cephrbdmirror.get.6247af142ccc\"\
     : true,\n        \"rook-ceph.cephrbdmirror.get.87c4bd54d297\": true,\n       \
     \ \"rook-ceph.cephrbdmirror.list.6b7a6d2623ba\": true,\n        \"rook-ceph.cephrbdmirror.list.dbf3b397d667\"\
-    : true,\n        \"workspace.context\": true,\n        \"workspace.doctor\": true,\n\
-    \        \"workspace.index\": true,\n        \"workspace.list\": true,\n     \
-    \   \"workspace.memory-audit\": true,\n        \"workspace.scan\": true,\n   \
-    \     \"workspace.status\": true,\n        \"workspace.sync\": true\n      },\n\
-    \      \"header\": \"Authorization\",\n      \"namespace\": \"ai-operations\"\
-    ,\n      \"secret\": \"cluster-infra-service-auth\",\n      \"secretKey\": \"\
-    token\",\n      \"url\": \"http://re8ch-cloud-platform.ai-operations.svc.cluster.local:19443/mcp\"\
-    \n    },\n    \"tenant_admin\": {\n      \"allowed\": {\n        \"byoc_connection_approve\"\
-    : true,\n        \"byoc_connection_revoke\": true,\n        \"byoc_registration_list\"\
-    : true,\n        \"dynamic_skill_pending\": true,\n        \"dynamic_skill_publish\"\
-    : true,\n        \"dynamic_skill_review\": true,\n        \"dynamic_skill_revoke\"\
-    : true,\n        \"tenant_create\": true,\n        \"tenant_delete\": true,\n\
-    \        \"tenant_list\": true,\n        \"tenant_visibility_update\": true\n\
-    \      },\n      \"header\": \"Authorization\",\n      \"namespace\": \"tenant-infrastructure\"\
+    : true,\n        \"mihomos.workloads.list\": true,\n        \"mihomos.controllers.list\"\
+    : true,\n        \"mihomos.controller.version\": true,\n        \"mihomos.proxies.list\"\
+    : true,\n        \"mihomos.proxies.get\": true,\n        \"mihomos.groups.list\"\
+    : true,\n        \"mihomos.groups.get\": true,\n        \"mihomos.rules.list\"\
+    : true,\n        \"mihomos.proxy-providers.list\": true,\n        \"mihomos.proxy-providers.get\"\
+    : true,\n        \"mihomos.provider-proxies.get\": true,\n        \"mihomos.rule-providers.list\"\
+    : true,\n        \"mihomos.controller.hello\": true,\n        \"mihomos.configs.get\"\
+    : true,\n        \"mihomos.connections.snapshot\": true,\n        \"anatomy.runtimediff.create\"\
+    : true,\n        \"anatomy.runtimediff.delete\": true,\n        \"cilium.cidrgroup.create\"\
+    : true,\n        \"cilium.cidrgroup.delete\": true,\n        \"advfab-legacy.advancedfabric.delete.61a88efea3fe\"\
+    : true,\n        \"advfab-legacy.advancedfabric.patch.01a438a66db8\": true,\n\
+    \        \"advfab-legacy.advancedfabric.post.5b09ae1f8f1a\": true,\n        \"\
+    advfab-legacy.advancedfabric.put.bd134ca6e525\": true,\n        \"advfab-legacy.networkintervention.delete.f41c1a3adac8\"\
+    : true,\n        \"advfab-legacy.networkintervention.patch.7f380710e538\": true,\n\
+    \        \"advfab-legacy.networkintervention.post.6b24961b5d3a\": true,\n    \
+    \    \"advfab-legacy.networkintervention.put.8dedeeda154d\": true,\n        \"\
+    advfab-legacy.networkobservationepisode.delete.6757cd743ada\": true,\n       \
+    \ \"advfab-legacy.networkobservationepisode.patch.acc536745ea5\": true,\n    \
+    \    \"advfab-legacy.networkobservationepisode.post.d63d83f91dd1\": true,\n  \
+    \      \"advfab-legacy.networkobservationepisode.put.6cd27c41966b\": true,\n \
+    \       \"advfab-legacy.networkpathassessment.delete.4983757e35f3\": true,\n \
+    \       \"advfab-legacy.networkpathassessment.delete.ba1140040448\": true,\n \
+    \       \"advfab-legacy.networkpathassessment.patch.56a1ebdc4593\": true,\n  \
+    \      \"advfab-legacy.networkpathassessment.patch.78cdc91bcb3a\": true,\n   \
+    \     \"advfab-legacy.networkpathassessment.post.4e61891c1ebd\": true,\n     \
+    \   \"advfab-legacy.networkpathassessment.post.9471fc00be67\": true,\n       \
+    \ \"advfab-legacy.networkpathassessment.put.617c0df701aa\": true,\n        \"\
+    advfab-legacy.networkpathassessment.put.eeb99644dde1\": true,\n        \"advfab-legacy.networktradeoffestimate.delete.9fb6c9b2a3af\"\
+    : true,\n        \"advfab-legacy.networktradeoffestimate.patch.75077ae29281\"\
+    : true,\n        \"advfab-legacy.networktradeoffestimate.post.e10a04f2d88e\":\
+    \ true,\n        \"advfab-legacy.networktradeoffestimate.put.16300027eba4\": true,\n\
+    \        \"advfab-legacy.tradeofftriangle.delete.7b5502223676\": true,\n     \
+    \   \"advfab-legacy.tradeofftriangle.patch.54c8df1ae271\": true,\n        \"advfab-legacy.tradeofftriangle.post.c64766ccd1c1\"\
+    : true,\n        \"advfab-legacy.tradeofftriangle.put.fbc8fdac6ba9\": true,\n\
+    \        \"advfab-legacy.trafficpolicy.delete.34c3b6929b67\": true,\n        \"\
+    advfab-legacy.trafficpolicy.patch.0d3890796d6c\": true,\n        \"advfab-legacy.trafficpolicy.post.c52cc2ef3bd6\"\
+    : true,\n        \"advfab-legacy.trafficpolicy.put.64a170ac5c63\": true,\n   \
+    \     \"advfab.advancedfabric.delete.bf7cc8eb9395\": true,\n        \"advfab.advancedfabric.patch.62de7e6473ab\"\
+    : true,\n        \"advfab.advancedfabric.post.15e1ec96e0fa\": true,\n        \"\
+    advfab.advancedfabric.put.f378820e80c3\": true,\n        \"advfab.networkintervention.delete.4d5c82868a9c\"\
+    : true,\n        \"advfab.networkintervention.patch.81cf1fc59558\": true,\n  \
+    \      \"advfab.networkintervention.post.c56d940daf83\": true,\n        \"advfab.networkintervention.put.81bb1c4fb459\"\
+    : true,\n        \"advfab.networkobservationepisode.delete.a4e0ab7526fa\": true,\n\
+    \        \"advfab.networkobservationepisode.patch.c715f0886d81\": true,\n    \
+    \    \"advfab.networkobservationepisode.post.11e41420175c\": true,\n        \"\
+    advfab.networkobservationepisode.put.1c00ce57d6de\": true,\n        \"advfab.networkpathassessment.delete.6c68329892ba\"\
+    : true,\n        \"advfab.networkpathassessment.delete.a48abb6bbd59\": true,\n\
+    \        \"advfab.networkpathassessment.patch.208dce28c63f\": true,\n        \"\
+    advfab.networkpathassessment.patch.f79538d8915b\": true,\n        \"advfab.networkpathassessment.post.27f09e50798d\"\
+    : true,\n        \"advfab.networkpathassessment.post.d212f59867ab\": true,\n \
+    \       \"advfab.networkpathassessment.put.25383ae95196\": true,\n        \"advfab.networkpathassessment.put.51a615e1f3f0\"\
+    : true,\n        \"advfab.networktradeoffestimate.delete.90cad95f2068\": true,\n\
+    \        \"advfab.networktradeoffestimate.patch.433a5bcf82cf\": true,\n      \
+    \  \"advfab.networktradeoffestimate.post.0f1fa9d9446b\": true,\n        \"advfab.networktradeoffestimate.put.5e3da23ab61d\"\
+    : true,\n        \"advfab.tradeofftriangle.delete.c74f3227691e\": true,\n    \
+    \    \"advfab.tradeofftriangle.patch.aac1ccbf1e24\": true,\n        \"advfab.tradeofftriangle.post.f07c66c5d525\"\
+    : true,\n        \"advfab.tradeofftriangle.put.615e6a9b28b3\": true,\n       \
+    \ \"advfab.trafficpolicy.delete.52f7b14a754f\": true,\n        \"advfab.trafficpolicy.patch.ad15dfc5372a\"\
+    : true,\n        \"advfab.trafficpolicy.post.1941de605fc9\": true,\n        \"\
+    advfab.trafficpolicy.put.cd92b2feff5f\": true,\n        \"mobile-egress.mobileegress.delete.75bfa5f6daac\"\
+    : true,\n        \"mobile-egress.mobileegress.patch.b8b95ff07998\": true,\n  \
+    \      \"mobile-egress.mobileegress.post.462d4b4effbe\": true,\n        \"mobile-egress.mobileegress.put.152109cbc59a\"\
+    : true,\n        \"public-edge.publicedge.delete.c967aef6a0c7\": true,\n     \
+    \   \"public-edge.publicedge.patch.843ed2ca541e\": true,\n        \"public-edge.publicedge.post.5c7b156c0412\"\
+    : true,\n        \"public-edge.publicedge.put.4598f1918b1a\": true\n      }\n\
+    \    },\n    \"tenant_admin\": {\n      \"namespace\": \"tenant-infrastructure\"\
     ,\n      \"secret\": \"admin-vmcp-backend-auth\",\n      \"secretKey\": \"token\"\
-    ,\n      \"url\": \"http://admin-api.tenant-infrastructure.svc.cluster.local/mcp\"\
-    \n    }\n  },\n  \"version\": 1\n}\n"
+    ,\n      \"header\": \"Authorization\",\n      \"url\": \"http://admin-api.tenant-infrastructure.svc.cluster.local/mcp\"\
+    ,\n      \"allowed\": {\n        \"tenant_create\": true,\n        \"tenant_list\"\
+    : true,\n        \"tenant_visibility_update\": true,\n        \"tenant_delete\"\
+    : true,\n        \"byoc_registration_list\": true,\n        \"byoc_connection_approve\"\
+    : true,\n        \"byoc_connection_revoke\": true,\n        \"dynamic_skill_pending\"\
+    : true,\n        \"dynamic_skill_publish\": true,\n        \"dynamic_skill_review\"\
+    : true,\n        \"dynamic_skill_revoke\": true\n      }\n    }\n  }\n}\n"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

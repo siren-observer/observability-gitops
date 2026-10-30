@@ -2915,7 +2915,12 @@ spec:
         required: false
       tenantAPI:
         enabled: true
-        stalwartBootstrapEnabled: true
+        stalwartBootstrapEnabled: false
+        collaboration:
+          enabled: true
+          origin: https://id.re8ch.com
+          clientID: re8ch-self-service
+          validationRef: service-backend-run-41095140323;cloud-platform-run-41097289672;stalwart-audit-op_1915898582e246efbeda8fef864cf27a
         openAIAppsChallengeToken: 6n3O48vy3O89euYVrri4aHJMeUJ_vkofxLpzxv-6TTE
         organizationsURL: https://api.re8ch.com/auth/v2/organizations
         platformSessionURL: ''

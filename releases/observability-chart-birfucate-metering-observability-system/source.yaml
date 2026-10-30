@@ -9,13 +9,13 @@ spec:
   namespace: observability-system
   releaseNamespace: observability-ai
   values: values.yaml
-  valuesDigest: sha256:1045969aece2a838615b2fa73e06928d510f36cfa12048e59a9bb5980a4c3422
+  valuesDigest: sha256:6bb1e2b0b59ed54e79cac6773271603c1a87b2ca98056249be9ccf5da7f688fe
   renderedResources: resources.yaml
   renderedResourcesDigest: sha256:e4a15fff0bff28c1849210e7c01a03d702dba073e0f91413afc06d381e961f0a
   helmRelease:
     namespace: flux-observability-system
     name: birfucate-metering
-  helmDeclarationDigest: sha256:0e4c38142fd176e726ac9355b1d168e42dc830ddc513fee596e705ffc5ca9e75
+  helmDeclarationDigest: sha256:1a2b9085f687d4a59dae601df2a2f57a9038f74d1607088664c2844ca642278a
   imagePins:
     registry.k8s.io/pause:3.10.1: registry.k8s.io/pause@sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c
     ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.153.0: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator@sha256:71c80734e698e0a38039aeb5a6fad7129ca68eaa31eb262752c1e5015b319a24
@@ -57,6 +57,9 @@ spec:
   - kind: CustomResourceDefinition
     name: tenantresourceclaims.tenancy.re8ch.com
     reason: platform-bootstrap
+  - kind: Namespace
+    name: stalwart-credentials
+    reason: platform-bootstrap
   - kind: ClusterRole
     name: birfucate-metering-discovery
     reason: platform-owned-rbac
@@ -85,6 +88,9 @@ spec:
     name: tenant-usage-token-reviewer
     reason: platform-owned-rbac
   - kind: Role
+    name: tenant-api-stalwart-credentials
+    reason: platform-owned-rbac
+  - kind: Role
     name: tenant-provider-database-metrics-anysite
     reason: platform-owned-rbac
   - kind: Role
@@ -107,6 +113,9 @@ spec:
     reason: platform-owned-rbac
   - kind: Role
     name: tenant-api-credential-read
+    reason: platform-owned-rbac
+  - kind: RoleBinding
+    name: tenant-api-stalwart-credentials
     reason: platform-owned-rbac
   - kind: RoleBinding
     name: tenant-provider-database-metrics-anysite
@@ -307,5 +316,5 @@ spec:
   valuesFromEvidence:
     configMap: flux-observability-system/tenant-mcp-image
     key: image
-    releaseRun: https://github.com/re8ch/service-backend/actions/runs/41032678518
-    sourceRevision: dd5acdbec289082c5c5a561fcf68e797d484c9e8
+    releaseRun: https://github.com/re8ch/service-backend/actions/runs/41095140323
+    sourceRevision: 5e030620eb6ffd143c4edae65d676e585c550e33
