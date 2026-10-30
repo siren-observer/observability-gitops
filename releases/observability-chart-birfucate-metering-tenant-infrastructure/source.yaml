@@ -9,9 +9,9 @@ spec:
   namespace: tenant-infrastructure
   releaseNamespace: observability-ai
   values: values.yaml
-  valuesDigest: sha256:1646af3346435ef935e145d5340e8431c038a7023b59a754b874f37db2869ad0
+  valuesDigest: sha256:d1878a3cfe35c1675ea573d853ac1e8117225f68222f531ca9be14c8527eb5d8
   renderedResources: resources.yaml
-  renderedResourcesDigest: sha256:241492e74873c6aadf6377b9358675ae32beefc28e5a1bac6bec2deadcec914d
+  renderedResourcesDigest: sha256:a68979a554273fd2ae72fddad56d7fbbd62d3ca6306701d739eb34ebaee405f4
   helmRelease:
     namespace: flux-observability-system
     name: birfucate-metering

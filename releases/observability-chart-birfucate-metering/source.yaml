@@ -9,7 +9,7 @@ spec:
   namespace: observability-ai
   releaseNamespace: observability-ai
   values: values.yaml
-  valuesDigest: sha256:1646af3346435ef935e145d5340e8431c038a7023b59a754b874f37db2869ad0
+  valuesDigest: sha256:d1878a3cfe35c1675ea573d853ac1e8117225f68222f531ca9be14c8527eb5d8
   renderedResources: resources.yaml
   renderedResourcesDigest: sha256:34865e712f26bc1167a283596e65a28dffd41888c5094c4413c45aceaace2d3f
   helmRelease:
