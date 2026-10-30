@@ -9,14 +9,14 @@ spec:
     namespace: observability-system
   source:
     renderer: kustomize
-    revision: git-chart@sha256:e22f2fdb3f9498261c976c3fcf42ae4eefc2aa551c1607956f2bc06864e6e1f6
+    revision: git-chart@sha256:76887164dd3b6aa76ed624118397b99b36700b81cddd69935530739af255be7b
     repository: siren-observer/observability-gitops
     path: releases/observability-chart-birfucate-metering-observability-system
     values:
     - path: releases/observability-chart-birfucate-metering-observability-system/values.yaml
-      digest: sha256:03e02c60233f1037780418e369bdefa6d300971c1aa9e7080e95d192ca1ce696
+      digest: sha256:6c23c014d9cc55e5801e39b246361859d0154f912ffbaca80d97e2c66629ccec
     chart: clusters/re8ch/charts/birfucate-metering
-    chartDigest: sha256:e22f2fdb3f9498261c976c3fcf42ae4eefc2aa551c1607956f2bc06864e6e1f6
+    chartDigest: sha256:76887164dd3b6aa76ed624118397b99b36700b81cddd69935530739af255be7b
   provenance:
     repository: siren-observer/observability-gitops
     workflow: .github/workflows/static-release.yml

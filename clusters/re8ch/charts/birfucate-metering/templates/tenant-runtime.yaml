@@ -8,7 +8,20 @@ kind: ConfigMap
 metadata: {name: tenant-platform-modules, namespace: tenant-infrastructure}
 data:
   modules.json: |
+{{- if or .Values.tenantPlatform.tenantAPI.stalwartAdminEnabled .Values.tenantPlatform.tenantAPI.stalwartBootstrapEnabled }}
+{{- $modules := .Files.Get "files/tenant-platform-modules.json" | fromJson }}
+{{- if .Values.tenantPlatform.tenantAPI.stalwartAdminEnabled }}
+{{- range $tool := list "stalwart.admin.read" "stalwart.admin.plan" "stalwart.admin.apply" }}
+{{- $_ := set $modules.backends.native.allowed $tool true }}
+{{- end }}
+{{- end }}
+{{- if .Values.tenantPlatform.tenantAPI.stalwartBootstrapEnabled }}
+{{- $_ := set $modules.backends.native.allowed "credentials.stalwart.ensure" true }}
+{{- end }}
+{{ $modules | toPrettyJson | indent 4 }}
+{{- else }}
 {{ .Files.Get "files/tenant-platform-modules.json" | indent 4 }}
+{{- end }}
 ---
 {{- end }}
 apiVersion: v1
@@ -202,6 +215,12 @@ spec:
             {{- end }}
             {{- if .Values.tenantPlatform.tenantAPI.organizationsURL }}
             - {name: PLATFORM_ORGANIZATIONS_URL, value: {{ .Values.tenantPlatform.tenantAPI.organizationsURL | quote }}}
+            {{- end }}
+            - {name: COLLABORATION_ENABLED, value: {{ .Values.tenantPlatform.tenantAPI.collaboration.enabled | quote }}}
+            - {name: COLLABORATION_CREDENTIAL_NAMESPACE, value: stalwart-credentials}
+            {{- if .Values.tenantPlatform.tenantAPI.collaboration.enabled }}
+            - {name: STALWART_URL, value: {{ required "collaboration.origin is required" .Values.tenantPlatform.tenantAPI.collaboration.origin | quote }}}
+            - {name: STALWART_CLIENT_ID, value: {{ required "collaboration.clientID is required" .Values.tenantPlatform.tenantAPI.collaboration.clientID | quote }}}
             {{- end }}
             - {name: PLATFORM_MODULE_REGISTRY, value: /etc/re8ch/modules/modules.json}
             - {name: DYNAMIC_SKILL_DB, value: /var/lib/tenant-platform/dynamic-skills.db}

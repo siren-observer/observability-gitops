@@ -1,0 +1,26 @@
+# Candidate only: not imported by any Kustomization or release contract.
+# Platform bootstrap must install the reviewed CRD enum extension first.
+apiVersion: finops.re8ch.com/v1alpha1
+kind: Consumable
+metadata:
+  name: collaboration-stalwart
+spec:
+  serviceClass: collaboration.stalwart.v1
+  owner: platform-collaboration
+  lifecycle: Draft
+  endpointClass: TenantSafe
+  authenticationProxyRef: tenant
+  supportBoundary: User-consented mail/calendar/lightweight file access; management, mailbox provisioning, arbitrary writes and recursive synchronization excluded.
+  accessContract:
+    type: Collaboration
+    isolationUnit: TenantSubjectProviderAccount
+    isolationBoundary: Verified active tenant and subject plus provider account-scoped OAuth consent.
+    isolationMechanism: Per-subject connection ownership, required tenant grant, provider scopes and isolated credential namespace.
+    provisioner: tenant-infrastructure/tenant-api
+    credentialDelivery: BrokerReference
+    requestFields: [scopes]
+    grantedResources: [CollaborationConnectionReference]
+    revocation: Revoke the local connection and remove its scoped credential; reconnect requires provider consent.
+  allowedWorkloadKinds: [Deployment]
+  meters:
+    - {name: tool_call, unit: call, source: tenant-mcp-tool-usage}

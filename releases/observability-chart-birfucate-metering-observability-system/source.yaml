@@ -9,7 +9,7 @@ spec:
   namespace: observability-system
   releaseNamespace: observability-ai
   values: values.yaml
-  valuesDigest: sha256:03e02c60233f1037780418e369bdefa6d300971c1aa9e7080e95d192ca1ce696
+  valuesDigest: sha256:6c23c014d9cc55e5801e39b246361859d0154f912ffbaca80d97e2c66629ccec
   renderedResources: resources.yaml
   renderedResourcesDigest: sha256:e4a15fff0bff28c1849210e7c01a03d702dba073e0f91413afc06d381e961f0a
   helmRelease:
@@ -303,8 +303,9 @@ spec:
   - kind: TenantNamespace
     name: tenant-ci-4d8e6b2e153260b9
     reason: platform-bootstrap
-  chartDigest: sha256:e22f2fdb3f9498261c976c3fcf42ae4eefc2aa551c1607956f2bc06864e6e1f6
+  chartDigest: sha256:76887164dd3b6aa76ed624118397b99b36700b81cddd69935530739af255be7b
   valuesFromEvidence:
     configMap: flux-observability-system/tenant-mcp-image
     key: image
-    auditRef: audit://operations/op_28b7d00621ca4b94949567b9304858eb
+    releaseRun: https://github.com/re8ch/service-backend/actions/runs/41032678518
+    sourceRevision: dd5acdbec289082c5c5a561fcf68e797d484c9e8
