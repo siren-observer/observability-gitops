@@ -18,7 +18,8 @@ def render(*extra, success=True):
 
 
 def test_disabled_collaboration_has_no_credential_write_or_admin_publication():
-    docs = render('--set', 'tenantPlatform.tenantAPI.stalwartBootstrapEnabled=false')
+    docs = render('--set', 'tenantPlatform.tenantAPI.stalwartBootstrapEnabled=false',
+                  '--set', 'tenantPlatform.tenantAPI.collaboration.enabled=false')
     assert not any(d['metadata'].get('namespace') == 'stalwart-credentials' for d in docs)
     dep = next(d for d in docs if d['kind'] == 'Deployment' and d['metadata']['name'] == 'tenant-api')
     env = {e['name']: e.get('value') for e in dep['spec']['template']['spec']['containers'][0]['env']}
@@ -42,11 +43,12 @@ def test_enabled_credentials_have_only_namespaced_lifecycle_permissions():
 
 
 def test_activation_requires_reviewed_evidence():
-    assert 'validationRef' in render('--set', 'tenantPlatform.tenantAPI.collaboration.enabled=true', '--set', 'tenantPlatform.tenantAPI.collaboration.origin=https://provider.example', '--set', 'tenantPlatform.tenantAPI.collaboration.clientID=fixture', success=False)
+    assert 'validationRef' in render('--set', 'tenantPlatform.tenantAPI.collaboration.enabled=true', '--set', 'tenantPlatform.tenantAPI.collaboration.origin=https://provider.example', '--set', 'tenantPlatform.tenantAPI.collaboration.clientID=fixture', '--set-string', 'tenantPlatform.tenantAPI.collaboration.validationRef=', success=False)
 
 
 def test_management_allowlist_is_exact_and_separate_from_collaboration():
-    docs = render('--set', 'tenantPlatform.tenantAPI.stalwartAdminEnabled=true')
+    docs = render('--set', 'tenantPlatform.tenantAPI.stalwartAdminEnabled=true',
+                  '--set', 'tenantPlatform.tenantAPI.collaboration.enabled=false')
     modules = next(d for d in docs if d['kind'] == 'ConfigMap' and d['metadata']['name'] == 'tenant-platform-modules')
     allowed = json.loads(modules['data']['modules.json'])['backends']['native']['allowed']
     assert {k for k, v in allowed.items() if k.startswith('stalwart.') and v} == {'stalwart.admin.read', 'stalwart.admin.plan', 'stalwart.admin.apply'}
@@ -107,7 +109,8 @@ def test_discovery_controller_does_not_provision_or_ready_draft_collaboration():
 
 
 def test_bootstrap_publication_is_exact_and_does_not_enable_steady_state_admin():
-    docs = render('--set', 'tenantPlatform.tenantAPI.stalwartBootstrapEnabled=true')
+    docs = render('--set', 'tenantPlatform.tenantAPI.stalwartBootstrapEnabled=true',
+                  '--set', 'tenantPlatform.tenantAPI.collaboration.enabled=false')
     modules = next(d for d in docs if d['kind'] == 'ConfigMap' and d['metadata']['name'] == 'tenant-platform-modules')
     allowed = json.loads(modules['data']['modules.json'])['backends']['native']['allowed']
     assert {k for k, v in allowed.items() if k.startswith('credentials.stalwart.') and v} == {
@@ -116,12 +119,15 @@ def test_bootstrap_publication_is_exact_and_does_not_enable_steady_state_admin()
     assert not any(d['metadata'].get('namespace') == 'stalwart-credentials' for d in docs)
 
 
-def test_production_bootstrap_window_has_exact_two_tools_and_no_other_object_change():
+def test_production_activation_enables_user_collaboration_and_closes_bootstrap_window():
     docs = list(yaml.safe_load_all((ROOT / 'releases/observability-chart-birfucate-metering-tenant-infrastructure/resources.yaml').read_text()))
     modules = next(d for d in docs if d['kind'] == 'ConfigMap' and d['metadata']['name'] == 'tenant-platform-modules')
     allowed = json.loads(modules['data']['modules.json'])['backends']['native']['allowed']
-    assert {k for k in allowed if 'stalwart' in k} == {'credentials.stalwart.ensure', 'credentials.stalwart.authority.ensure'}
+    assert not {k for k in allowed if 'stalwart' in k}
     dep = next(d for d in docs if d['kind'] == 'Deployment' and d['metadata']['name'] == 'tenant-api')
     env = {e['name']: e.get('value') for e in dep['spec']['template']['spec']['containers'][0]['env']}
-    assert env['COLLABORATION_ENABLED'] == 'false'
+    assert env['COLLABORATION_ENABLED'] == 'true'
+    assert env['STALWART_URL'] == 'https://id.re8ch.com'
+    assert env['STALWART_CLIENT_ID'] == 're8ch-self-service'
+    assert dep['spec']['template']['spec']['containers'][0]['image'].endswith('@sha256:b632741280a7c67c226d45d82db2bd94a1ef1026b4d0cce940233cb9b99fb0c7')
     assert not any(d['kind'] in {'Secret', 'Role', 'RoleBinding', 'Namespace'} for d in docs)

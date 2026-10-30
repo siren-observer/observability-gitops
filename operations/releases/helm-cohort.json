@@ -65,6 +65,11 @@
         "reason": "platform-bootstrap"
       },
       {
+        "kind": "Namespace",
+        "name": "stalwart-credentials",
+        "reason": "platform-bootstrap"
+      },
+      {
         "kind": "ClusterRole",
         "name": "birfucate-metering-discovery",
         "reason": "platform-owned-rbac"
@@ -111,6 +116,11 @@
       },
       {
         "kind": "Role",
+        "name": "tenant-api-stalwart-credentials",
+        "reason": "platform-owned-rbac"
+      },
+      {
+        "kind": "Role",
         "name": "tenant-provider-database-metrics-anysite",
         "reason": "platform-owned-rbac"
       },
@@ -147,6 +157,11 @@
       {
         "kind": "Role",
         "name": "tenant-api-credential-read",
+        "reason": "platform-owned-rbac"
+      },
+      {
+        "kind": "RoleBinding",
+        "name": "tenant-api-stalwart-credentials",
         "reason": "platform-owned-rbac"
       },
       {
@@ -542,6 +557,11 @@
         "reason": "platform-bootstrap"
       },
       {
+        "kind": "Namespace",
+        "name": "stalwart-credentials",
+        "reason": "platform-bootstrap"
+      },
+      {
         "kind": "ClusterRole",
         "name": "birfucate-metering-discovery",
         "reason": "platform-owned-rbac"
@@ -588,6 +608,11 @@
       },
       {
         "kind": "Role",
+        "name": "tenant-api-stalwart-credentials",
+        "reason": "platform-owned-rbac"
+      },
+      {
+        "kind": "Role",
         "name": "tenant-provider-database-metrics-anysite",
         "reason": "platform-owned-rbac"
       },
@@ -624,6 +649,11 @@
       {
         "kind": "Role",
         "name": "tenant-api-credential-read",
+        "reason": "platform-owned-rbac"
+      },
+      {
+        "kind": "RoleBinding",
+        "name": "tenant-api-stalwart-credentials",
         "reason": "platform-owned-rbac"
       },
       {
@@ -1019,6 +1049,11 @@
         "reason": "platform-bootstrap"
       },
       {
+        "kind": "Namespace",
+        "name": "stalwart-credentials",
+        "reason": "platform-bootstrap"
+      },
+      {
         "kind": "ClusterRole",
         "name": "birfucate-metering-discovery",
         "reason": "platform-owned-rbac"
@@ -1065,6 +1100,11 @@
       },
       {
         "kind": "Role",
+        "name": "tenant-api-stalwart-credentials",
+        "reason": "platform-owned-rbac"
+      },
+      {
+        "kind": "Role",
         "name": "tenant-provider-database-metrics-anysite",
         "reason": "platform-owned-rbac"
       },
@@ -1101,6 +1141,11 @@
       {
         "kind": "Role",
         "name": "tenant-api-credential-read",
+        "reason": "platform-owned-rbac"
+      },
+      {
+        "kind": "RoleBinding",
+        "name": "tenant-api-stalwart-credentials",
         "reason": "platform-owned-rbac"
       },
       {
@@ -1496,6 +1541,11 @@
         "reason": "platform-bootstrap"
       },
       {
+        "kind": "Namespace",
+        "name": "stalwart-credentials",
+        "reason": "platform-bootstrap"
+      },
+      {
         "kind": "ClusterRole",
         "name": "birfucate-metering-discovery",
         "reason": "platform-owned-rbac"
@@ -1542,6 +1592,11 @@
       },
       {
         "kind": "Role",
+        "name": "tenant-api-stalwart-credentials",
+        "reason": "platform-owned-rbac"
+      },
+      {
+        "kind": "Role",
         "name": "tenant-provider-database-metrics-anysite",
         "reason": "platform-owned-rbac"
       },
@@ -1578,6 +1633,11 @@
       {
         "kind": "Role",
         "name": "tenant-api-credential-read",
+        "reason": "platform-owned-rbac"
+      },
+      {
+        "kind": "RoleBinding",
+        "name": "tenant-api-stalwart-credentials",
         "reason": "platform-owned-rbac"
       },
       {
@@ -1973,6 +2033,11 @@
         "reason": "platform-bootstrap"
       },
       {
+        "kind": "Namespace",
+        "name": "stalwart-credentials",
+        "reason": "platform-bootstrap"
+      },
+      {
         "kind": "ClusterRole",
         "name": "birfucate-metering-discovery",
         "reason": "platform-owned-rbac"
@@ -2019,6 +2084,11 @@
       },
       {
         "kind": "Role",
+        "name": "tenant-api-stalwart-credentials",
+        "reason": "platform-owned-rbac"
+      },
+      {
+        "kind": "Role",
         "name": "tenant-provider-database-metrics-anysite",
         "reason": "platform-owned-rbac"
       },
@@ -2055,6 +2125,11 @@
       {
         "kind": "Role",
         "name": "tenant-api-credential-read",
+        "reason": "platform-owned-rbac"
+      },
+      {
+        "kind": "RoleBinding",
+        "name": "tenant-api-stalwart-credentials",
         "reason": "platform-owned-rbac"
       },
       {
