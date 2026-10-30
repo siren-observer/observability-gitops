@@ -48,7 +48,10 @@ upgrade or an unscoped OAuth fallback.
    tenant/subject ownership additionally checked by tenant-api. Revoke old
    connections before moving an already enabled installation's credentials.
 3. Grant `collaboration.stalwart.v1` only to the intended active application tenant
-   via its reviewed Tenant grants, after provider readiness. Admin organization
+   via its reviewed Tenant grants, after provider readiness. The `Tenant` object is
+   platform-bootstrap deferred in the bounded chart release, so read back the
+   reviewed `Tenant/re8ch` spec through the platform path; a refreshed chart lock
+   alone does not activate this grant. Admin organization
    membership is not an application tenant grant. Then merge the enabled values,
    refresh the locked chart snapshots, and deliver through the existing executor.
 4. Verify running tenant-api imageID and environment via platform tools. Exercise
@@ -89,12 +92,14 @@ The reviewed candidate to append to the chosen application's existing
 ```yaml
 name: collaboration-stalwart
 consumableRef: collaboration.stalwart.v1
-roleRef: operator
+roleRef: viewer
 lifecycle: Suspended
 ```
 
-Do not add it to the Admin tenant. After readiness evidence, approve the
-Consumable and change only this grant to `Active` in a signed PR. No service
+Do not add it to the Admin tenant. A viewer grant permits only personal
+provider consent and owner-scoped collaboration data calls; infrastructure
+operations retain their operator/admin gates. After readiness evidence, approve
+the Consumable and change only this grant to `Active` in a signed PR. No service
 instance provisioning class is implied: this capability binds an existing
 provider account through user consent. The generic service-instance API is not
 used. The application currently checks the active Tenant grant directly, so a
