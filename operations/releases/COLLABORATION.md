@@ -114,12 +114,23 @@ Secret and both management ConfigMaps are absent (`op_5a4b3afe7fe8414aa708ee3349
 
 ## Temporary bootstrap catalog publication
 
-`stalwartBootstrapEnabled` publishes only `credentials.stalwart.ensure`, separately
+`stalwartBootstrapEnabled` publishes exactly `credentials.stalwart.ensure` and
+`credentials.stalwart.authority.ensure`, separately
 from the three steady-state management tools. Keep it false until the verified
-Cloud Platform image containing service-backend #2531 and its reviewed
+Cloud Platform image containing service-backend #2531, the reviewed one-hour
+authority seed/revoke implementation in service-backend #2533, and its reviewed
 `STALWART_BOOTSTRAP_CONFIG`/bootstrap-token mounts exist. That source repository
 owns the temporary mounts and their removal; no credentials are declared here.
 The backend fails closed if configuration is missing. Use the platform operation's
 plan/apply flow once the v1 provider is verified, then remove the temporary mount
 and disable this catalog switch after provisioning. This switch does not publish
 mailbox creation, arbitrary JMAP operations, or any tenant-facing tool.
+
+The authority operation is platform-only and supplies the bootstrap credential
+through a fixed server-side Secret path. Its seed/revoke plan cannot accept a
+caller-supplied provider, identity, key, Secret destination or arbitrary native
+method. Recovery credential bytes must remain server-side and never become the
+runtime token. Complete verified provider migration and backup gates before any
+seed; revoke the temporary key after dedicated management credential provisioning.
+The default catalog remains unchanged until the existing bootstrap switch is
+explicitly enabled in a later reviewed runtime change.

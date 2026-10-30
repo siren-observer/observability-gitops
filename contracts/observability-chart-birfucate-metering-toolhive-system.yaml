@@ -9,14 +9,14 @@ spec:
     namespace: toolhive-system
   source:
     renderer: kustomize
-    revision: git-chart@sha256:76887164dd3b6aa76ed624118397b99b36700b81cddd69935530739af255be7b
+    revision: git-chart@sha256:afd81df9a1548614889a601bd608bd410f24f95d135ba732408e5eb474f0fe47
     repository: siren-observer/observability-gitops
     path: releases/observability-chart-birfucate-metering-toolhive-system
     values:
     - path: releases/observability-chart-birfucate-metering-toolhive-system/values.yaml
       digest: sha256:6c23c014d9cc55e5801e39b246361859d0154f912ffbaca80d97e2c66629ccec
     chart: clusters/re8ch/charts/birfucate-metering
-    chartDigest: sha256:76887164dd3b6aa76ed624118397b99b36700b81cddd69935530739af255be7b
+    chartDigest: sha256:afd81df9a1548614889a601bd608bd410f24f95d135ba732408e5eb474f0fe47
   provenance:
     repository: siren-observer/observability-gitops
     workflow: .github/workflows/static-release.yml

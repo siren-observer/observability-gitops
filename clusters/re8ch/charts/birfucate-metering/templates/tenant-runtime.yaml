@@ -17,6 +17,7 @@ data:
 {{- end }}
 {{- if .Values.tenantPlatform.tenantAPI.stalwartBootstrapEnabled }}
 {{- $_ := set $modules.backends.native.allowed "credentials.stalwart.ensure" true }}
+{{- $_ := set $modules.backends.native.allowed "credentials.stalwart.authority.ensure" true }}
 {{- end }}
 {{ $modules | toPrettyJson | indent 4 }}
 {{- else }}
