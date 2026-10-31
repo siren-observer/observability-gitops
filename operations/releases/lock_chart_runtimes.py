@@ -34,7 +34,7 @@ for hr in source_docs:
  p=root/'releases'/name;p.mkdir(parents=True,exist_ok=True)
  values=spec.get('values',{}).copy()
  if hn=='birfucate-metering':
-  values=json.loads(json.dumps(values));values.setdefault('tenantPlatform',{}).setdefault('tenantAPI',{})['image']='registry.re8ch.com/image/re8ch-tenant-mcp@sha256:6ab09f496b33c431a2fca17ddcf4bee8e668e3dfcdf62aa6f89a5d1e757bdbc1'
+  values=json.loads(json.dumps(values));values.setdefault('tenantPlatform',{}).setdefault('tenantAPI',{})['image']='registry.re8ch.com/image/re8ch-tenant-mcp@sha256:96870f7e2687e69128643b6a376ec138e7e5fec4df5878cf012cbdb2ec2f37fa'
  values_bytes=yaml.safe_dump(values,sort_keys=False).encode();(p/'values.yaml').write_bytes(values_bytes)
  if hn=='birfucate-metering':
   chart=root/'clusters/re8ch/charts/birfucate-metering';chart_ref='clusters/re8ch/charts/birfucate-metering';chart_digest=treehash(chart);version=yaml.safe_load((chart/'Chart.yaml').read_text())['version']
@@ -80,7 +80,7 @@ for hr in source_docs:
   compile_bundle(contract,body)
   (root/'contracts'/f'{name}.yaml').write_text(yaml.safe_dump(contract,sort_keys=False))
   lock={'apiVersion':'delivery.re8ch.com/locked-helm-render/v1alpha1','kind':'LockedHelmRender','metadata':{'name':name},'spec':{'chart':chart_ref,'version':version,'releaseName':spec.get('releaseName',hn),'namespace':namespace,'releaseNamespace':spec['targetNamespace'],'values':'values.yaml','valuesDigest':sha(values_bytes),'renderedResources':'resources.yaml','renderedResourcesDigest':sha(body),'helmRelease':{'namespace':hr['metadata']['namespace'],'name':hn},'helmDeclarationDigest':digest(canonical(spec)),'imagePins':images,'deferred':deferred}}
-  if hn=='birfucate-metering':lock['spec']['chartDigest']=chart_digest;lock['spec']['valuesFromEvidence']={'configMap':'flux-observability-system/tenant-mcp-image','key':'image','releaseRun':'https://github.com/re8ch/service-backend/actions/runs/41130844949','sourceRevision':'56798c83cee531fc7527906dc9b417aec6f7ee4d'}
+  if hn=='birfucate-metering':lock['spec']['chartDigest']=chart_digest;lock['spec']['valuesFromEvidence']={'configMap':'flux-observability-system/tenant-mcp-image','key':'image','releaseRun':'https://github.com/re8ch/service-backend/actions/runs/41157833160','sourceRevision':'4eda2e8319e51797f5ab58169374f1ee17a1583a'}
   (p/'source.yaml').write_text(yaml.safe_dump(lock,sort_keys=False))
   ledger.append({'release':name,'helmRelease':hn,'objects':len(objects),'deferred':deferred})
   print(name,len(objects),'runtime objects',len(deferred),'platform-owned')

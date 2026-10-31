@@ -33,11 +33,11 @@ spec:
     objectNames:
     - victoria-metrics-operator
     allowClusterScoped: false
+    requireExisting: true
     forceConflictObjects:
     - apps/Deployment/observability-system/victoria-metrics-operator
     - core/Service/observability-system/victoria-metrics-operator
     - core/ServiceAccount/observability-system/victoria-metrics-operator
-    requireExisting: true
   inventory:
     digest: sha256:839d59921e2cb34d6ea04477564589e3115efe482c55d308a16352792760a642
   lifecycle:

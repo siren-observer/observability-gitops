@@ -49,6 +49,7 @@ tenantPlatform:
     collaboration:
       enabled: true
       origin: https://id.re8ch.com
+      connectOrigin: http://stalwart.mail-system.svc.cluster.local:8080
       clientID: stalwart-webui
       authorizationMode: auth-hub-pkce
       authorizationURL: https://auth.re8ch.com/authorize
@@ -59,7 +60,7 @@ tenantPlatform:
     organizationsURL: https://api.re8ch.com/auth/v2/organizations
     platformSessionURL: ''
     usersURL: https://api.re8ch.com/auth/v2/users
-    image: registry.re8ch.com/image/re8ch-tenant-mcp@sha256:6ab09f496b33c431a2fca17ddcf4bee8e668e3dfcdf62aa6f89a5d1e757bdbc1
+    image: registry.re8ch.com/image/re8ch-tenant-mcp@sha256:96870f7e2687e69128643b6a376ec138e7e5fec4df5878cf012cbdb2ec2f37fa
   tenantReadinessPath: /readyz
   tenants:
   - byocAllowed: true

@@ -9,7 +9,7 @@ VALUES = ROOT / 'releases/observability-chart-birfucate-metering/values.yaml'
 
 
 def render(*extra, success=True):
-    run = subprocess.run(['helm', 'template', 'birfucate-metering', str(CHART), '-n', 'observability-ai', '-f', str(VALUES), *extra], capture_output=True, text=True)
+    run = subprocess.run(['helm', 'template', 'birfucate-metering', str(CHART), '--kube-version', '1.35.0', '-n', 'observability-ai', '-f', str(VALUES), *extra], capture_output=True, text=True)
     if not success:
         assert run.returncode != 0
         return run.stderr
@@ -138,6 +138,7 @@ def test_production_activation_enables_user_collaboration_and_closes_bootstrap_w
     env = {e['name']: e.get('value') for e in dep['spec']['template']['spec']['containers'][0]['env']}
     assert env['COLLABORATION_ENABLED'] == 'true'
     assert env['STALWART_URL'] == 'https://id.re8ch.com'
+    assert env['STALWART_CONNECT_URL'] == 'http://stalwart.mail-system.svc.cluster.local:8080'
     assert env['STALWART_CLIENT_ID'] == 'stalwart-webui'
     assert env['COLLABORATION_AUTH_MODE'] == 'auth-hub-pkce'
     assert env['STALWART_AUTHORIZATION_URL'] == 'https://auth.re8ch.com/authorize'
@@ -146,5 +147,5 @@ def test_production_activation_enables_user_collaboration_and_closes_bootstrap_w
     route = next(d for d in docs if d['kind'] == 'HTTPRoute' and d['metadata']['name'] == 'tenant-native-mcp')
     paths = {m['path']['value'] for rule in route['spec']['rules'] for m in rule.get('matches', [])}
     assert '/collaboration/oauth/callback' in paths
-    assert dep['spec']['template']['spec']['containers'][0]['image'].endswith('@sha256:6ab09f496b33c431a2fca17ddcf4bee8e668e3dfcdf62aa6f89a5d1e757bdbc1')
+    assert dep['spec']['template']['spec']['containers'][0]['image'].endswith('@sha256:96870f7e2687e69128643b6a376ec138e7e5fec4df5878cf012cbdb2ec2f37fa')
     assert not any(d['kind'] in {'Secret', 'Role', 'RoleBinding', 'Namespace'} for d in docs)
