@@ -42,6 +42,7 @@ tenantPlatform:
     collaboration:
       enabled: false
       origin: ""
+      connectOrigin: ""
       clientID: ""
       authorizationMode: device
       authorizationURL: ""

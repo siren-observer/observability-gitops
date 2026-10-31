@@ -31,6 +31,7 @@
               "type": "object", "additionalProperties": false,
               "properties": {
                 "enabled": {"type": "boolean"}, "origin": {"type": "string"},
+                "connectOrigin": {"type": "string", "pattern": "^$|^http://[a-zA-Z0-9.-]+\\.svc\\.cluster\\.local(:[0-9]+)?$"},
                 "clientID": {"type": "string"},
                 "authorizationMode": {"type": "string", "enum": ["device", "auth-hub-pkce"]},
                 "authorizationURL": {"type": "string", "pattern": "^$|^https://[^ ]+$"},

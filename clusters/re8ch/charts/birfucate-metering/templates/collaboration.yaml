@@ -5,6 +5,9 @@
 {{- if not (regexMatch "^https://[a-zA-Z0-9.-]+(:[0-9]+)?$" .Values.tenantPlatform.tenantAPI.collaboration.origin) }}
 {{- fail "collaboration.origin must be one HTTPS origin" }}
 {{- end }}
+{{- if and .Values.tenantPlatform.tenantAPI.collaboration.connectOrigin (not (regexMatch "^http://[a-zA-Z0-9.-]+\\.svc\\.cluster\\.local(:[0-9]+)?$" .Values.tenantPlatform.tenantAPI.collaboration.connectOrigin)) }}
+{{- fail "collaboration.connectOrigin must be one internal cluster Service origin" }}
+{{- end }}
 # Platform bootstrap authority must install these objects before activation.
 # Runtime release executors must not acquire namespace/RBAC management rights.
 apiVersion: v1

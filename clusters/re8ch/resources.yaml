@@ -2919,6 +2919,7 @@ spec:
         collaboration:
           enabled: true
           origin: https://id.re8ch.com
+          connectOrigin: http://stalwart.mail-system.svc.cluster.local:8080
           clientID: stalwart-webui
           authorizationMode: auth-hub-pkce
           authorizationURL: https://auth.re8ch.com/authorize
