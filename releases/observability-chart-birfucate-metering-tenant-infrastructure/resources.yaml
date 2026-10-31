@@ -258,7 +258,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: runtime
-        image: registry.re8ch.com/image/re8ch-tenant-mcp@sha256:6ab09f496b33c431a2fca17ddcf4bee8e668e3dfcdf62aa6f89a5d1e757bdbc1
+        image: registry.re8ch.com/image/re8ch-tenant-mcp@sha256:96870f7e2687e69128643b6a376ec138e7e5fec4df5878cf012cbdb2ec2f37fa
         imagePullPolicy: IfNotPresent
         envFrom:
         - secretRef:
@@ -328,6 +328,8 @@ spec:
           value: stalwart-credentials
         - name: STALWART_URL
           value: https://id.re8ch.com
+        - name: STALWART_CONNECT_URL
+          value: http://stalwart.mail-system.svc.cluster.local:8080
         - name: STALWART_CLIENT_ID
           value: stalwart-webui
         - name: COLLABORATION_AUTH_MODE

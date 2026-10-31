@@ -40,6 +40,7 @@ spec:
     - otel-operator-opentelemetry-operator-serving-cert
     - otel-operator-opentelemetry-operator-webhook
     allowClusterScoped: false
+    requireExisting: true
     forceConflictObjects:
     - apps/Deployment/opentelemetry-operator/otel-operator-opentelemetry-operator
     - cert-manager.io/Certificate/opentelemetry-operator/otel-operator-opentelemetry-operator-serving-cert
@@ -48,7 +49,6 @@ spec:
     - core/Service/opentelemetry-operator/otel-operator-opentelemetry-operator-webhook
     - core/ServiceAccount/opentelemetry-operator/opentelemetry-operator
     - policy/PodDisruptionBudget/opentelemetry-operator/otel-operator-opentelemetry-operator
-    requireExisting: true
   inventory:
     digest: sha256:d643aff1c6ce79037c61937c8b3f9a3f7e69ef3a0aa3bc8f466092941071d077
   lifecycle:

@@ -36,13 +36,13 @@ spec:
     - incidentrelay-telegram
     - incidentrelay-web
     allowClusterScoped: false
+    requireExisting: true
     forceConflictObjects:
     - apps/Deployment/incidentrelay/incidentrelay-scheduler
     - apps/Deployment/incidentrelay/incidentrelay-telegram
     - apps/Deployment/incidentrelay/incidentrelay-web
     - core/Service/incidentrelay/incidentrelay
     - core/ServiceAccount/incidentrelay/incidentrelay
-    requireExisting: true
   inventory:
     digest: sha256:535076d9b7e19161a50594e827173f1b4ac96b1d50b9868becf0645341917266
   lifecycle:
