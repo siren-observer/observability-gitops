@@ -258,7 +258,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: runtime
-        image: registry.re8ch.com/image/re8ch-tenant-mcp@sha256:96870f7e2687e69128643b6a376ec138e7e5fec4df5878cf012cbdb2ec2f37fa
+        image: registry.re8ch.com/image/re8ch-tenant-mcp@sha256:b2b2e416e1e1eb6ca783d890dd057a9efea4a6c60fe6081d1d7cb0055399a674
         imagePullPolicy: IfNotPresent
         envFrom:
         - secretRef:
