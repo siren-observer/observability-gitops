@@ -147,5 +147,5 @@ def test_production_activation_enables_user_collaboration_and_closes_bootstrap_w
     route = next(d for d in docs if d['kind'] == 'HTTPRoute' and d['metadata']['name'] == 'tenant-native-mcp')
     paths = {m['path']['value'] for rule in route['spec']['rules'] for m in rule.get('matches', [])}
     assert '/collaboration/oauth/callback' in paths
-    assert dep['spec']['template']['spec']['containers'][0]['image'].endswith('@sha256:96870f7e2687e69128643b6a376ec138e7e5fec4df5878cf012cbdb2ec2f37fa')
+    assert dep['spec']['template']['spec']['containers'][0]['image'].endswith('@sha256:b2b2e416e1e1eb6ca783d890dd057a9efea4a6c60fe6081d1d7cb0055399a674')
     assert not any(d['kind'] in {'Secret', 'Role', 'RoleBinding', 'Namespace'} for d in docs)

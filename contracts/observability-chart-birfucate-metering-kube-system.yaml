@@ -14,7 +14,7 @@ spec:
     path: releases/observability-chart-birfucate-metering-kube-system
     values:
     - path: releases/observability-chart-birfucate-metering-kube-system/values.yaml
-      digest: sha256:7b565308285391aa6946c758b8850a04ed060c8c10b94e38d76c492e7a88f69d
+      digest: sha256:f0691da497e88d94c21ddc4e2760b01f8c9be8e21361f8f0f2be965ebda96a67
     chart: clusters/re8ch/charts/birfucate-metering
     chartDigest: sha256:b53dae57c8a872763faff9e4283afb3aabb8ddfd0167582fab7f957abba9fdea
   provenance:
