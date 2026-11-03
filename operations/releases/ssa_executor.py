@@ -264,7 +264,13 @@ class Executor:
         manifest, objects = load_archive(bundle_path)
         if manifest["releaseId"] != operation["releaseId"]:
             raise Rejected("bundle is bound to another release")
-        if operation["action"] != "rollback" and manifest["contractDigest"] != contract_digest:
+        # A replay is already pinned to the exact healthy accepted reference,
+        # digest, payload and inventory above.  Allow that immutable bundle to
+        # survive non-inventory contract hardening (for example, narrowing the
+        # replay identity) without requiring an identical artifact rebuild.
+        # Publisher operations remain bound to the complete current contract.
+        if (operation["action"] != "rollback" and not replay_only
+                and manifest["contractDigest"] != contract_digest):
             raise Rejected("bundle is bound to another contract")
         if manifest["inventoryDigest"] != operation["inventoryDigest"]:
             raise Rejected("operation inventory differs from bundle")
