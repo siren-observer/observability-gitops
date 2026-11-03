@@ -33,6 +33,39 @@ def test_replay_requires_exact_healthy_acceptance(tmp_path,monkeypatch,fault):
         with pytest.raises((executor.Rejected,ValueError)):executor.Executor(now=lambda:NOW).validate(c,op,bundle,store)
     else:assert executor.Executor(now=lambda:NOW).validate(c,op,bundle,store)[0]['releaseId']=='demo'
 
+
+def test_replay_accepts_accepted_bundle_after_non_inventory_contract_hardening(tmp_path):
+    c,op,bundle=prepare(tmp_path,sequence=2)
+    c['spec']['authorityDomain']='observability-metering'
+    c['spec']['provenance'].update(repository=REPOSITORY,workflow=WORKFLOW,environment=ENVIRONMENT,audience=AUDIENCE,signer=SIGNER)
+    archive,_=compile_bundle(c,rendered());bundle.write_bytes(archive)
+    accepted_contract_digest=digest(canonical(c))
+
+    # Tightening authorization changes the contract digest but does not change
+    # the immutable accepted payload or inventory.
+    c['spec']['authorization']['forceConflictObjects']=[]
+    op['contractDigest']=digest(canonical(c))
+    assert op['contractDigest'] != accepted_contract_digest
+    op['bundle'].update(reference='oci://ghcr.io/siren-observer/observability-gitops-release/demo',digest=digest(archive),payloadDigest=digest(archive),signer=SIGNER)
+    op['github'].update(replay_provenance(c))
+    op['previousApprovedDigest']=digest(archive)
+    state=dict(releaseId='demo',sequence=1,healthyDigest=digest(archive),appliedDigest=digest(archive),payloadDigest=digest(archive),bundleReference=op['bundle']['reference'],inventoryDigest=op['inventoryDigest'])
+    store=SimpleNamespace(result=lambda _:None,state=lambda:state)
+
+    manifest,_,_=executor.Executor(now=lambda:NOW).validate(c,op,bundle,store)
+    assert manifest['contractDigest']==accepted_contract_digest
+
+
+def test_publisher_remains_bound_to_complete_current_contract(tmp_path):
+    c,op,bundle=prepare(tmp_path)
+    archive,_=compile_bundle(c,rendered());bundle.write_bytes(archive)
+    c['spec']['authorization']['forceConflictObjects']=[]
+    op['contractDigest']=digest(canonical(c))
+    op['bundle']['payloadDigest']=digest(archive)
+
+    with pytest.raises(executor.Rejected,match='another contract'):
+        executor.Executor(now=lambda:NOW).validate(c,op,bundle,SimpleNamespace(result=lambda _:None,state=lambda:None))
+
 def test_matrix_and_workflow_have_no_publishing_inputs(monkeypatch):
     monkeypatch.chdir(ROOT)
     matrix=replay_matrix()
@@ -42,7 +75,8 @@ def test_matrix_and_workflow_have_no_publishing_inputs(monkeypatch):
     workflow=yaml.safe_load(text)
     triggers=workflow.get('on',workflow.get(True))
     assert triggers['workflow_dispatch'] is None
-    assert set(triggers)=={'workflow_dispatch'}
+    assert triggers['schedule']==[{'cron':'17 5 * * *'}]
+    assert set(triggers)=={'schedule','workflow_dispatch'}
     assert '--replay-only' in text and 'accepted-bundle' in text
     publisher=yaml.safe_load((ROOT/'.github/workflows/static-release.yml').read_text())
     assert publisher['concurrency']['group']=='observability-metering-static-release-${{ inputs.contract }}'
