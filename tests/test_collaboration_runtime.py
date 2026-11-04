@@ -17,6 +17,12 @@ def render(*extra, success=True):
     return [d for d in yaml.safe_load_all(run.stdout) if d]
 
 
+def test_public_re8ch_plugin_uses_reviewed_tool_endpoint():
+    route = next(d for d in render() if d['kind'] == 'HTTPRoute' and d['metadata']['name'] == 'tenant-native-mcp')
+    rule = next(r for r in route['spec']['rules'] if r['matches'][0]['path']['value'] == '/tenant-native/mcp')
+    assert rule['filters'][0]['urlRewrite']['path']['replaceFullPath'] == '/plugin/mcp'
+
+
 def test_disabled_collaboration_has_no_credential_write_or_admin_publication():
     docs = render('--set', 'tenantPlatform.tenantAPI.stalwartBootstrapEnabled=false',
                   '--set', 'tenantPlatform.tenantAPI.collaboration.enabled=false')
