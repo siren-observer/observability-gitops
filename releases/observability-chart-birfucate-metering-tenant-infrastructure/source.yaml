@@ -11,7 +11,7 @@ spec:
   values: values.yaml
   valuesDigest: sha256:ec6431aee3e6f154282ce3d7007ac8a49c9e5f3488e9b5fb7283e8a710da3a9c
   renderedResources: resources.yaml
-  renderedResourcesDigest: sha256:d3751bd8007e20c13913af1663c448a747a4e768feb9de0f4d9c0c0efaa284d6
+  renderedResourcesDigest: sha256:1fb7828e1fb43538ae89056ac1bdf3fc11ee7b2dbaed665af888c3b415d51dff
   helmRelease:
     namespace: flux-observability-system
     name: birfucate-metering
@@ -312,7 +312,7 @@ spec:
   - kind: TenantNamespace
     name: tenant-ci-4d8e6b2e153260b9
     reason: platform-bootstrap
-  chartDigest: sha256:b53dae57c8a872763faff9e4283afb3aabb8ddfd0167582fab7f957abba9fdea
+  chartDigest: sha256:7fb7bdc3c10fd01d8f659138df6c26f29a012f2559be6f5e6c0e8776302ed445
   valuesFromEvidence:
     configMap: flux-observability-system/tenant-mcp-image
     key: image

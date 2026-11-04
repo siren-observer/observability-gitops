@@ -9,14 +9,14 @@ spec:
     namespace: tenant-infrastructure
   source:
     renderer: kustomize
-    revision: git-chart@sha256:b53dae57c8a872763faff9e4283afb3aabb8ddfd0167582fab7f957abba9fdea
+    revision: git-chart@sha256:7fb7bdc3c10fd01d8f659138df6c26f29a012f2559be6f5e6c0e8776302ed445
     repository: siren-observer/observability-gitops
     path: releases/observability-chart-birfucate-metering-tenant-infrastructure
     values:
     - path: releases/observability-chart-birfucate-metering-tenant-infrastructure/values.yaml
       digest: sha256:ec6431aee3e6f154282ce3d7007ac8a49c9e5f3488e9b5fb7283e8a710da3a9c
     chart: clusters/re8ch/charts/birfucate-metering
-    chartDigest: sha256:b53dae57c8a872763faff9e4283afb3aabb8ddfd0167582fab7f957abba9fdea
+    chartDigest: sha256:7fb7bdc3c10fd01d8f659138df6c26f29a012f2559be6f5e6c0e8776302ed445
   provenance:
     repository: siren-observer/observability-gitops
     workflow: .github/workflows/static-release.yml
