@@ -9,7 +9,7 @@ spec:
   namespace: toolhive-system
   releaseNamespace: observability-ai
   values: values.yaml
-  valuesDigest: sha256:ec6431aee3e6f154282ce3d7007ac8a49c9e5f3488e9b5fb7283e8a710da3a9c
+  valuesDigest: sha256:9d356671ac53d94d5eb126d9eb6678fe564cfdbac9d9b716a33401c924b6d221
   renderedResources: resources.yaml
   renderedResourcesDigest: sha256:5789ad0ec3a6067edce72016eb0e0b8bdafa3cedac38bc75bdb7c124ca3c7af8
   helmRelease:
@@ -316,5 +316,5 @@ spec:
   valuesFromEvidence:
     configMap: flux-observability-system/tenant-mcp-image
     key: image
-    releaseRun: https://github.com/re8ch/service-backend/actions/runs/41492069309
-    sourceRevision: f084f0fd056c495b3cddc643618251e9101c8630
+    releaseRun: https://github.com/re8ch/service-backend/actions/runs/41915117718
+    sourceRevision: be44df62354f425261655c26b91231ee637eb55b
