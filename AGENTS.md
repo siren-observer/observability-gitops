@@ -4,3 +4,5 @@
 - Never commit credentials or decrypted SOPS material.
 - Pin images and OCI/Helm artifacts by digest.
 - The production root is `clusters/re8ch`.
+
+- Before using RE8CH self-service or platform tools, read [docs/RE8CH-TOOLS.md](docs/RE8CH-TOOLS.md) and discover the current authenticated catalog.
