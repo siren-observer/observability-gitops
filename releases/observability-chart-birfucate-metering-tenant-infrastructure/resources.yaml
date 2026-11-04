@@ -1176,7 +1176,7 @@ spec:
       urlRewrite:
         path:
           type: ReplaceFullPath
-          replaceFullPath: /mcp
+          replaceFullPath: /plugin/mcp
     backendRefs:
     - name: tenant-api
       port: 80
