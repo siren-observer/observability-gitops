@@ -34,7 +34,7 @@ for hr in source_docs:
  p=root/'releases'/name;p.mkdir(parents=True,exist_ok=True)
  values=spec.get('values',{}).copy()
  if hn=='birfucate-metering':
-  values=json.loads(json.dumps(values));values.setdefault('tenantPlatform',{}).setdefault('tenantAPI',{})['image']='registry.re8ch.com/image/re8ch-tenant-mcp@sha256:b2b2e416e1e1eb6ca783d890dd057a9efea4a6c60fe6081d1d7cb0055399a674'
+  values=json.loads(json.dumps(values));values.setdefault('tenantPlatform',{}).setdefault('tenantAPI',{})['image']='registry.re8ch.com/image/re8ch-tenant-mcp@sha256:81f7ccd401de741a67f9a5164d6f71c8ab7ab124baca60a12c4c885a78582978'
  values_bytes=yaml.safe_dump(values,sort_keys=False).encode();(p/'values.yaml').write_bytes(values_bytes)
  if hn=='birfucate-metering':
   chart=root/'clusters/re8ch/charts/birfucate-metering';chart_ref='clusters/re8ch/charts/birfucate-metering';chart_digest=treehash(chart);version=yaml.safe_load((chart/'Chart.yaml').read_text())['version']
