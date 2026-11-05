@@ -8,7 +8,7 @@ persists accepted state, and prunes only explicitly authorized stale objects.
 """
 from __future__ import annotations
 
-from profile import replay_provenance, REPLAY_AUDIENCE
+from profile import replay_provenance, REPLAY_AUDIENCE, WRITE_FENCED
 import argparse
 import contextlib
 import datetime as dt
@@ -208,6 +208,8 @@ class Executor:
     def validate(self, contract: dict, operation: dict, bundle_path: Path, store: Store) -> tuple[dict, list[dict], str]:
         validate_schema(contract, "release-contract.schema.json")
         validate_schema(operation, "release-operation.schema.json")
+        if contract["metadata"]["name"] in WRITE_FENCED:
+            raise Rejected("release write fenced: inventory overlaps live agent-runtime ownership")
         now = self.now()
         if parse_time(operation["issuedAt"]) > now + dt.timedelta(minutes=2) or parse_time(operation["expiresAt"]) <= now:
             raise Rejected("operation is stale or not yet valid")

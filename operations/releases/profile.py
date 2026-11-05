@@ -24,6 +24,11 @@ REPLAY_ENVIRONMENT = "release-reconciler-observability-metering"
 REPLAY_AUDIENCE = "https://kube-api.re8ch.com/release-reconciler-observability-metering"
 
 
+# The historical bundle includes workloads currently owned by agent-runtime.
+# Preserve its state for inspection while both scheduled and direct writes are fenced.
+WRITE_FENCED = {"observability-chart-birfucate-metering-tenant-infrastructure"}
+
+
 def sha256(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -112,6 +117,8 @@ def replay_provenance(contract: dict) -> dict[str, str] | None:
 def replay_matrix() -> list[dict[str, str]]:
     result = []
     for path in sorted(CONTRACT_ROOT.glob("observability-*.yaml")):
+        if path.stem in WRITE_FENCED:
+            continue
         profile = validate_contract(path.relative_to(ROOT))
         result.append({**profile, "contract": str(path.relative_to(ROOT)),
                        "environment": REPLAY_ENVIRONMENT, "audience": REPLAY_AUDIENCE})
