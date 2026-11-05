@@ -9,14 +9,14 @@ spec:
     namespace: kube-system
   source:
     renderer: kustomize
-    revision: git-chart@sha256:7fb7bdc3c10fd01d8f659138df6c26f29a012f2559be6f5e6c0e8776302ed445
+    revision: git-chart@sha256:5cbbc343907ac9625c758e01f8310c121b8c5d74790a29859113fcfd9c62b239
     repository: siren-observer/observability-gitops
     path: releases/observability-chart-birfucate-metering-kube-system
     values:
     - path: releases/observability-chart-birfucate-metering-kube-system/values.yaml
       digest: sha256:9d356671ac53d94d5eb126d9eb6678fe564cfdbac9d9b716a33401c924b6d221
     chart: clusters/re8ch/charts/birfucate-metering
-    chartDigest: sha256:7fb7bdc3c10fd01d8f659138df6c26f29a012f2559be6f5e6c0e8776302ed445
+    chartDigest: sha256:5cbbc343907ac9625c758e01f8310c121b8c5d74790a29859113fcfd9c62b239
   provenance:
     repository: siren-observer/observability-gitops
     workflow: .github/workflows/static-release.yml

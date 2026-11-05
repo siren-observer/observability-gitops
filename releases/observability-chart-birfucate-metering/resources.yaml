@@ -261,18 +261,29 @@ data:
     * on (namespace, pod) group_left(label_re8ch_com_tenant, label_birfucate_re8ch_com_resource)
     kube_pod_labels{label_opensandbox_re8ch_com_workload=\"true\",label_re8ch_com_tenant!=\"\"})
     / 1073741824","resourceLabel":"label_birfucate_re8ch_com_resource","resourceType":"sandbox-memory","serviceClass":"sandbox.runtime.v1","tenantLabel":"label_re8ch_com_tenant","unit":"GiB-second","valueKind":"gauge"},{"billingUnitSize":3600,"domain":"compute","name":"tenant-claim-cpu-request","pricePerBillingUnit":0.2,"purpose":"workload-runtime","query":"sum
-    by (label_tenant, label_resource_ref) (kube_pod_container_resource_requests{resource=\"cpu\"}
-    * on (namespace, pod) group_left(label_tenant, label_resource_ref) kube_pod_labels{label_birfucate_re8ch_com_metered=\"true\"})","resourceLabel":"label_resource_ref","resourceType":"cpu","tenantLabel":"label_tenant","unit":"core-second","valueKind":"gauge"},{"billingUnitSize":3600,"domain":"compute","name":"tenant-claim-memory-request","pricePerBillingUnit":0.03,"purpose":"workload-runtime","query":"sum
-    by (label_tenant, label_resource_ref) (kube_pod_container_resource_requests{resource=\"memory\"}
-    * on (namespace, pod) group_left(label_tenant, label_resource_ref) kube_pod_labels{label_birfucate_re8ch_com_metered=\"true\"})
+    by (label_tenant, label_resource_ref) (max by (exported_namespace, exported_pod,
+    exported_container) (kube_pod_container_resource_requests{resource=\"cpu\"}) *
+    on (exported_namespace, exported_pod) group_left(label_tenant, label_resource_ref)
+    max by (exported_namespace, exported_pod, label_tenant, label_resource_ref) (kube_pod_labels{label_birfucate_re8ch_com_metered=\"true\"}))","resourceLabel":"label_resource_ref","resourceType":"cpu","tenantLabel":"label_tenant","unit":"core-second","valueKind":"gauge"},{"billingUnitSize":3600,"domain":"compute","name":"tenant-claim-memory-request","pricePerBillingUnit":0.03,"purpose":"workload-runtime","query":"sum
+    by (label_tenant, label_resource_ref) (max by (exported_namespace, exported_pod,
+    exported_container) (kube_pod_container_resource_requests{resource=\"memory\"})
+    * on (exported_namespace, exported_pod) group_left(label_tenant, label_resource_ref)
+    max by (exported_namespace, exported_pod, label_tenant, label_resource_ref) (kube_pod_labels{label_birfucate_re8ch_com_metered=\"true\"}))
     / 1073741824","resourceLabel":"label_resource_ref","resourceType":"memory","tenantLabel":"label_tenant","unit":"GiB-second","valueKind":"gauge"},{"domain":"compute","name":"tenant-workload-cpu-used","purpose":"workload-runtime","query":"sum
     by (label_tenant, label_resource_ref) (rate(container_cpu_usage_seconds_total{container!=\"\",image!=\"\"}[5m])
-    * on (namespace, pod) group_left(label_tenant, label_resource_ref) kube_pod_labels{label_birfucate_re8ch_com_metered=\"true\"})","resourceLabel":"label_resource_ref","resourceType":"cpu-used","tenantLabel":"label_tenant","unit":"core-second","valueKind":"gauge"},{"domain":"compute","name":"tenant-workload-memory-used","purpose":"workload-runtime","query":"sum
+    * on (namespace, pod) group_left(label_tenant, label_resource_ref) label_replace(label_replace(max
+    by (exported_namespace, exported_pod, label_tenant, label_resource_ref) (kube_pod_labels{label_birfucate_re8ch_com_metered=\"true\"}),
+    \"namespace\", \"$1\", \"exported_namespace\", \"(.+)\"), \"pod\", \"$1\", \"exported_pod\",
+    \"(.+)\"))","resourceLabel":"label_resource_ref","resourceType":"cpu-used","tenantLabel":"label_tenant","unit":"core-second","valueKind":"gauge"},{"domain":"compute","name":"tenant-workload-memory-used","purpose":"workload-runtime","query":"sum
     by (label_tenant, label_resource_ref) (container_memory_working_set_bytes{container!=\"\",image!=\"\"}
-    * on (namespace, pod) group_left(label_tenant, label_resource_ref) kube_pod_labels{label_birfucate_re8ch_com_metered=\"true\"})
-    / 1073741824","resourceLabel":"label_resource_ref","resourceType":"memory-used","tenantLabel":"label_tenant","unit":"GiB-second","valueKind":"gauge"},{"billingUnitSize":3600,"domain":"compute","name":"tenant-claim-ephemeral-storage-request","pricePerBillingUnit":0.005,"purpose":"workload-scratch","query":"sum
-    by (label_tenant, label_resource_ref) (kube_pod_container_resource_requests{resource=\"ephemeral_storage\"}
-    * on (namespace, pod) group_left(label_tenant, label_resource_ref) kube_pod_labels{label_birfucate_re8ch_com_metered=\"true\"})
+    * on (namespace, pod) group_left(label_tenant, label_resource_ref) label_replace(label_replace(max
+    by (exported_namespace, exported_pod, label_tenant, label_resource_ref) (kube_pod_labels{label_birfucate_re8ch_com_metered=\"true\"}),
+    \"namespace\", \"$1\", \"exported_namespace\", \"(.+)\"), \"pod\", \"$1\", \"exported_pod\",
+    \"(.+)\")) / 1073741824","resourceLabel":"label_resource_ref","resourceType":"memory-used","tenantLabel":"label_tenant","unit":"GiB-second","valueKind":"gauge"},{"billingUnitSize":3600,"domain":"compute","name":"tenant-claim-ephemeral-storage-request","pricePerBillingUnit":0.005,"purpose":"workload-scratch","query":"sum
+    by (label_tenant, label_resource_ref) (max by (exported_namespace, exported_pod,
+    exported_container) (kube_pod_container_resource_requests{resource=\"ephemeral_storage\"})
+    * on (exported_namespace, exported_pod) group_left(label_tenant, label_resource_ref)
+    max by (exported_namespace, exported_pod, label_tenant, label_resource_ref) (kube_pod_labels{label_birfucate_re8ch_com_metered=\"true\"}))
     / 1073741824","resourceLabel":"label_resource_ref","resourceType":"ephemeral-storage","tenantLabel":"label_tenant","unit":"GiB-second","valueKind":"gauge"},{"billingUnitSize":3600,"domain":"ceph","name":"ceph-volume-capacity","pricePerBillingUnit":0.002,"purpose":"persistent-data","query":"sum
     by (label_tenant, label_resource_ref) ((kube_persistentvolumeclaim_resource_requests_storage_bytes
     * on (namespace, persistentvolumeclaim) group_left(label_tenant, label_resource_ref)

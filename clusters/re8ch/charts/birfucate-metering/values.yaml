@@ -306,7 +306,7 @@ meters:
       valueKind: gauge
       tenantLabel: label_tenant
       resourceLabel: label_resource_ref
-      query: sum by (label_tenant, label_resource_ref) (kube_pod_container_resource_requests{resource="cpu"} * on (namespace, pod) group_left(label_tenant, label_resource_ref) kube_pod_labels{label_birfucate_re8ch_com_metered="true"})
+      query: sum by (label_tenant, label_resource_ref) (max by (exported_namespace, exported_pod, exported_container) (kube_pod_container_resource_requests{resource="cpu"}) * on (exported_namespace, exported_pod) group_left(label_tenant, label_resource_ref) max by (exported_namespace, exported_pod, label_tenant, label_resource_ref) (kube_pod_labels{label_birfucate_re8ch_com_metered="true"}))
     - name: tenant-claim-memory-request
       domain: compute
       resourceType: memory
@@ -317,7 +317,7 @@ meters:
       valueKind: gauge
       tenantLabel: label_tenant
       resourceLabel: label_resource_ref
-      query: sum by (label_tenant, label_resource_ref) (kube_pod_container_resource_requests{resource="memory"} * on (namespace, pod) group_left(label_tenant, label_resource_ref) kube_pod_labels{label_birfucate_re8ch_com_metered="true"}) / 1073741824
+      query: sum by (label_tenant, label_resource_ref) (max by (exported_namespace, exported_pod, exported_container) (kube_pod_container_resource_requests{resource="memory"}) * on (exported_namespace, exported_pod) group_left(label_tenant, label_resource_ref) max by (exported_namespace, exported_pod, label_tenant, label_resource_ref) (kube_pod_labels{label_birfucate_re8ch_com_metered="true"})) / 1073741824
     - name: tenant-workload-cpu-used
       domain: compute
       resourceType: cpu-used
@@ -326,7 +326,7 @@ meters:
       valueKind: gauge
       tenantLabel: label_tenant
       resourceLabel: label_resource_ref
-      query: sum by (label_tenant, label_resource_ref) (rate(container_cpu_usage_seconds_total{container!="",image!=""}[5m]) * on (namespace, pod) group_left(label_tenant, label_resource_ref) kube_pod_labels{label_birfucate_re8ch_com_metered="true"})
+      query: sum by (label_tenant, label_resource_ref) (rate(container_cpu_usage_seconds_total{container!="",image!=""}[5m]) * on (namespace, pod) group_left(label_tenant, label_resource_ref) label_replace(label_replace(max by (exported_namespace, exported_pod, label_tenant, label_resource_ref) (kube_pod_labels{label_birfucate_re8ch_com_metered="true"}), "namespace", "$1", "exported_namespace", "(.+)"), "pod", "$1", "exported_pod", "(.+)"))
     - name: tenant-workload-memory-used
       domain: compute
       resourceType: memory-used
@@ -335,7 +335,7 @@ meters:
       valueKind: gauge
       tenantLabel: label_tenant
       resourceLabel: label_resource_ref
-      query: sum by (label_tenant, label_resource_ref) (container_memory_working_set_bytes{container!="",image!=""} * on (namespace, pod) group_left(label_tenant, label_resource_ref) kube_pod_labels{label_birfucate_re8ch_com_metered="true"}) / 1073741824
+      query: sum by (label_tenant, label_resource_ref) (container_memory_working_set_bytes{container!="",image!=""} * on (namespace, pod) group_left(label_tenant, label_resource_ref) label_replace(label_replace(max by (exported_namespace, exported_pod, label_tenant, label_resource_ref) (kube_pod_labels{label_birfucate_re8ch_com_metered="true"}), "namespace", "$1", "exported_namespace", "(.+)"), "pod", "$1", "exported_pod", "(.+)")) / 1073741824
     - name: tenant-claim-ephemeral-storage-request
       domain: compute
       resourceType: ephemeral-storage
@@ -346,7 +346,7 @@ meters:
       valueKind: gauge
       tenantLabel: label_tenant
       resourceLabel: label_resource_ref
-      query: sum by (label_tenant, label_resource_ref) (kube_pod_container_resource_requests{resource="ephemeral_storage"} * on (namespace, pod) group_left(label_tenant, label_resource_ref) kube_pod_labels{label_birfucate_re8ch_com_metered="true"}) / 1073741824
+      query: sum by (label_tenant, label_resource_ref) (max by (exported_namespace, exported_pod, exported_container) (kube_pod_container_resource_requests{resource="ephemeral_storage"}) * on (exported_namespace, exported_pod) group_left(label_tenant, label_resource_ref) max by (exported_namespace, exported_pod, label_tenant, label_resource_ref) (kube_pod_labels{label_birfucate_re8ch_com_metered="true"})) / 1073741824
     - name: ceph-volume-capacity
       domain: ceph
       resourceType: block-storage
