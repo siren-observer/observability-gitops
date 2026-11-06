@@ -1,5 +1,18 @@
 # RE8CH Observability GitOps
 
+<!-- gitops-status:start -->
+[![Reconcile](https://github.com/siren-observer/observability-gitops/actions/workflows/observability-metering-reconcile.yml/badge.svg?branch=main)](https://github.com/siren-observer/observability-gitops/actions/workflows/observability-metering-reconcile.yml?query=branch%3Amain)
+[![Contract validation](https://github.com/siren-observer/observability-gitops/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/siren-observer/observability-gitops/actions/workflows/validate.yml?query=branch%3Amain)
+
+These live badges show the latest workflow result on `main`, including scheduled
+and manual runs. Reconcile runs can cover a single release; a passing badge is
+not proof that every release is healthy or that SSA changed an object. Open the
+run for its release scope, accepted digest, comparison, apply and health results.
+The [domain observation Project](https://github.com/orgs/siren-observer/projects/1) retains release-level evidence;
+receipt dispatch and governance checks do not replace runtime health verification.
+Private workflow badges require repository access.
+<!-- gitops-status:end -->
+
 Private desired-state authority for RE8CH metrics, logs, alerts, and metering. Siren product source remains outside this repository.
 
 The `observability-kube-state-metrics` ReleaseContract is the first static
