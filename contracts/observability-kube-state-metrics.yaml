@@ -13,7 +13,7 @@ spec:
     chartOCI: oci://ghcr.io/prometheus-community/charts/kube-state-metrics@sha256:1fe070bab14c87f6bcdbef42200cf39b207b5f3d3a20234c429cebfe1bdb4270
     values:
     - path: releases/observability-kube-state-metrics/values.yaml
-      digest: sha256:bddab6c60eb55111c44a08caf89bcc08eee89074e7019fd4e6203268896d26c0
+      digest: sha256:c43a61d0dc8c1787ad1d52bbb315233189d2201503dc22b4160aaf9889ff9ef6
   provenance:
     repository: siren-observer/observability-gitops
     workflow: .github/workflows/static-release.yml

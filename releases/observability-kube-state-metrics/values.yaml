@@ -24,12 +24,6 @@ collectors:
 customLabels:
   observability.re8ch.com/component: inventory
 env:
-- name: KUBERNETES_SERVICE_HOST
-  valueFrom:
-    fieldRef:
-      fieldPath: status.hostIP
-- name: KUBERNETES_SERVICE_PORT
-  value: "6443"
 fullnameOverride: re8ch-kube-state-metrics
 image:
   registry: registry.k8s.io

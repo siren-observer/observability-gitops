@@ -9,7 +9,7 @@ spec:
   namespace: observability-system
   includeCRDs: true
   values: values.yaml
-  valuesDigest: sha256:bddab6c60eb55111c44a08caf89bcc08eee89074e7019fd4e6203268896d26c0
+  valuesDigest: sha256:c43a61d0dc8c1787ad1d52bbb315233189d2201503dc22b4160aaf9889ff9ef6
   renderedResources: resources.yaml
-  renderedResourcesDigest: sha256:005536ffbb08ac23ab31080b9990d6f8e907222b704064b69149f840f4f97d38
+  renderedResourcesDigest: sha256:b5db8cd6a472b58418e9f8440e8ebda5488b3eea9714905d5e5da625aa3cffa8
   containerImage: registry.k8s.io/kube-state-metrics/kube-state-metrics@sha256:85108987d044b18a098126732f98602df408888c0f7d456241f5abefb9744bc1
