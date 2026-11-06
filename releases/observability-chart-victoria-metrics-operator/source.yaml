@@ -9,13 +9,13 @@ spec:
   namespace: observability-system
   releaseNamespace: observability-system
   values: values.yaml
-  valuesDigest: sha256:dcbf9bd08cd54fd74d9da807cf5fe926f2dde4ecc187094b78827bb1f7418297
+  valuesDigest: sha256:86ce1534f9294f7f09a864315ebe530ceff78e39fe168c519d9e4282b5e761e9
   renderedResources: resources.yaml
-  renderedResourcesDigest: sha256:c4e032df7891e2b5aaf7edb087fa37b6b66159d756c8650ff4d79ceabdacb548
+  renderedResourcesDigest: sha256:b89b6df7798a32e5d9285420f1ffefb2a8481da3f1c7c032bd731ff69ef9da2d
   helmRelease:
     namespace: flux-observability-system
     name: victoria-metrics-operator
-  helmDeclarationDigest: sha256:d8664bf732db5db4893242132457f24a7ad7660e2dd3e7a951412a892146176f
+  helmDeclarationDigest: sha256:2507c08adf748f4a470e6082d9adf4ef0efa7e12f288aa57e2c98b197ef07b9e
   imagePins:
     registry.k8s.io/pause:3.10.1: registry.k8s.io/pause@sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c
     ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.153.0: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator@sha256:71c80734e698e0a38039aeb5a6fad7129ca68eaa31eb262752c1e5015b319a24

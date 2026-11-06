@@ -3460,12 +3460,6 @@ spec:
     customLabels:
       observability.re8ch.com/component: inventory
     env:
-    - name: KUBERNETES_SERVICE_HOST
-      valueFrom:
-        fieldRef:
-          fieldPath: status.hostIP
-    - name: KUBERNETES_SERVICE_PORT
-      value: '6443'
     fullnameOverride: re8ch-kube-state-metrics
     metricAnnotationsAllowList:
     - services=[observability.re8ch.com/owner,observability.re8ch.com/runbook,observability.re8ch.com/metrics-doc,observability.re8ch.com/slo]
@@ -3578,10 +3572,6 @@ spec:
       enabled: true
       plain: false
     env:
-    - name: KUBERNETES_SERVICE_HOST
-      value: 10.250.0.1
-    - name: KUBERNETES_SERVICE_PORT
-      value: '6443'
     operator:
       disable_prometheus_converter: true
     podDisruptionBudget:
