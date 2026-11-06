@@ -6,3 +6,15 @@
 - The production root is `clusters/re8ch`.
 
 - Before using RE8CH self-service or platform tools, read [docs/RE8CH-TOOLS.md](docs/RE8CH-TOOLS.md) and inspect the current Re8ch model-callable tool list and schemas. Backend authorization or a workflow example does not prove plugin publication.
+
+## Shared developer context
+
+- This repository is the desired-state authority for its own domain. The
+  [service-backend developer-context declaration](https://github.com/re8ch/service-backend/blob/main/workspace/developer-context.yaml)
+  supplies cross-repository navigation only and never overrides this file.
+- Start every change from current `origin/main` in a task-specific `codex/*`
+  worktree. Keep the base checkout clean; preserve dirty work before cleanup.
+- A Codespace is an ephemeral developer machine, not a reconciliation
+  controller. GitHub Actions and runtime read-back remain delivery evidence.
+- Wiki, Projects and Gists are projections or task evidence. Stable context and
+  desired state must be reviewed in Git; never place credentials in them.
