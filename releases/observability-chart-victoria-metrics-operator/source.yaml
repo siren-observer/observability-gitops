@@ -9,7 +9,7 @@ spec:
   namespace: observability-system
   releaseNamespace: observability-system
   values: values.yaml
-  valuesDigest: sha256:86ce1534f9294f7f09a864315ebe530ceff78e39fe168c519d9e4282b5e761e9
+  valuesDigest: sha256:16748e396b8f45702a7d89b759f8d53e70fa676094e9ba683c01df959c152d43
   renderedResources: resources.yaml
   renderedResourcesDigest: sha256:b89b6df7798a32e5d9285420f1ffefb2a8481da3f1c7c032bd731ff69ef9da2d
   helmRelease:

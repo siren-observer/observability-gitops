@@ -15,7 +15,7 @@ crds:
     enabled: false
   enabled: true
   plain: false
-env:
+env: null
 operator:
   disable_prometheus_converter: true
 podDisruptionBudget:

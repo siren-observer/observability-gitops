@@ -32,3 +32,11 @@ def test_changed_chart_values_require_new_locked_render(tmp_path,monkeypatch):
     values.write_text(values.read_text()+'\nunreviewedChange: true\n')
     with pytest.raises(ValueError,match='values digest mismatch'):
         profile.validate_contract(tmp_path/'contracts'/f'{name}.yaml')
+
+def test_admin_adoption_list_is_reviewed_and_locked_without_core_namespaces():
+    values=yaml.safe_load((ROOT/'releases/observability-chart-birfucate-metering/values.yaml').read_text())
+    admin=next(item for item in values['tenantPlatform']['tenants'] if item['name']=='admin')
+    adopted=set(admin['namespacePolicy']['adoptedNamespaces'])
+    assert {'tenant-infrastructure','toolhive-system','observability-system','rook-ceph','flux-system'} <= adopted
+    assert not {'default','kube-system','kube-public','kube-node-lease'} & adopted
+    assert admin['namespacePolicy']['maxNamespaces'] == 100
