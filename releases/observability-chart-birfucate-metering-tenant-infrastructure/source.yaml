@@ -9,13 +9,13 @@ spec:
   namespace: tenant-infrastructure
   releaseNamespace: observability-ai
   values: values.yaml
-  valuesDigest: sha256:9d356671ac53d94d5eb126d9eb6678fe564cfdbac9d9b716a33401c924b6d221
+  valuesDigest: sha256:6bae9eeb921725fb5ed2eaed0deb248486cafcc7e7e92908d263635192ad8d19
   renderedResources: resources.yaml
   renderedResourcesDigest: sha256:48682cc46c0c5d6a89d2a4579a3686c2c90364f4801fa2d189a3d8573137ad10
   helmRelease:
     namespace: flux-observability-system
     name: birfucate-metering
-  helmDeclarationDigest: sha256:1396aca845c4f99e09ec7b71b2764b805414d29290257f2e31246a33f0959fda
+  helmDeclarationDigest: sha256:9118651b8ef36759b200b8b9c45e365879327cc1a1019e3ce7701811c8ad61a1
   imagePins:
     registry.k8s.io/pause:3.10.1: registry.k8s.io/pause@sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c
     ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.153.0: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator@sha256:71c80734e698e0a38039aeb5a6fad7129ca68eaa31eb262752c1e5015b319a24
@@ -312,7 +312,7 @@ spec:
   - kind: TenantNamespace
     name: tenant-ci-4d8e6b2e153260b9
     reason: platform-bootstrap
-  chartDigest: sha256:5cbbc343907ac9625c758e01f8310c121b8c5d74790a29859113fcfd9c62b239
+  chartDigest: sha256:b77bcebcbe66000b3f97a4044a11783d3d76ffa9c46c4ca2963ef28cde9e2daf
   valuesFromEvidence:
     configMap: flux-observability-system/tenant-mcp-image
     key: image

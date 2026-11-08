@@ -14,7 +14,7 @@ spec:
     path: releases/observability-chart-victoria-metrics-operator
     values:
     - path: releases/observability-chart-victoria-metrics-operator/values.yaml
-      digest: sha256:86ce1534f9294f7f09a864315ebe530ceff78e39fe168c519d9e4282b5e761e9
+      digest: sha256:16748e396b8f45702a7d89b759f8d53e70fa676094e9ba683c01df959c152d43
     chartOCI: oci://ghcr.io/victoriametrics/helm-charts/victoria-metrics-operator@sha256:454e94bbc58a44edf760c69d69d3e2cbc4a355b90b5adda2dcc28069213fb442
   provenance:
     repository: siren-observer/observability-gitops
