@@ -9,13 +9,13 @@ spec:
   namespace: tenant-infrastructure
   releaseNamespace: observability-ai
   values: values.yaml
-  valuesDigest: sha256:9d356671ac53d94d5eb126d9eb6678fe564cfdbac9d9b716a33401c924b6d221
+  valuesDigest: sha256:7c6be02654f6bf96e03155dd6970055c62907b9b57dfc4da1c557ffe4ca93930
   renderedResources: resources.yaml
-  renderedResourcesDigest: sha256:48682cc46c0c5d6a89d2a4579a3686c2c90364f4801fa2d189a3d8573137ad10
+  renderedResourcesDigest: sha256:9f9ac41af6b0ec6aaa375fd198744cf00bb3a898c77f82a54d698f45fb827258
   helmRelease:
     namespace: flux-observability-system
     name: birfucate-metering
-  helmDeclarationDigest: sha256:1396aca845c4f99e09ec7b71b2764b805414d29290257f2e31246a33f0959fda
+  helmDeclarationDigest: sha256:50281f2958f17c46c2053e654443cbe430247c4a8dd18c2f6c2ac38d9dcff9b7
   imagePins:
     registry.k8s.io/pause:3.10.1: registry.k8s.io/pause@sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c
     ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator:0.153.0: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator@sha256:71c80734e698e0a38039aeb5a6fad7129ca68eaa31eb262752c1e5015b319a24
@@ -180,6 +180,9 @@ spec:
   - kind: Consumable
     name: sandbox-runtime
     reason: platform-bootstrap
+  - kind: Consumable
+    name: github-enterprise-governance
+    reason: platform-bootstrap
   - kind: MCPExternalAuthConfig
     name: admin-vmcp-backend-auth
     reason: platform-bootstrap
@@ -312,9 +315,12 @@ spec:
   - kind: TenantNamespace
     name: tenant-ci-4d8e6b2e153260b9
     reason: platform-bootstrap
-  chartDigest: sha256:5cbbc343907ac9625c758e01f8310c121b8c5d74790a29859113fcfd9c62b239
+  - kind: TenantServiceInstance
+    name: github-enterprise-governance
+    reason: platform-bootstrap
+  chartDigest: sha256:5d1405ca5d9b75f2918aa3691c267f32dfe139d1b9d7af6d6e35484d9178e593
   valuesFromEvidence:
     configMap: flux-observability-system/tenant-mcp-image
     key: image
-    releaseRun: https://github.com/re8ch/service-backend/actions/runs/41915117718
-    sourceRevision: be44df62354f425261655c26b91231ee637eb55b
+    releaseRun: https://github.com/re8ch/service-backend/actions/runs/42689050680
+    sourceRevision: 07d4deae231b372c2b8521fa0c75ced0c05b5625

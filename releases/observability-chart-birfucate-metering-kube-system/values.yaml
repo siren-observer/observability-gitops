@@ -20,7 +20,7 @@ serviceMonitor:
   enabled: false
 tenantPlatform:
   enabled: true
-  image: registry.re8ch.com/image/re8ch-ai-operations@sha256:f751479965f23bbb102e6637cfefd2791004c962c15acb928dcd6d42949967d8
+  image: registry.re8ch.com/image/re8ch-ai-operations@sha256:4fc65f269db3ca31114d0b5b547bc2eeb6e138c17dfb5433f2f19e81550b615e
   placement:
     nodeNames:
     - r640
@@ -37,7 +37,9 @@ tenantPlatform:
       secretUID: e31d554c-5cf8-4663-adcd-811849a31b3c
       tenantRef: re8ch
     enabled: true
-    image: registry.re8ch.com/image/re8ch-ai-operations@sha256:f751479965f23bbb102e6637cfefd2791004c962c15acb928dcd6d42949967d8
+    githubEnterpriseGovernance:
+      enabled: true
+    image: registry.re8ch.com/image/re8ch-ai-operations@sha256:4fc65f269db3ca31114d0b5b547bc2eeb6e138c17dfb5433f2f19e81550b615e
   state:
     size: 1Gi
     storageClassName: rbd-r640
@@ -60,7 +62,7 @@ tenantPlatform:
     organizationsURL: https://api.re8ch.com/auth/v2/organizations
     platformSessionURL: ''
     usersURL: https://api.re8ch.com/auth/v2/users
-    image: ghcr.io/re8ch/service-backend-tenant-mcp@sha256:f9c50fa88cccad8298f4e92fe87408af0dae8b70a350f00aab2754a49f306c8d
+    image: ghcr.io/re8ch/service-backend-tenant-mcp@sha256:18a88733d5f5cd103623e5f0ca32527932561c3434e7efcbac3f55e0e7d7e4ea
   tenantReadinessPath: /readyz
   tenants:
   - byocAllowed: true
@@ -139,7 +141,11 @@ tenantPlatform:
     visibility: Private
   - deletionPolicy: Retain
     displayName: RE8CH Platform Administration
-    grants: []
+    grants:
+    - consumableRef: integration.github.enterprise-governance.v1
+      lifecycle: Active
+      name: admin-github-enterprise-governance
+      roleRef: admin
     harborProjectRef: re8ch
     identityBindings:
     - group: re8ch:k8s-admins
