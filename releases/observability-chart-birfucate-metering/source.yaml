@@ -318,7 +318,7 @@ spec:
   - kind: TenantServiceInstance
     name: github-enterprise-governance
     reason: platform-bootstrap
-  chartDigest: sha256:5d1405ca5d9b75f2918aa3691c267f32dfe139d1b9d7af6d6e35484d9178e593
+  chartDigest: sha256:5662170e2890603ac9437f7991269706d085ebad498b1b48f9d870e9b2843fd2
   valuesFromEvidence:
     configMap: flux-observability-system/tenant-mcp-image
     key: image
