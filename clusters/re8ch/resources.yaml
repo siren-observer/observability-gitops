@@ -2890,7 +2890,7 @@ spec:
       enabled: false
     tenantPlatform:
       enabled: true
-      image: registry.re8ch.com/image/re8ch-ai-operations@sha256:f751479965f23bbb102e6637cfefd2791004c962c15acb928dcd6d42949967d8
+      image: registry.re8ch.com/image/re8ch-ai-operations@sha256:4fc65f269db3ca31114d0b5b547bc2eeb6e138c17dfb5433f2f19e81550b615e
       placement:
         nodeNames:
         - r640
@@ -2907,7 +2907,9 @@ spec:
           secretUID: e31d554c-5cf8-4663-adcd-811849a31b3c
           tenantRef: re8ch
         enabled: true
-        image: registry.re8ch.com/image/re8ch-ai-operations@sha256:f751479965f23bbb102e6637cfefd2791004c962c15acb928dcd6d42949967d8
+        githubEnterpriseGovernance:
+          enabled: true
+        image: registry.re8ch.com/image/re8ch-ai-operations@sha256:4fc65f269db3ca31114d0b5b547bc2eeb6e138c17dfb5433f2f19e81550b615e
       state:
         size: 1Gi
         storageClassName: rbd-r640
@@ -3008,7 +3010,11 @@ spec:
         visibility: Private
       - deletionPolicy: Retain
         displayName: RE8CH Platform Administration
-        grants: []
+        grants:
+        - consumableRef: integration.github.enterprise-governance.v1
+          lifecycle: Active
+          name: admin-github-enterprise-governance
+          roleRef: admin
         harborProjectRef: re8ch
         identityBindings:
         - group: re8ch:k8s-admins

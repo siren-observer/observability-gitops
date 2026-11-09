@@ -21,7 +21,7 @@ spec:
     metadata:
       annotations:
         checksum/collector: 6721cc7678fe7048f415e7878d17e308d4160be5d12207b4f63177f272fc2281
-        checksum/config: 3038ac5a6403e7015d15cb79058c25d4156f876bc1586911c957157eb9a4e615
+        checksum/config: 1fe9c6e2bb2329b88137d90bc7144c19ecc1fe3774f3d33a5c0db212687cb21b
       labels:
         app.kubernetes.io/name: birfucate-metering
         app.kubernetes.io/instance: birfucate-metering

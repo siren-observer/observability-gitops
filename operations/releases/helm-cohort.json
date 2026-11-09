@@ -270,6 +270,11 @@
         "reason": "platform-bootstrap"
       },
       {
+        "kind": "Consumable",
+        "name": "github-enterprise-governance",
+        "reason": "platform-bootstrap"
+      },
+      {
         "kind": "MCPExternalAuthConfig",
         "name": "admin-vmcp-backend-auth",
         "reason": "platform-bootstrap"
@@ -487,6 +492,11 @@
       {
         "kind": "TenantNamespace",
         "name": "tenant-ci-4d8e6b2e153260b9",
+        "reason": "platform-bootstrap"
+      },
+      {
+        "kind": "TenantServiceInstance",
+        "name": "github-enterprise-governance",
         "reason": "platform-bootstrap"
       }
     ]
@@ -762,6 +772,11 @@
         "reason": "platform-bootstrap"
       },
       {
+        "kind": "Consumable",
+        "name": "github-enterprise-governance",
+        "reason": "platform-bootstrap"
+      },
+      {
         "kind": "MCPExternalAuthConfig",
         "name": "admin-vmcp-backend-auth",
         "reason": "platform-bootstrap"
@@ -979,6 +994,11 @@
       {
         "kind": "TenantNamespace",
         "name": "tenant-ci-4d8e6b2e153260b9",
+        "reason": "platform-bootstrap"
+      },
+      {
+        "kind": "TenantServiceInstance",
+        "name": "github-enterprise-governance",
         "reason": "platform-bootstrap"
       }
     ]
@@ -1254,6 +1274,11 @@
         "reason": "platform-bootstrap"
       },
       {
+        "kind": "Consumable",
+        "name": "github-enterprise-governance",
+        "reason": "platform-bootstrap"
+      },
+      {
         "kind": "MCPExternalAuthConfig",
         "name": "admin-vmcp-backend-auth",
         "reason": "platform-bootstrap"
@@ -1471,6 +1496,11 @@
       {
         "kind": "TenantNamespace",
         "name": "tenant-ci-4d8e6b2e153260b9",
+        "reason": "platform-bootstrap"
+      },
+      {
+        "kind": "TenantServiceInstance",
+        "name": "github-enterprise-governance",
         "reason": "platform-bootstrap"
       }
     ]
@@ -1746,6 +1776,11 @@
         "reason": "platform-bootstrap"
       },
       {
+        "kind": "Consumable",
+        "name": "github-enterprise-governance",
+        "reason": "platform-bootstrap"
+      },
+      {
         "kind": "MCPExternalAuthConfig",
         "name": "admin-vmcp-backend-auth",
         "reason": "platform-bootstrap"
@@ -1963,6 +1998,11 @@
       {
         "kind": "TenantNamespace",
         "name": "tenant-ci-4d8e6b2e153260b9",
+        "reason": "platform-bootstrap"
+      },
+      {
+        "kind": "TenantServiceInstance",
+        "name": "github-enterprise-governance",
         "reason": "platform-bootstrap"
       }
     ]
@@ -2238,6 +2278,11 @@
         "reason": "platform-bootstrap"
       },
       {
+        "kind": "Consumable",
+        "name": "github-enterprise-governance",
+        "reason": "platform-bootstrap"
+      },
+      {
         "kind": "MCPExternalAuthConfig",
         "name": "admin-vmcp-backend-auth",
         "reason": "platform-bootstrap"
@@ -2455,6 +2500,11 @@
       {
         "kind": "TenantNamespace",
         "name": "tenant-ci-4d8e6b2e153260b9",
+        "reason": "platform-bootstrap"
+      },
+      {
+        "kind": "TenantServiceInstance",
+        "name": "github-enterprise-governance",
         "reason": "platform-bootstrap"
       }
     ]
