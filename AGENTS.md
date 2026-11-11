@@ -4,6 +4,8 @@
 - Never commit credentials or decrypted SOPS material.
 - Pin images and OCI/Helm artifacts by digest.
 - The production root is `clusters/re8ch`.
+- Local Flux writers are permanently retired and forbidden. Never create, restore, scale, restart, repair, proxy or grant RBAC to Source, Kustomize, Helm, Notification, image automation, compatibility or domain Flux controllers.
+- Retained Flux CRDs and manifests are historical/migration inputs only. GitHub webhooks/Actions plus the bounded cloud SSA executor are the sole delivery path, including emergency recovery.
 
 - Before using RE8CH self-service or platform tools, read [docs/RE8CH-TOOLS.md](docs/RE8CH-TOOLS.md) and inspect the current Re8ch model-callable tool list and schemas. Backend authorization or a workflow example does not prove plugin publication.
 

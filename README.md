@@ -15,10 +15,20 @@ Private workflow badges require repository access.
 
 Private desired-state authority for RE8CH metrics, logs, alerts, and metering. Siren product source remains outside this repository.
 
+## Local Flux prohibition
+
+Local Flux writers are permanently retired and forbidden. Do not create,
+restore, scale, restart, repair, proxy or authorize Source, Kustomize, Helm,
+Notification, image automation, compatibility or domain Flux controllers.
+Retained Flux APIs and manifests are historical/migration inputs only. GitHub
+webhooks and Actions select reviewed immutable artifacts; the bounded cloud SSA
+executor is the sole runtime writer and the only recovery path.
+
 The `observability-kube-state-metrics` ReleaseContract is the first static
 executor migration. It binds the reviewed render to both the Helm chart digest
-and the multi-architecture container image digest. Flux remains live until the
-protected server-side dry-run and conflict takeover are recorded.
+and the multi-architecture container image digest. The bounded cloud SSA
+executor owns delivery; no local Flux writer may be restored before, during or
+after server-side dry-run and conflict takeover.
 
 ## Native domain cloud handoff
 
