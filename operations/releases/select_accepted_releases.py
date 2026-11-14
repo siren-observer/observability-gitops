@@ -18,6 +18,21 @@ from operation_materialize import accepted_bundle, state_configmap_name
 from profile import ROOT, replay_matrix
 
 
+def read_failure_reason(result):
+    message = f"{result.stdout or ''}\n{result.stderr or ''}".lower()
+    for marker, reason in (
+        ('certificate signed by unknown authority', 'state-read-untrusted-ca'),
+        ('forbidden', 'state-read-forbidden'),
+        ('unauthorized', 'state-read-unauthorized'),
+        ('connection refused', 'state-read-connection-refused'),
+        ('i/o timeout', 'state-read-timeout'),
+        ('context deadline exceeded', 'state-read-timeout'),
+    ):
+        if marker in message:
+            return reason
+    return 'state-read-failed'
+
+
 def read_state(argv, runner, sleeper):
     for attempt in range(3):
         try:
@@ -41,7 +56,7 @@ def select(matrix, root=ROOT, runner=subprocess.run, sleeper=time.sleep):
                 result=read_state(['kubectl','get','configmap',state_configmap_name(release),'--namespace',entry['namespace'],
                                   '--ignore-not-found','-o','json'],runner,sleeper)
                 if result.returncode:
-                    return 'invalid',release,'state-read-failed',entry
+                    return 'invalid',release,read_failure_reason(result),entry
                 if not result.stdout.strip():
                     return 'skipped',release,'no-accepted-state',entry
                 cm=json.loads(result.stdout)
