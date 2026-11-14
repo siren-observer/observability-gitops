@@ -83,6 +83,14 @@ def test_selection_classifies_untrusted_ca_without_exposing_stderr(tmp_path):
     assert not selected and not skipped and invalid==[('demo','state-read-untrusted-ca')]
 
 
+def test_selection_classifies_kubectl_login_challenge(tmp_path):
+    entry,_,_=fixture(tmp_path)
+    def runner(argv,**kwargs):
+        return subprocess.CompletedProcess(argv,1,'','You must be logged in to the server (the server has asked for the client to provide credentials)')
+    selected,skipped,invalid=selector.select([entry],tmp_path,runner,sleeper=lambda _:None)
+    assert not selected and not skipped and invalid==[('demo','state-read-unauthorized')]
+
+
 def test_empty_matrix_is_explicitly_skipped_and_execution_rechecks_state():
     root=Path(__file__).resolve().parents[1]
     text=(root/'.github/workflows/observability-metering-reconcile.yml').read_text();workflow=yaml.safe_load(text)
