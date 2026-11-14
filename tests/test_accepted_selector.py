@@ -71,8 +71,16 @@ def test_selection_does_not_retry_authorization_failure(tmp_path):
     def runner(argv,**kwargs):
         calls.append(argv);return subprocess.CompletedProcess(argv,1,'','forbidden')
     selected,skipped,invalid=selector.select([entry],tmp_path,runner,sleeper=lambda _:None)
-    assert not selected and not skipped and invalid==[('demo','state-read-failed')]
+    assert not selected and not skipped and invalid==[('demo','state-read-forbidden')]
     assert len(calls)==1
+
+
+def test_selection_classifies_untrusted_ca_without_exposing_stderr(tmp_path):
+    entry,_,_=fixture(tmp_path)
+    def runner(argv,**kwargs):
+        return subprocess.CompletedProcess(argv,1,'','x509: certificate signed by unknown authority')
+    selected,skipped,invalid=selector.select([entry],tmp_path,runner,sleeper=lambda _:None)
+    assert not selected and not skipped and invalid==[('demo','state-read-untrusted-ca')]
 
 
 def test_empty_matrix_is_explicitly_skipped_and_execution_rechecks_state():
