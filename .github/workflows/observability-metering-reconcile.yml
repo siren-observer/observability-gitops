@@ -66,7 +66,7 @@ jobs:
     permissions: {contents: read, id-token: write}
     env:
       EXECUTOR_AUDIENCE: https://kube-api.re8ch.com/release-reconciler-observability-metering
-      SOURCE_REVISION: 45248d1c55ea9573efb109e6d33bd32659370b2d
+      SOURCE_REVISION: ec76aa8b2efb66afce1ceb6ef541f1408f9429af
       TARGET_NAMESPACE: tenant-infrastructure
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -111,12 +111,12 @@ jobs:
           trap 'find "$RUNNER_TEMP/governance-secrets" -type f -exec shred -u {} + 2>/dev/null || true' EXIT
           checksums="$RUNNER_TEMP/governance-secret-checksums"
           cat > "$checksums" <<'EOF'
-          8058db7e92338afbdfcababc9a0bacb288b7cac9f73ab3b2e25b25556c7dcb4c  github-enterprise-delivery-app.sops.yaml
-          200df9c370be07fa3c11b683cbb712deb25b520bff570536e1209136f88c52a9  github-enterprise-security-app.sops.yaml
-          628c67a2e865ecd3da9a80390adf9df9be522c2250e3bd78599e217507907525  github-enterprise-collaboration-app.sops.yaml
-          e3d92772adbd72a04b88158c08863a2263c22ad320cb182965695301ebac5222  github-enterprise-developer-ai-app.sops.yaml
-          64ccfbf456a00f4cee4dedfaade35e205247d19e9fcf7b9acd90ad7662cdc229  github-enterprise-identity-app.sops.yaml
-          635a10fd008c579966bc5784bca9994b187c8317e3827871a32f8eb1ab9d603e  github-enterprise-billing-app.sops.yaml
+          33f0f250cc287b3348e12c27327e6e9b6959b1bd9df7d7ab8d6caf0b3d66a383  github-enterprise-delivery-app.sops.yaml
+          b0b8e72306b6a78e4e7acec16feeca52ece726aa214bddaffd363851f70e501d  github-enterprise-security-app.sops.yaml
+          4888484714d6d4775c67ef5e206a7713a16c13424d862c9a7e9e29968b6758c2  github-enterprise-collaboration-app.sops.yaml
+          24c2025929defc46481ff68f4c76350c140551c305dc785039316982feddbd86  github-enterprise-developer-ai-app.sops.yaml
+          fbf932b7b733139d583d3494a96d934b00a910d6c96d739c2a6b299a40ca48dd  github-enterprise-identity-app.sops.yaml
+          a40c1a6f6c5c11343752e79f844a022024d39fae321e08ca343979384fd464c9  github-enterprise-billing-app.sops.yaml
           EOF
           while read -r _ file; do
             curl -fsSL --retry 4 \
