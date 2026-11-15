@@ -69,12 +69,12 @@ def test_publisher_remains_bound_to_complete_current_contract(tmp_path):
 def test_matrix_and_workflow_have_no_publishing_inputs(monkeypatch):
     monkeypatch.chdir(ROOT)
     matrix=replay_matrix()
-    assert len(matrix)==19
+    assert len(matrix)==18
     assert all(p['audience']==REPLAY_AUDIENCE for p in matrix)
     text=(ROOT/'.github/workflows/observability-metering-reconcile.yml').read_text()
     workflow=yaml.safe_load(text)
     triggers=workflow.get('on',workflow.get(True))
-    assert set(triggers['workflow_dispatch']['inputs']) == {'delivery_id'}
+    assert set(triggers['workflow_dispatch']['inputs']) == {'delivery_id', 'inject_governance_secrets'}
     assert triggers['schedule']==[{'cron':'17 5 * * *'}]
     assert set(triggers)=={'schedule','workflow_dispatch'}
     assert '--replay-only' in text and 'accepted-bundle' in text

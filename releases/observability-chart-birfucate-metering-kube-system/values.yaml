@@ -62,7 +62,7 @@ tenantPlatform:
     organizationsURL: https://api.re8ch.com/auth/v2/organizations
     platformSessionURL: ''
     usersURL: https://api.re8ch.com/auth/v2/users
-    image: ghcr.io/re8ch/service-backend-tenant-mcp@sha256:18a88733d5f5cd103623e5f0ca32527932561c3434e7efcbac3f55e0e7d7e4ea
+    image: ghcr.io/re8ch/service-backend-tenant-mcp@sha256:76b83c4fe55e94870f61df42acd42539d67947e91dae2f43287abccaa7564a8b
   tenantReadinessPath: /readyz
   tenants:
   - byocAllowed: true
