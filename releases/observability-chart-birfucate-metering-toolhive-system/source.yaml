@@ -9,7 +9,7 @@ spec:
   namespace: toolhive-system
   releaseNamespace: observability-ai
   values: values.yaml
-  valuesDigest: sha256:7c6be02654f6bf96e03155dd6970055c62907b9b57dfc4da1c557ffe4ca93930
+  valuesDigest: sha256:51d70f678f96beff1b795b11bdfe98f029b2983b61798bb3764accc67b040ded
   renderedResources: resources.yaml
   renderedResourcesDigest: sha256:5789ad0ec3a6067edce72016eb0e0b8bdafa3cedac38bc75bdb7c124ca3c7af8
   helmRelease:
@@ -318,9 +318,9 @@ spec:
   - kind: TenantServiceInstance
     name: github-enterprise-governance
     reason: platform-bootstrap
-  chartDigest: sha256:5662170e2890603ac9437f7991269706d085ebad498b1b48f9d870e9b2843fd2
+  chartDigest: sha256:98e2485c30aa5355de5d90bedfafd8fb3c140e973a2029c1467d0b1a4f8b9225
   valuesFromEvidence:
     configMap: flux-observability-system/tenant-mcp-image
     key: image
-    releaseRun: https://github.com/re8ch/service-backend/actions/runs/42689050680
-    sourceRevision: 07d4deae231b372c2b8521fa0c75ced0c05b5625
+    releaseRun: https://github.com/re8ch/service-backend/actions/workflows/tenant-go-release.yml
+    sourceRevision: 45248d1c55ea9573efb109e6d33bd32659370b2d

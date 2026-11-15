@@ -9,6 +9,11 @@ on:
         description: Release webhook delivery for accepted-field observation
         required: false
         type: string
+      inject_governance_secrets:
+        description: Inject the reviewed GitHub App SOPS Secrets into tenant-infrastructure
+        required: false
+        default: false
+        type: boolean
 permissions:
   contents: read
 concurrency:
@@ -16,7 +21,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   select:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && inputs.inject_governance_secrets != true
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     environment: release-reconciler-observability-metering
@@ -46,6 +51,90 @@ jobs:
         if: failure()
         run: |
           python -c 'import datetime as dt,json,os; print(json.dumps({"apiVersion":"delivery.re8ch.com/workflow-failure/v1alpha1","outcome":"failed","finishedAt":dt.datetime.now(dt.timezone.utc).isoformat(),"runId":os.environ.get("GITHUB_RUN_ID"),"job":os.environ.get("GITHUB_JOB"),"health":{"status":"unknown","reason":"workflow step failed; inspect this run before trusting older accepted state"}}))' > "$RUNNER_TEMP/workflow-failure.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: failure()
+        with:
+          name: 'workflow-failure-${{ github.job }}-${{ github.run_id }}-${{ github.run_attempt }}'
+          path: '${{ runner.temp }}/workflow-failure.json'
+          retention-days: 30
+          if-no-files-found: error
+  inject-governance-secrets:
+    if: github.ref == 'refs/heads/main' && inputs.inject_governance_secrets == true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: release-reconciler-observability-metering
+    permissions: {contents: read, id-token: write}
+    env:
+      EXECUTOR_AUDIENCE: https://kube-api.re8ch.com/release-reconciler-observability-metering
+      SOURCE_REVISION: 45248d1c55ea9573efb109e6d33bd32659370b2d
+      TARGET_NAMESPACE: tenant-infrastructure
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: azure/setup-kubectl@c0c8b32d33a5244f1e5947304550403b63930415 # v4
+        with: {version: v1.33.1}
+      - name: Install pinned SOPS
+        run: |
+          curl -fsSL --retry 4 https://github.com/getsops/sops/releases/download/v3.13.1/sops-v3.13.1.linux.amd64 -o "$RUNNER_TEMP/sops"
+          echo "620a9d7e3352ababeca6908cea24a6e8b14ce89a448ddbd3f94f1ef3398f470a  $RUNNER_TEMP/sops" | sha256sum --check
+          chmod +x "$RUNNER_TEMP/sops"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+      - name: Acquire exact OIDC identity and prove bounded Secret access
+        env:
+          KUBE_API_CA_PEM: '${{ secrets.KUBE_API_CA_PEM }}'
+        run: |
+          set -euo pipefail
+          curl -fsS --get -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" --data-urlencode "audience=$EXECUTOR_AUDIENCE" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL" > "$RUNNER_TEMP/oidc.json"
+          token="$(jq -r .value "$RUNNER_TEMP/oidc.json")"; echo "::add-mask::$token"
+          kubeconfig="$RUNNER_TEMP/governance-secret-injector.kubeconfig"
+          printf '%s' "$KUBE_API_CA_PEM" > "$RUNNER_TEMP/re8ch-ca.crt"
+          kubectl config --kubeconfig "$kubeconfig" set-cluster re8ch-main --server=https://kube-api.service.re8ch.com \
+            --certificate-authority="$RUNNER_TEMP/re8ch-ca.crt" --embed-certs=true
+          kubectl config --kubeconfig "$kubeconfig" set-credentials release-executor --token="$token"
+          kubectl config --kubeconfig "$kubeconfig" set-context release-executor --cluster=re8ch-main --user=release-executor
+          kubectl config --kubeconfig "$kubeconfig" use-context release-executor
+          export KUBECONFIG="$kubeconfig"
+          for name in github-enterprise-{delivery,security,collaboration,developer-ai,identity,billing}-app; do
+            test "$(kubectl auth can-i patch "secret/$name" -n "$TARGET_NAMESPACE")" = yes
+          done
+          for denied in "get secrets" "list secrets" "create secrets" "delete secrets"; do
+            read -r -a request <<<"$denied"
+            test "$(kubectl auth can-i "${request[@]}" -n "$TARGET_NAMESPACE")" = no
+          done
+          echo "KUBECONFIG=$kubeconfig" >> "$GITHUB_ENV"
+      - name: Inject reviewed encrypted GitHub App Secrets
+        env:
+          SOPS_AGE_KEY: '${{ secrets.SOPS_AGE_KEY }}'
+        run: |
+          set -euo pipefail
+          install -d -m 0700 "$RUNNER_TEMP/governance-secrets"
+          trap 'find "$RUNNER_TEMP/governance-secrets" -type f -exec shred -u {} + 2>/dev/null || true' EXIT
+          checksums="$RUNNER_TEMP/governance-secret-checksums"
+          cat > "$checksums" <<'EOF'
+          8058db7e92338afbdfcababc9a0bacb288b7cac9f73ab3b2e25b25556c7dcb4c  github-enterprise-delivery-app.sops.yaml
+          200df9c370be07fa3c11b683cbb712deb25b520bff570536e1209136f88c52a9  github-enterprise-security-app.sops.yaml
+          628c67a2e865ecd3da9a80390adf9df9be522c2250e3bd78599e217507907525  github-enterprise-collaboration-app.sops.yaml
+          e3d92772adbd72a04b88158c08863a2263c22ad320cb182965695301ebac5222  github-enterprise-developer-ai-app.sops.yaml
+          64ccfbf456a00f4cee4dedfaade35e205247d19e9fcf7b9acd90ad7662cdc229  github-enterprise-identity-app.sops.yaml
+          635a10fd008c579966bc5784bca9994b187c8317e3827871a32f8eb1ab9d603e  github-enterprise-billing-app.sops.yaml
+          EOF
+          while read -r _ file; do
+            curl -fsSL --retry 4 \
+              "https://raw.githubusercontent.com/re8ch/service-backend/$SOURCE_REVISION/clusters/re8ch/secrets/$file" \
+              -o "$RUNNER_TEMP/governance-secrets/$file"
+          done < "$checksums"
+          (cd "$RUNNER_TEMP/governance-secrets" && sha256sum --check "$checksums")
+          while read -r _ file; do
+            plain="$RUNNER_TEMP/governance-secrets/${file%.sops.yaml}.yaml"
+            umask 077
+            sops --decrypt "$RUNNER_TEMP/governance-secrets/$file" > "$plain"
+            kubectl apply --server-side --field-manager=re8ch-governance-secret-injector -f "$plain" -o name
+            shred -u "$plain"
+          done < "$checksums"
+      - name: Preserve workflow failure evidence
+        if: failure()
+        run: |
+          python -c 'import datetime as dt,json,os; print(json.dumps({"apiVersion":"delivery.re8ch.com/workflow-failure/v1alpha1","outcome":"failed","finishedAt":dt.datetime.now(dt.timezone.utc).isoformat(),"runId":os.environ.get("GITHUB_RUN_ID"),"job":os.environ.get("GITHUB_JOB"),"health":{"status":"unknown","reason":"workflow step failed; inspect this run before trusting governance Secret injection"}}))' > "$RUNNER_TEMP/workflow-failure.json"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: failure()
         with:
