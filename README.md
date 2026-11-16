@@ -15,6 +15,8 @@ Private workflow badges require repository access.
 
 Private desired-state authority for RE8CH metrics, logs, alerts, and metering. Siren product source remains outside this repository.
 
+For reconcile incidents, use the local [GitHub-ops debugging notes](docs/GITHUB_OPS_RECONCILE_DEBUGGING.md) and the authoritative cross-domain runbook linked there.
+
 ## Local Flux prohibition
 
 Local Flux writers are permanently retired and forbidden. Do not create,
