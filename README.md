@@ -15,6 +15,16 @@ Private workflow badges require repository access.
 
 Private desired-state authority for RE8CH metrics, logs, alerts, and metering. Siren product source remains outside this repository.
 
+## Project context
+
+The [static context site](https://siren-observer.github.io/observability-gitops/)
+is the public discovery surface. Cross-organization dependencies use fully
+qualified references described in
+[`docs/CROSS-ORGANIZATION-CONTEXT.md`](docs/CROSS-ORGANIZATION-CONTEXT.md).
+Runtime narratives remain in [Discussions](https://github.com/siren-observer/observability-gitops/discussions),
+the [Wiki](https://github.com/siren-observer/observability-gitops/wiki) and
+observability backends.
+
 ## Local Flux prohibition
 
 Local Flux writers are permanently retired and forbidden. Do not create,

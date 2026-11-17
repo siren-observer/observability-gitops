@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://siren-observer.github.io/observability-gitops/sitemap.xml
