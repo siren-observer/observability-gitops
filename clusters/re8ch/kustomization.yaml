@@ -46,3 +46,4 @@ patches:
   - path: toolchain-dashboard.patch.yaml
   - path: toolchain-datasources.patch.yaml
   - path: toolchain-grafana-reload.patch.yaml
+  - path: grafana-mcp-ingress.patch.yaml
