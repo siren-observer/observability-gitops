@@ -237,7 +237,7 @@ jobs:
     if: always() && inputs.execute && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && (needs.compile-sign.result == 'success' || (inputs.mode == 'reconcile' && needs.compile-sign.result == 'skipped'))
     needs: [validate, compile-sign]
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 90
     environment: ${{ needs.validate.outputs.environment }}
     permissions: {contents: read, id-token: write, packages: read}
     steps:
