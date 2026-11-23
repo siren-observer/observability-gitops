@@ -1,6 +1,6 @@
 {
   "domain": "observability-metering",
-  "sourceObjects": 117,
+  "sourceObjects": 122,
   "releases": [
     {
       "name": "observability-domain-flux-system",
@@ -35,7 +35,7 @@
     {
       "name": "observability-domain-observability-system",
       "namespace": "observability-system",
-      "objects": 50,
+      "objects": 55,
       "contract": "contracts/observability-domain-observability-system.yaml"
     },
     {
@@ -63,7 +63,7 @@
       "contract": "contracts/observability-domain-tenant-infrastructure.yaml"
     }
   ],
-  "publishableObjects": 88,
+  "publishableObjects": 93,
   "deferred": [
     {
       "identity": "apps/DaemonSet/observability-system/re8ch-node-storage-exporter",

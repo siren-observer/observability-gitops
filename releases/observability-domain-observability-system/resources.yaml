@@ -576,6 +576,207 @@ data:
     Storage","uid":"re8ch-storage","version":2}
 
     '
+  re8ch-toolchain-sentry.json: "{\n  \"uid\": \"re8ch-toolchain-sentry\",\n  \"title\"\
+    : \"RE8CH Toolchain \xB7 Metrics and Sentry\",\n  \"tags\": [\n    \"re8ch\",\n\
+    \    \"mcp\",\n    \"toolchain\",\n    \"sentry\"\n  ],\n  \"schemaVersion\":\
+    \ 41,\n  \"version\": 1,\n  \"timezone\": \"utc\",\n  \"refresh\": \"30s\",\n\
+    \  \"time\": {\n    \"from\": \"now-1h\",\n    \"to\": \"now\"\n  },\n  \"templating\"\
+    : {\n    \"list\": [\n      {\n        \"name\": \"environment\",\n        \"\
+    label\": \"Environment\",\n        \"type\": \"query\",\n        \"datasource\"\
+    : {\n          \"type\": \"prometheus\",\n          \"uid\": \"ds-prometheus\"\
+    \n        },\n        \"query\": \"label_values(re8ch_toolchain_build_info, environment)\"\
+    ,\n        \"definition\": \"label_values(re8ch_toolchain_build_info, environment)\"\
+    ,\n        \"refresh\": 2,\n        \"sort\": 1,\n        \"multi\": false,\n\
+    \        \"includeAll\": false,\n        \"current\": {\n          \"text\": \"\
+    production\",\n          \"value\": \"production\"\n        }\n      },\n    \
+    \  {\n        \"name\": \"component\",\n        \"label\": \"Component\",\n  \
+    \      \"type\": \"query\",\n        \"datasource\": {\n          \"type\": \"\
+    prometheus\",\n          \"uid\": \"ds-prometheus\"\n        },\n        \"query\"\
+    : \"label_values(re8ch_toolchain_build_info{environment=\\\"$environment\\\"},\
+    \ component)\",\n        \"definition\": \"label_values(re8ch_toolchain_build_info{environment=\\\
+    \"$environment\\\"}, component)\",\n        \"refresh\": 2,\n        \"sort\"\
+    : 1,\n        \"multi\": false,\n        \"includeAll\": false,\n        \"current\"\
+    : {\n          \"text\": \"tenant-mcp\",\n          \"value\": \"tenant-mcp\"\n\
+    \        }\n      },\n      {\n        \"name\": \"release\",\n        \"label\"\
+    : \"Release\",\n        \"type\": \"query\",\n        \"datasource\": {\n    \
+    \      \"type\": \"prometheus\",\n          \"uid\": \"ds-prometheus\"\n     \
+    \   },\n        \"query\": \"label_values(re8ch_toolchain_build_info{component=\\\
+    \"$component\\\",environment=\\\"$environment\\\"}, release)\",\n        \"definition\"\
+    : \"label_values(re8ch_toolchain_build_info{component=\\\"$component\\\",environment=\\\
+    \"$environment\\\"}, release)\",\n        \"refresh\": 2,\n        \"sort\": 1,\n\
+    \        \"multi\": false,\n        \"includeAll\": false,\n        \"current\"\
+    : {\n          \"text\": \"unversioned\",\n          \"value\": \"unversioned\"\
+    \n        }\n      }\n    ]\n  },\n  \"links\": [\n    {\n      \"title\": \"\
+    Sentry issues: selected release and time\",\n      \"url\": \"https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}\"\
+    ,\n      \"type\": \"link\",\n      \"targetBlank\": true,\n      \"includeVars\"\
+    : false\n    }\n  ],\n  \"panels\": [\n    {\n      \"id\": 1,\n      \"title\"\
+    : \"Scope and correlation\",\n      \"type\": \"text\",\n      \"gridPos\": {\n\
+    \        \"x\": 0,\n        \"y\": 0,\n        \"w\": 24,\n        \"h\": 3\n\
+    \      },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\"\
+    : \"short\",\n          \"links\": [\n            {\n              \"title\":\
+    \ \"Sentry: same component, release and time\",\n              \"url\": \"https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}\"\
+    ,\n              \"targetBlank\": true\n            }\n          ]\n        },\n\
+    \        \"overrides\": []\n      },\n      \"options\": {\n        \"mode\":\
+    \ \"markdown\",\n        \"content\": \"Server-side HTTP and tool completion are\
+    \ not confirmation that a caller received the result. Select component, environment\
+    \ and release, then open the matching Sentry issues from a data point. Completion\
+    \ logs provide exact trace, operation and error-event links.\"\n      }\n    },\n\
+    \    {\n      \"id\": 2,\n      \"title\": \"HTTP requests / second\",\n     \
+    \ \"type\": \"stat\",\n      \"gridPos\": {\n        \"x\": 0,\n        \"y\"\
+    : 3,\n        \"w\": 8,\n        \"h\": 4\n      },\n      \"datasource\": {\n\
+    \        \"type\": \"prometheus\",\n        \"uid\": \"ds-prometheus\"\n     \
+    \ },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"\
+    reqps\",\n          \"links\": [\n            {\n              \"title\": \"Sentry:\
+    \ same component, release and time\",\n              \"url\": \"https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}\"\
+    ,\n              \"targetBlank\": true\n            }\n          ]\n        },\n\
+    \        \"overrides\": []\n      },\n      \"targets\": [\n        {\n      \
+    \    \"refId\": \"A\",\n          \"expr\": \"sum((rate(re8ch_toolchain_http_requests_total{component=\\\
+    \"$component\\\",environment=\\\"$environment\\\"}[$__rate_interval])) * on (job,\
+    \ instance) group_left (release, repository) (max by (job, instance, release,\
+    \ repository) (re8ch_toolchain_build_info{component=\\\"$component\\\",environment=\\\
+    \"$environment\\\",release=\\\"$release\\\"})))\",\n          \"legendFormat\"\
+    : \"{{phase}} {{status_class}} {{outcome}}\",\n          \"instant\": false,\n\
+    \          \"range\": true,\n          \"format\": \"time_series\"\n        }\n\
+    \      ]\n    },\n    {\n      \"id\": 3,\n      \"title\": \"HTTP errors / second\"\
+    ,\n      \"type\": \"stat\",\n      \"gridPos\": {\n        \"x\": 8,\n      \
+    \  \"y\": 3,\n        \"w\": 8,\n        \"h\": 4\n      },\n      \"datasource\"\
+    : {\n        \"type\": \"prometheus\",\n        \"uid\": \"ds-prometheus\"\n \
+    \     },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\"\
+    : \"reqps\",\n          \"links\": [\n            {\n              \"title\":\
+    \ \"Sentry: same component, release and time\",\n              \"url\": \"https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}\"\
+    ,\n              \"targetBlank\": true\n            }\n          ]\n        },\n\
+    \        \"overrides\": []\n      },\n      \"targets\": [\n        {\n      \
+    \    \"refId\": \"A\",\n          \"expr\": \"sum((rate(re8ch_toolchain_http_requests_total{component=\\\
+    \"$component\\\",environment=\\\"$environment\\\",outcome=\\\"error\\\"}[$__rate_interval]))\
+    \ * on (job, instance) group_left (release, repository) (max by (job, instance,\
+    \ release, repository) (re8ch_toolchain_build_info{component=\\\"$component\\\"\
+    ,environment=\\\"$environment\\\",release=\\\"$release\\\"})))\",\n          \"\
+    legendFormat\": \"{{phase}} {{status_class}} {{outcome}}\",\n          \"instant\"\
+    : false,\n          \"range\": true,\n          \"format\": \"time_series\"\n\
+    \        }\n      ]\n    },\n    {\n      \"id\": 4,\n      \"title\": \"Scrape\
+    \ availability\",\n      \"type\": \"table\",\n      \"gridPos\": {\n        \"\
+    x\": 16,\n        \"y\": 3,\n        \"w\": 8,\n        \"h\": 4\n      },\n \
+    \     \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"\
+    ds-prometheus\"\n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n\
+    \          \"unit\": \"short\",\n          \"links\": [\n            {\n     \
+    \         \"title\": \"Sentry: same component, release and time\",\n         \
+    \     \"url\": \"https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}\"\
+    ,\n              \"targetBlank\": true\n            }\n          ]\n        },\n\
+    \        \"overrides\": []\n      },\n      \"targets\": [\n        {\n      \
+    \    \"refId\": \"A\",\n          \"expr\": \"up{job=~\\\"tenant-api|toolchain-connectool-gateway|toolchain-cloud-platform|toolchain-tenant-control|toolchain-among-hub|toolchain-among-broker\\\
+    \"}\",\n          \"legendFormat\": \"{{job}} {{instance}}\",\n          \"instant\"\
+    : true,\n          \"range\": false,\n          \"format\": \"table\"\n      \
+    \  }\n      ]\n    },\n    {\n      \"id\": 5,\n      \"title\": \"HTTP rate by\
+    \ phase and status\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n\
+    \        \"x\": 0,\n        \"y\": 7,\n        \"w\": 12,\n        \"h\": 8\n\
+    \      },\n      \"datasource\": {\n        \"type\": \"prometheus\",\n      \
+    \  \"uid\": \"ds-prometheus\"\n      },\n      \"fieldConfig\": {\n        \"\
+    defaults\": {\n          \"unit\": \"reqps\",\n          \"links\": [\n      \
+    \      {\n              \"title\": \"Sentry: same component, release and time\"\
+    ,\n              \"url\": \"https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}\"\
+    ,\n              \"targetBlank\": true\n            },\n            {\n      \
+    \        \"title\": \"Sentry: this phase\",\n              \"url\": \"https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22%20phase%3A%22${__field.labels.phase}%22&start=${__from:date:iso}&end=${__to:date:iso}\"\
+    ,\n              \"targetBlank\": true\n            }\n          ]\n        },\n\
+    \        \"overrides\": []\n      },\n      \"targets\": [\n        {\n      \
+    \    \"refId\": \"A\",\n          \"expr\": \"sum by (phase, status_class, outcome,\
+    \ error_category) ((rate(re8ch_toolchain_http_requests_total{component=\\\"$component\\\
+    \",environment=\\\"$environment\\\"}[$__rate_interval])) * on (job, instance)\
+    \ group_left (release, repository) (max by (job, instance, release, repository)\
+    \ (re8ch_toolchain_build_info{component=\\\"$component\\\",environment=\\\"$environment\\\
+    \",release=\\\"$release\\\"})))\",\n          \"legendFormat\": \"{{phase}} {{status_class}}\
+    \ {{outcome}}\",\n          \"instant\": false,\n          \"range\": true,\n\
+    \          \"format\": \"time_series\"\n        }\n      ]\n    },\n    {\n  \
+    \    \"id\": 6,\n      \"title\": \"HTTP p95 by phase\",\n      \"type\": \"timeseries\"\
+    ,\n      \"gridPos\": {\n        \"x\": 12,\n        \"y\": 7,\n        \"w\"\
+    : 12,\n        \"h\": 8\n      },\n      \"datasource\": {\n        \"type\":\
+    \ \"prometheus\",\n        \"uid\": \"ds-prometheus\"\n      },\n      \"fieldConfig\"\
+    : {\n        \"defaults\": {\n          \"unit\": \"s\",\n          \"links\"\
+    : [\n            {\n              \"title\": \"Sentry: same component, release\
+    \ and time\",\n              \"url\": \"https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}\"\
+    ,\n              \"targetBlank\": true\n            },\n            {\n      \
+    \        \"title\": \"Sentry: this phase\",\n              \"url\": \"https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22%20phase%3A%22${__field.labels.phase}%22&start=${__from:date:iso}&end=${__to:date:iso}\"\
+    ,\n              \"targetBlank\": true\n            }\n          ]\n        },\n\
+    \        \"overrides\": []\n      },\n      \"targets\": [\n        {\n      \
+    \    \"refId\": \"A\",\n          \"expr\": \"histogram_quantile(0.95, sum by\
+    \ (le, phase) ((rate(re8ch_toolchain_http_request_duration_seconds_bucket{component=\\\
+    \"$component\\\",environment=\\\"$environment\\\"}[$__rate_interval])) * on (job,\
+    \ instance) group_left (release, repository) (max by (job, instance, release,\
+    \ repository) (re8ch_toolchain_build_info{component=\\\"$component\\\",environment=\\\
+    \"$environment\\\",release=\\\"$release\\\"}))))\",\n          \"legendFormat\"\
+    : \"{{phase}}\",\n          \"instant\": false,\n          \"range\": true,\n\
+    \          \"format\": \"time_series\"\n        }\n      ]\n    },\n    {\n  \
+    \    \"id\": 7,\n      \"title\": \"Tool call rate and result\",\n      \"type\"\
+    : \"timeseries\",\n      \"gridPos\": {\n        \"x\": 0,\n        \"y\": 15,\n\
+    \        \"w\": 12,\n        \"h\": 8\n      },\n      \"datasource\": {\n   \
+    \     \"type\": \"prometheus\",\n        \"uid\": \"ds-prometheus\"\n      },\n\
+    \      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"reqps\"\
+    ,\n          \"links\": [\n            {\n              \"title\": \"Sentry: same\
+    \ component, release and time\",\n              \"url\": \"https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}\"\
+    ,\n              \"targetBlank\": true\n            },\n            {\n      \
+    \        \"title\": \"Sentry: this tool\",\n              \"url\": \"https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22%20tool_name%3A%22${__field.labels.tool_name}%22&start=${__from:date:iso}&end=${__to:date:iso}\"\
+    ,\n              \"targetBlank\": true\n            }\n          ]\n        },\n\
+    \        \"overrides\": []\n      },\n      \"targets\": [\n        {\n      \
+    \    \"refId\": \"A\",\n          \"expr\": \"sum by (tool_name, outcome, error_category)\
+    \ ((rate(re8ch_mcp_tool_calls_total[$__rate_interval])) * on (job, instance) group_left\
+    \ (release, repository) (max by (job, instance, release, repository) (re8ch_toolchain_build_info{component=\\\
+    \"$component\\\",environment=\\\"$environment\\\",release=\\\"$release\\\"})))\"\
+    ,\n          \"legendFormat\": \"{{tool_name}} {{outcome}}\",\n          \"instant\"\
+    : false,\n          \"range\": true,\n          \"format\": \"time_series\"\n\
+    \        }\n      ],\n      \"description\": \"Tool series are emitted by tenant-mcp.\
+    \ Choose tenant-mcp to correlate the selected Core release; HTTP panels cover\
+    \ all components.\"\n    },\n    {\n      \"id\": 8,\n      \"title\": \"Tool\
+    \ call p95\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n       \
+    \ \"x\": 12,\n        \"y\": 15,\n        \"w\": 12,\n        \"h\": 8\n     \
+    \ },\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\"\
+    : \"ds-prometheus\"\n      },\n      \"fieldConfig\": {\n        \"defaults\"\
+    : {\n          \"unit\": \"s\",\n          \"links\": [\n            {\n     \
+    \         \"title\": \"Sentry: same component, release and time\",\n         \
+    \     \"url\": \"https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}\"\
+    ,\n              \"targetBlank\": true\n            },\n            {\n      \
+    \        \"title\": \"Sentry: this tool\",\n              \"url\": \"https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22%20tool_name%3A%22${__field.labels.tool_name}%22&start=${__from:date:iso}&end=${__to:date:iso}\"\
+    ,\n              \"targetBlank\": true\n            }\n          ]\n        },\n\
+    \        \"overrides\": []\n      },\n      \"targets\": [\n        {\n      \
+    \    \"refId\": \"A\",\n          \"expr\": \"histogram_quantile(0.95, sum by\
+    \ (le, tool_name) ((rate(re8ch_mcp_tool_call_duration_seconds_bucket[$__rate_interval]))\
+    \ * on (job, instance) group_left (release, repository) (max by (job, instance,\
+    \ release, repository) (re8ch_toolchain_build_info{component=\\\"$component\\\"\
+    ,environment=\\\"$environment\\\",release=\\\"$release\\\"}))))\",\n         \
+    \ \"legendFormat\": \"{{tool_name}}\",\n          \"instant\": false,\n      \
+    \    \"range\": true,\n          \"format\": \"time_series\"\n        }\n    \
+    \  ],\n      \"description\": \"Finite buckets cover long operations in the new\
+    \ telemetry release. Server-side duration is distinct from client transport delivery.\"\
+    \n    },\n    {\n      \"id\": 9,\n      \"title\": \"Selected deployment identity\"\
+    ,\n      \"type\": \"table\",\n      \"gridPos\": {\n        \"x\": 0,\n     \
+    \   \"y\": 23,\n        \"w\": 24,\n        \"h\": 5\n      },\n      \"datasource\"\
+    : {\n        \"type\": \"prometheus\",\n        \"uid\": \"ds-prometheus\"\n \
+    \     },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\"\
+    : \"short\",\n          \"links\": [\n            {\n              \"title\":\
+    \ \"Sentry: same component, release and time\",\n              \"url\": \"https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}\"\
+    ,\n              \"targetBlank\": true\n            }\n          ]\n        },\n\
+    \        \"overrides\": []\n      },\n      \"targets\": [\n        {\n      \
+    \    \"refId\": \"A\",\n          \"expr\": \"re8ch_toolchain_build_info{component=\\\
+    \"$component\\\",environment=\\\"$environment\\\",release=\\\"$release\\\"}\"\
+    ,\n          \"legendFormat\": \"{{component}} {{release}}\",\n          \"instant\"\
+    : true,\n          \"range\": false,\n          \"format\": \"table\"\n      \
+    \  }\n      ]\n    },\n    {\n      \"id\": 10,\n      \"title\": \"Correlated\
+    \ completion logs\",\n      \"type\": \"logs\",\n      \"gridPos\": {\n      \
+    \  \"x\": 0,\n        \"y\": 28,\n        \"w\": 24,\n        \"h\": 12\n    \
+    \  },\n      \"datasource\": {\n        \"type\": \"victoriametrics-logs-datasource\"\
+    ,\n        \"uid\": \"re8ch-vlogs\"\n      },\n      \"fieldConfig\": {\n    \
+    \    \"defaults\": {\n          \"unit\": \"short\",\n          \"links\": [\n\
+    \            {\n              \"title\": \"Sentry: same component, release and\
+    \ time\",\n              \"url\": \"https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}\"\
+    ,\n              \"targetBlank\": true\n            }\n          ]\n        },\n\
+    \        \"overrides\": []\n      },\n      \"targets\": [\n        {\n      \
+    \    \"refId\": \"A\",\n          \"expr\": \"kubernetes.pod_namespace:in(\\\"\
+    tenant-infrastructure\\\",\\\"ai-operations\\\",\\\"among-clusters\\\",\\\"credential-broker\\\
+    \") | unpack_json keep_original_fields | filter component:=\\\"$component\\\"\
+    \ AND environment:=\\\"$environment\\\" AND release:=\\\"$release\\\" | fields\
+    \ _time, _msg, component, environment, release, phase, outcome, errorCategory,\
+    \ durationMs, traceId, operationId, sentryEventId | drop_empty_fields\",\n   \
+    \       \"queryType\": \"instant\"\n        }\n      ],\n      \"options\": {\n\
+    \        \"showTime\": true,\n        \"showLabels\": false,\n        \"wrapLogMessage\"\
+    : true\n      }\n    }\n  ]\n}\n"
 kind: ConfigMap
 metadata:
   labels:
@@ -586,21 +787,28 @@ metadata:
 ---
 apiVersion: v1
 data:
-  datasources.yaml: "apiVersion: 1\ndatasources:\n  - name: RE8CH Raw Metrics\n  \
-    \  uid: ds-prometheus\n    type: prometheus\n    access: proxy\n    url: http://vmselect-re8ch-metrics.observability-system.svc:8481/select/0/prometheus\n\
-    \    isDefault: true\n    jsonData: {timeInterval: 15s, exemplarTraceIdDestinations:\
-    \ [{name: trace_id, datasourceUid: re8ch-traces}]}\n  - name: RE8CH Analytics\n\
-    \    uid: re8ch-analytics\n    type: prometheus\n    access: proxy\n    url: http://vmsingle-re8ch-analytics.observability-system.svc:8429\n\
-    \    jsonData: {timeInterval: 30s}\n  - name: RE8CH Cost Metrics\n    uid: re8ch-costs\n\
-    \    type: prometheus\n    access: proxy\n    url: http://vmsingle-opencost.observability-system.svc:8429\n\
-    \    jsonData: {timeInterval: 30s}\n  - name: RE8CH Traces\n    uid: re8ch-traces\n\
-    \    type: jaeger\n    access: proxy\n    url: http://vtselect-re8ch-traces.observability-system.svc:10471/select/jaeger\n\
-    \    jsonData:\n      tracesToLogsV2: {datasourceUid: re8ch-vlogs, spanStartTimeShift:\
-    \ -5m, spanEndTimeShift: 5m, tags: [service.name, k8s.namespace.name, k8s.pod.name]}\n\
-    \      tracesToMetrics: {datasourceUid: ds-prometheus, spanStartTimeShift: -5m,\
-    \ spanEndTimeShift: 5m, tags: [{key: service.name, value: service_name}]}\n  -\
-    \ name: RE8CH Events and Logs\n    uid: re8ch-vlogs\n    type: victoriametrics-logs-datasource\n\
-    \    access: proxy\n    url: http://vlsingle-re8ch-logs.observability-system.svc.cluster.local:9428\n"
+  datasources.yaml: "apiVersion: 1\ndatasources:\n- name: RE8CH Raw Metrics\n  uid:\
+    \ ds-prometheus\n  type: prometheus\n  access: proxy\n  url: http://vmselect-re8ch-metrics.observability-system.svc:8481/select/0/prometheus\n\
+    \  isDefault: true\n  jsonData:\n    timeInterval: 15s\n- name: RE8CH Analytics\n\
+    \  uid: re8ch-analytics\n  type: prometheus\n  access: proxy\n  url: http://vmsingle-re8ch-analytics.observability-system.svc:8429\n\
+    \  jsonData:\n    timeInterval: 30s\n- name: RE8CH Cost Metrics\n  uid: re8ch-costs\n\
+    \  type: prometheus\n  access: proxy\n  url: http://vmsingle-opencost.observability-system.svc:8429\n\
+    \  jsonData:\n    timeInterval: 30s\n- name: RE8CH Traces\n  uid: re8ch-traces\n\
+    \  type: jaeger\n  access: proxy\n  url: http://vtselect-re8ch-traces.observability-system.svc:10471/select/jaeger\n\
+    \  jsonData:\n    tracesToLogsV2:\n      datasourceUid: re8ch-vlogs\n      spanStartTimeShift:\
+    \ -5m\n      spanEndTimeShift: 5m\n      tags:\n      - service.name\n      -\
+    \ k8s.namespace.name\n      - k8s.pod.name\n    tracesToMetrics:\n      datasourceUid:\
+    \ ds-prometheus\n      spanStartTimeShift: -5m\n      spanEndTimeShift: 5m\n \
+    \     tags:\n      - key: service.name\n        value: service_name\n- name: RE8CH\
+    \ Events and Logs\n  uid: re8ch-vlogs\n  type: victoriametrics-logs-datasource\n\
+    \  access: proxy\n  url: http://vlsingle-re8ch-logs.observability-system.svc.cluster.local:9428\n\
+    \  jsonData:\n    derivedFields:\n    - name: Sentry trace\n      matcherType:\
+    \ label\n      matcherRegex: traceId\n      url: https://re8ch-studio.sentry.io/explore/traces/trace/$${__value.raw}/?project=4509349088985088&start=$${__from:date:iso}&end=$${__to:date:iso}\n\
+    \      urlDisplayLabel: Open Sentry trace\n    - name: Sentry operation\n    \
+    \  matcherType: label\n      matcherRegex: operationId\n      url: https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=operation_id%3A%22$${__value.raw}%22&start=$${__from:date:iso}&end=$${__to:date:iso}\n\
+    \      urlDisplayLabel: Find Sentry operation\n    - name: Sentry error event\n\
+    \      matcherType: label\n      matcherRegex: sentryEventId\n      url: https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=$${__value.raw}&start=$${__from:date:iso}&end=$${__to:date:iso}\n\
+    \      urlDisplayLabel: Find Sentry event\n"
 kind: ConfigMap
 metadata:
   labels:
@@ -2507,6 +2715,147 @@ spec:
     matchLabels:
       app.kubernetes.io/name: re8ch-routing-advisor
       observability.re8ch.com/opencost-recovery: 'true'
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  labels:
+    observability.re8ch.com/managed: 'true'
+  name: toolchain-among-broker
+  namespace: observability-system
+spec:
+  discoveryRole: endpointslice
+  endpoints:
+  - interval: 30s
+    path: /metrics
+    port: metrics
+    relabelConfigs:
+    - action: keep
+      regex: among-clusters-credential-broker
+      sourceLabels:
+      - __meta_kubernetes_service_name
+    - replacement: toolchain-among-broker
+      targetLabel: job
+    scheme: http
+    scrapeTimeout: 20s
+  namespaceSelector:
+    matchNames:
+    - credential-broker
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: among-clusters-credential-broker
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  labels:
+    observability.re8ch.com/managed: 'true'
+  name: toolchain-among-hub
+  namespace: observability-system
+spec:
+  discoveryRole: endpointslice
+  endpoints:
+  - interval: 30s
+    path: /metrics
+    port: metrics
+    relabelConfigs:
+    - action: keep
+      regex: among-clusters-hub
+      sourceLabels:
+      - __meta_kubernetes_service_name
+    - replacement: toolchain-among-hub
+      targetLabel: job
+    scheme: http
+    scrapeTimeout: 20s
+  namespaceSelector:
+    matchNames:
+    - among-clusters
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: among-clusters-hub
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  labels:
+    observability.re8ch.com/managed: 'true'
+  name: toolchain-cloud-platform
+  namespace: observability-system
+spec:
+  discoveryRole: endpointslice
+  endpoints:
+  - interval: 30s
+    path: /metrics
+    port: mcp
+    relabelConfigs:
+    - action: keep
+      regex: re8ch-cloud-platform
+      sourceLabels:
+      - __meta_kubernetes_service_name
+    - replacement: toolchain-cloud-platform
+      targetLabel: job
+    scheme: http
+    scrapeTimeout: 20s
+  namespaceSelector:
+    matchNames:
+    - ai-operations
+  selector: {}
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  labels:
+    observability.re8ch.com/managed: 'true'
+  name: toolchain-connectool-gateway
+  namespace: observability-system
+spec:
+  discoveryRole: endpointslice
+  endpoints:
+  - interval: 30s
+    path: /metrics
+    port: catalog-mcp
+    relabelConfigs:
+    - action: keep
+      regex: tenant-api
+      sourceLabels:
+      - __meta_kubernetes_service_name
+    - replacement: toolchain-connectool-gateway
+      targetLabel: job
+    scheme: http
+    scrapeTimeout: 20s
+  namespaceSelector:
+    matchNames:
+    - tenant-infrastructure
+  selector:
+    matchLabels:
+      re8ch.com/metrics-surface: tenant-mcp
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  labels:
+    observability.re8ch.com/managed: 'true'
+  name: toolchain-tenant-control
+  namespace: observability-system
+spec:
+  discoveryRole: endpointslice
+  endpoints:
+  - interval: 30s
+    path: /metrics
+    port: http
+    relabelConfigs:
+    - action: keep
+      regex: tenant-control-controller
+      sourceLabels:
+      - __meta_kubernetes_service_name
+    - replacement: toolchain-tenant-control
+      targetLabel: job
+    scheme: http
+    scrapeTimeout: 20s
+  namespaceSelector:
+    matchNames:
+    - tenant-infrastructure
+  selector: {}
 ---
 apiVersion: operator.victoriametrics.com/v1beta1
 kind: VMServiceScrape

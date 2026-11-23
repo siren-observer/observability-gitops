@@ -1,0 +1,141 @@
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: toolchain-connectool-gateway
+  namespace: observability-system
+  labels:
+    observability.re8ch.com/managed: 'true'
+spec:
+  discoveryRole: endpointslice
+  namespaceSelector:
+    matchNames:
+    - tenant-infrastructure
+  selector:
+    matchLabels:
+      re8ch.com/metrics-surface: tenant-mcp
+  endpoints:
+  - port: catalog-mcp
+    path: /metrics
+    scheme: http
+    interval: 30s
+    scrapeTimeout: 20s
+    relabelConfigs:
+    - action: keep
+      sourceLabels:
+      - __meta_kubernetes_service_name
+      regex: tenant-api
+    - targetLabel: job
+      replacement: toolchain-connectool-gateway
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: toolchain-cloud-platform
+  namespace: observability-system
+  labels:
+    observability.re8ch.com/managed: 'true'
+spec:
+  discoveryRole: endpointslice
+  namespaceSelector:
+    matchNames:
+    - ai-operations
+  selector: {}
+  endpoints:
+  - port: mcp
+    path: /metrics
+    scheme: http
+    interval: 30s
+    scrapeTimeout: 20s
+    relabelConfigs:
+    - action: keep
+      sourceLabels:
+      - __meta_kubernetes_service_name
+      regex: re8ch-cloud-platform
+    - targetLabel: job
+      replacement: toolchain-cloud-platform
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: toolchain-tenant-control
+  namespace: observability-system
+  labels:
+    observability.re8ch.com/managed: 'true'
+spec:
+  discoveryRole: endpointslice
+  namespaceSelector:
+    matchNames:
+    - tenant-infrastructure
+  selector: {}
+  endpoints:
+  - port: http
+    path: /metrics
+    scheme: http
+    interval: 30s
+    scrapeTimeout: 20s
+    relabelConfigs:
+    - action: keep
+      sourceLabels:
+      - __meta_kubernetes_service_name
+      regex: tenant-control-controller
+    - targetLabel: job
+      replacement: toolchain-tenant-control
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: toolchain-among-hub
+  namespace: observability-system
+  labels:
+    observability.re8ch.com/managed: 'true'
+spec:
+  discoveryRole: endpointslice
+  namespaceSelector:
+    matchNames:
+    - among-clusters
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: among-clusters-hub
+  endpoints:
+  - port: metrics
+    path: /metrics
+    scheme: http
+    interval: 30s
+    scrapeTimeout: 20s
+    relabelConfigs:
+    - action: keep
+      sourceLabels:
+      - __meta_kubernetes_service_name
+      regex: among-clusters-hub
+    - targetLabel: job
+      replacement: toolchain-among-hub
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: toolchain-among-broker
+  namespace: observability-system
+  labels:
+    observability.re8ch.com/managed: 'true'
+spec:
+  discoveryRole: endpointslice
+  namespaceSelector:
+    matchNames:
+    - credential-broker
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: among-clusters-credential-broker
+  endpoints:
+  - port: metrics
+    path: /metrics
+    scheme: http
+    interval: 30s
+    scrapeTimeout: 20s
+    relabelConfigs:
+    - action: keep
+      sourceLabels:
+      - __meta_kubernetes_service_name
+      regex: among-clusters-credential-broker
+    - targetLabel: job
+      replacement: toolchain-among-broker

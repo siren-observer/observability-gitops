@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: re8ch-grafana
+  namespace: observability-system
+spec:
+  template:
+    metadata:
+      annotations:
+        observability.re8ch.com/datasources-sha256: 109bb493f5e728d61339812c392df717ba647e690cd986d4744fa5e4c129d09c

@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: re8ch-observability-datasources
+  namespace: observability-system
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+    - name: RE8CH Raw Metrics
+      uid: ds-prometheus
+      type: prometheus
+      access: proxy
+      url: http://vmselect-re8ch-metrics.observability-system.svc:8481/select/0/prometheus
+      isDefault: true
+      jsonData:
+        timeInterval: 15s
+    - name: RE8CH Analytics
+      uid: re8ch-analytics
+      type: prometheus
+      access: proxy
+      url: http://vmsingle-re8ch-analytics.observability-system.svc:8429
+      jsonData:
+        timeInterval: 30s
+    - name: RE8CH Cost Metrics
+      uid: re8ch-costs
+      type: prometheus
+      access: proxy
+      url: http://vmsingle-opencost.observability-system.svc:8429
+      jsonData:
+        timeInterval: 30s
+    - name: RE8CH Traces
+      uid: re8ch-traces
+      type: jaeger
+      access: proxy
+      url: http://vtselect-re8ch-traces.observability-system.svc:10471/select/jaeger
+      jsonData:
+        tracesToLogsV2:
+          datasourceUid: re8ch-vlogs
+          spanStartTimeShift: -5m
+          spanEndTimeShift: 5m
+          tags:
+          - service.name
+          - k8s.namespace.name
+          - k8s.pod.name
+        tracesToMetrics:
+          datasourceUid: ds-prometheus
+          spanStartTimeShift: -5m
+          spanEndTimeShift: 5m
+          tags:
+          - key: service.name
+            value: service_name
+    - name: RE8CH Events and Logs
+      uid: re8ch-vlogs
+      type: victoriametrics-logs-datasource
+      access: proxy
+      url: http://vlsingle-re8ch-logs.observability-system.svc.cluster.local:9428
+      jsonData:
+        derivedFields:
+        - name: Sentry trace
+          matcherType: label
+          matcherRegex: traceId
+          url: https://re8ch-studio.sentry.io/explore/traces/trace/$${__value.raw}/?project=4509349088985088&start=$${__from:date:iso}&end=$${__to:date:iso}
+          urlDisplayLabel: Open Sentry trace
+        - name: Sentry operation
+          matcherType: label
+          matcherRegex: operationId
+          url: https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=operation_id%3A%22$${__value.raw}%22&start=$${__from:date:iso}&end=$${__to:date:iso}
+          urlDisplayLabel: Find Sentry operation
+        - name: Sentry error event
+          matcherType: label
+          matcherRegex: sentryEventId
+          url: https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=$${__value.raw}&start=$${__from:date:iso}&end=$${__to:date:iso}
+          urlDisplayLabel: Find Sentry event
