@@ -47,7 +47,10 @@ none of these Sentry links pretend its store contains the SDK trace.
 - Among broker: credential-broker/among-clusters-credential-broker, named metrics
   port 9090. Among's new application version must expose the independent
   listener on its existing Service and permit only the reviewed VMAgent pods.
-  Its public routes keep using HTTP 80 → 8080 and cannot route this listener.
+  The currently host-networked hub is not proven isolated by ordinary Pod network
+  policy: verify the listener binds its private POD_IP and public port 9090 is
+  unreachable separately. Its public routes keep using HTTP 80 → 8080 and cannot
+  route this listener.
 
 Each new ServiceScrape has an exact namespace plus a service-name keep rule;
 discovery of other Services never causes their endpoints to be scraped. The
