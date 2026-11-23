@@ -571,6 +571,11 @@ rules:
   - re8ch-fair-value-controller
   - re8ch-node-storage
   - re8ch-routing-advisor
+  - toolchain-among-broker
+  - toolchain-among-hub
+  - toolchain-cloud-platform
+  - toolchain-connectool-gateway
+  - toolchain-tenant-control
   - victoria-logs
   verbs:
   - get

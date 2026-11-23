@@ -86,6 +86,11 @@ spec:
     - re8ch-routing-advisor
     - re8ch-traces
     - tenant-metrics
+    - toolchain-among-broker
+    - toolchain-among-hub
+    - toolchain-cloud-platform
+    - toolchain-connectool-gateway
+    - toolchain-tenant-control
     - victoria-logs
     allowClusterScoped: false
     requireExisting: true
@@ -134,13 +139,18 @@ spec:
     - operator.victoriametrics.com/VMServiceScrape/observability-system/re8ch-fair-value-controller
     - operator.victoriametrics.com/VMServiceScrape/observability-system/re8ch-node-storage
     - operator.victoriametrics.com/VMServiceScrape/observability-system/re8ch-routing-advisor
+    - operator.victoriametrics.com/VMServiceScrape/observability-system/toolchain-among-broker
+    - operator.victoriametrics.com/VMServiceScrape/observability-system/toolchain-among-hub
+    - operator.victoriametrics.com/VMServiceScrape/observability-system/toolchain-cloud-platform
+    - operator.victoriametrics.com/VMServiceScrape/observability-system/toolchain-connectool-gateway
+    - operator.victoriametrics.com/VMServiceScrape/observability-system/toolchain-tenant-control
     - operator.victoriametrics.com/VMServiceScrape/observability-system/victoria-logs
     - operator.victoriametrics.com/VMSingle/observability-system/opencost
     - operator.victoriametrics.com/VMSingle/observability-system/re8ch-analytics
     - operator.victoriametrics.com/VMStaticScrape/observability-system/hubble-metrics
     - operator.victoriametrics.com/VTCluster/observability-system/re8ch-traces
   inventory:
-    digest: sha256:dfb23c29cfc4173baa40530773ed8e1db7dfd6b7f361306965fdc5c958f4d6fe
+    digest: sha256:8ee95f76a75c3edef47e6e1dc9b56ba7ab6772773edadaf118a4c64f77fac5f7
   lifecycle:
     prune: false
     healthTimeoutSeconds: 300

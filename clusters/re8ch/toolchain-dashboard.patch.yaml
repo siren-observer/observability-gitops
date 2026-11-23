@@ -1,0 +1,491 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: re8ch-observability-dashboards
+  namespace: observability-system
+data:
+  re8ch-toolchain-sentry.json: |
+    {
+      "uid": "re8ch-toolchain-sentry",
+      "title": "RE8CH Toolchain · Metrics and Sentry",
+      "tags": [
+        "re8ch",
+        "mcp",
+        "toolchain",
+        "sentry"
+      ],
+      "schemaVersion": 41,
+      "version": 1,
+      "timezone": "utc",
+      "refresh": "30s",
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "templating": {
+        "list": [
+          {
+            "name": "environment",
+            "label": "Environment",
+            "type": "query",
+            "datasource": {
+              "type": "prometheus",
+              "uid": "ds-prometheus"
+            },
+            "query": "label_values(re8ch_toolchain_build_info, environment)",
+            "definition": "label_values(re8ch_toolchain_build_info, environment)",
+            "refresh": 2,
+            "sort": 1,
+            "multi": false,
+            "includeAll": false,
+            "current": {
+              "text": "production",
+              "value": "production"
+            }
+          },
+          {
+            "name": "component",
+            "label": "Component",
+            "type": "query",
+            "datasource": {
+              "type": "prometheus",
+              "uid": "ds-prometheus"
+            },
+            "query": "label_values(re8ch_toolchain_build_info{environment=\"$environment\"}, component)",
+            "definition": "label_values(re8ch_toolchain_build_info{environment=\"$environment\"}, component)",
+            "refresh": 2,
+            "sort": 1,
+            "multi": false,
+            "includeAll": false,
+            "current": {
+              "text": "tenant-mcp",
+              "value": "tenant-mcp"
+            }
+          },
+          {
+            "name": "release",
+            "label": "Release",
+            "type": "query",
+            "datasource": {
+              "type": "prometheus",
+              "uid": "ds-prometheus"
+            },
+            "query": "label_values(re8ch_toolchain_build_info{component=\"$component\",environment=\"$environment\"}, release)",
+            "definition": "label_values(re8ch_toolchain_build_info{component=\"$component\",environment=\"$environment\"}, release)",
+            "refresh": 2,
+            "sort": 1,
+            "multi": false,
+            "includeAll": false,
+            "current": {
+              "text": "unversioned",
+              "value": "unversioned"
+            }
+          }
+        ]
+      },
+      "links": [
+        {
+          "title": "Sentry issues: selected release and time",
+          "url": "https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}",
+          "type": "link",
+          "targetBlank": true,
+          "includeVars": false
+        }
+      ],
+      "panels": [
+        {
+          "id": 1,
+          "title": "Scope and correlation",
+          "type": "text",
+          "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 3
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "links": [
+                {
+                  "title": "Sentry: same component, release and time",
+                  "url": "https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}",
+                  "targetBlank": true
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "options": {
+            "mode": "markdown",
+            "content": "Server-side HTTP and tool completion are not confirmation that a caller received the result. Select component, environment and release, then open the matching Sentry issues from a data point. Completion logs provide exact trace, operation and error-event links."
+          }
+        },
+        {
+          "id": 2,
+          "title": "HTTP requests / second",
+          "type": "stat",
+          "gridPos": {
+            "x": 0,
+            "y": 3,
+            "w": 8,
+            "h": 4
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ds-prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps",
+              "links": [
+                {
+                  "title": "Sentry: same component, release and time",
+                  "url": "https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}",
+                  "targetBlank": true
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum((rate(re8ch_toolchain_http_requests_total{component=\"$component\",environment=\"$environment\"}[$__rate_interval])) * on (job, instance) group_left (release, repository) (max by (job, instance, release, repository) (re8ch_toolchain_build_info{component=\"$component\",environment=\"$environment\",release=\"$release\"})))",
+              "legendFormat": "{{phase}} {{status_class}} {{outcome}}",
+              "instant": false,
+              "range": true,
+              "format": "time_series"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "title": "HTTP errors / second",
+          "type": "stat",
+          "gridPos": {
+            "x": 8,
+            "y": 3,
+            "w": 8,
+            "h": 4
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ds-prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps",
+              "links": [
+                {
+                  "title": "Sentry: same component, release and time",
+                  "url": "https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}",
+                  "targetBlank": true
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum((rate(re8ch_toolchain_http_requests_total{component=\"$component\",environment=\"$environment\",outcome=\"error\"}[$__rate_interval])) * on (job, instance) group_left (release, repository) (max by (job, instance, release, repository) (re8ch_toolchain_build_info{component=\"$component\",environment=\"$environment\",release=\"$release\"})))",
+              "legendFormat": "{{phase}} {{status_class}} {{outcome}}",
+              "instant": false,
+              "range": true,
+              "format": "time_series"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "title": "Scrape availability",
+          "type": "table",
+          "gridPos": {
+            "x": 16,
+            "y": 3,
+            "w": 8,
+            "h": 4
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ds-prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "links": [
+                {
+                  "title": "Sentry: same component, release and time",
+                  "url": "https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}",
+                  "targetBlank": true
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "up{job=~\"tenant-api|toolchain-connectool-gateway|toolchain-cloud-platform|toolchain-tenant-control|toolchain-among-hub|toolchain-among-broker\"}",
+              "legendFormat": "{{job}} {{instance}}",
+              "instant": true,
+              "range": false,
+              "format": "table"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "title": "HTTP rate by phase and status",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 0,
+            "y": 7,
+            "w": 12,
+            "h": 8
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ds-prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps",
+              "links": [
+                {
+                  "title": "Sentry: same component, release and time",
+                  "url": "https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}",
+                  "targetBlank": true
+                },
+                {
+                  "title": "Sentry: this phase",
+                  "url": "https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22%20phase%3A%22${__field.labels.phase}%22&start=${__from:date:iso}&end=${__to:date:iso}",
+                  "targetBlank": true
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (phase, status_class, outcome, error_category) ((rate(re8ch_toolchain_http_requests_total{component=\"$component\",environment=\"$environment\"}[$__rate_interval])) * on (job, instance) group_left (release, repository) (max by (job, instance, release, repository) (re8ch_toolchain_build_info{component=\"$component\",environment=\"$environment\",release=\"$release\"})))",
+              "legendFormat": "{{phase}} {{status_class}} {{outcome}}",
+              "instant": false,
+              "range": true,
+              "format": "time_series"
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "title": "HTTP p95 by phase",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 12,
+            "y": 7,
+            "w": 12,
+            "h": 8
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ds-prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "links": [
+                {
+                  "title": "Sentry: same component, release and time",
+                  "url": "https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}",
+                  "targetBlank": true
+                },
+                {
+                  "title": "Sentry: this phase",
+                  "url": "https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22%20phase%3A%22${__field.labels.phase}%22&start=${__from:date:iso}&end=${__to:date:iso}",
+                  "targetBlank": true
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "histogram_quantile(0.95, sum by (le, phase) ((rate(re8ch_toolchain_http_request_duration_seconds_bucket{component=\"$component\",environment=\"$environment\"}[$__rate_interval])) * on (job, instance) group_left (release, repository) (max by (job, instance, release, repository) (re8ch_toolchain_build_info{component=\"$component\",environment=\"$environment\",release=\"$release\"}))))",
+              "legendFormat": "{{phase}}",
+              "instant": false,
+              "range": true,
+              "format": "time_series"
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "title": "Tool call rate and result",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 0,
+            "y": 15,
+            "w": 12,
+            "h": 8
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ds-prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps",
+              "links": [
+                {
+                  "title": "Sentry: same component, release and time",
+                  "url": "https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}",
+                  "targetBlank": true
+                },
+                {
+                  "title": "Sentry: this tool",
+                  "url": "https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22%20tool_name%3A%22${__field.labels.tool_name}%22&start=${__from:date:iso}&end=${__to:date:iso}",
+                  "targetBlank": true
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (tool_name, outcome, error_category) ((rate(re8ch_mcp_tool_calls_total[$__rate_interval])) * on (job, instance) group_left (release, repository) (max by (job, instance, release, repository) (re8ch_toolchain_build_info{component=\"$component\",environment=\"$environment\",release=\"$release\"})))",
+              "legendFormat": "{{tool_name}} {{outcome}}",
+              "instant": false,
+              "range": true,
+              "format": "time_series"
+            }
+          ],
+          "description": "Tool series are emitted by tenant-mcp. Choose tenant-mcp to correlate the selected Core release; HTTP panels cover all components."
+        },
+        {
+          "id": 8,
+          "title": "Tool call p95",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 12,
+            "y": 15,
+            "w": 12,
+            "h": 8
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ds-prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "links": [
+                {
+                  "title": "Sentry: same component, release and time",
+                  "url": "https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}",
+                  "targetBlank": true
+                },
+                {
+                  "title": "Sentry: this tool",
+                  "url": "https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22%20tool_name%3A%22${__field.labels.tool_name}%22&start=${__from:date:iso}&end=${__to:date:iso}",
+                  "targetBlank": true
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "histogram_quantile(0.95, sum by (le, tool_name) ((rate(re8ch_mcp_tool_call_duration_seconds_bucket[$__rate_interval])) * on (job, instance) group_left (release, repository) (max by (job, instance, release, repository) (re8ch_toolchain_build_info{component=\"$component\",environment=\"$environment\",release=\"$release\"}))))",
+              "legendFormat": "{{tool_name}}",
+              "instant": false,
+              "range": true,
+              "format": "time_series"
+            }
+          ],
+          "description": "Finite buckets cover long operations in the new telemetry release. Server-side duration is distinct from client transport delivery."
+        },
+        {
+          "id": 9,
+          "title": "Selected deployment identity",
+          "type": "table",
+          "gridPos": {
+            "x": 0,
+            "y": 23,
+            "w": 24,
+            "h": 5
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ds-prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "links": [
+                {
+                  "title": "Sentry: same component, release and time",
+                  "url": "https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}",
+                  "targetBlank": true
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "re8ch_toolchain_build_info{component=\"$component\",environment=\"$environment\",release=\"$release\"}",
+              "legendFormat": "{{component}} {{release}}",
+              "instant": true,
+              "range": false,
+              "format": "table"
+            }
+          ]
+        },
+        {
+          "id": 10,
+          "title": "Correlated completion logs",
+          "type": "logs",
+          "gridPos": {
+            "x": 0,
+            "y": 28,
+            "w": 24,
+            "h": 12
+          },
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "re8ch-vlogs"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "links": [
+                {
+                  "title": "Sentry: same component, release and time",
+                  "url": "https://re8ch-studio.sentry.io/issues/?project=4509349088985088&query=component%3A%22${component:percentencode}%22%20environment%3A%22${environment:percentencode}%22%20release%3A%22${release:percentencode}%22&start=${__from:date:iso}&end=${__to:date:iso}",
+                  "targetBlank": true
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "kubernetes.pod_namespace:in(\"tenant-infrastructure\",\"ai-operations\",\"among-clusters\",\"credential-broker\") | unpack_json keep_original_fields | filter component:=\"$component\" AND environment:=\"$environment\" AND release:=\"$release\" | fields _time, _msg, component, environment, release, phase, outcome, errorCategory, durationMs, traceId, operationId, sentryEventId | drop_empty_fields",
+              "queryType": "instant"
+            }
+          ],
+          "options": {
+            "showTime": true,
+            "showLabels": false,
+            "wrapLogMessage": true
+          }
+        }
+      ]
+    }

@@ -18,6 +18,7 @@ spec:
   template:
     metadata:
       annotations:
+        observability.re8ch.com/datasources-sha256: 109bb493f5e728d61339812c392df717ba647e690cd986d4744fa5e4c129d09c
         re8ch.com/recovery-revision: 2026-09-21-database-ready-v1
       labels:
         app.kubernetes.io/name: re8ch-grafana
