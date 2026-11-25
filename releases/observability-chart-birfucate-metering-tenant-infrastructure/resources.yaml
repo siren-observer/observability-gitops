@@ -27,7 +27,7 @@ spec:
       automountServiceAccountToken: false
       initContainers:
       - name: pull
-        image: registry.re8ch.com/image/re8ch-ai-operations@sha256:4fc65f269db3ca31114d0b5b547bc2eeb6e138c17dfb5433f2f19e81550b615e
+        image: registry.re8ch.com/image/re8ch-ai-operations@sha256:efc3344c17f82b49c6d5c65376e51c02160acd9ea6aeac2b02c7c22d208b3fcd
         imagePullPolicy: IfNotPresent
         command:
         - sh
@@ -112,7 +112,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: runtime
-        image: registry.re8ch.com/image/re8ch-ai-operations@sha256:4fc65f269db3ca31114d0b5b547bc2eeb6e138c17dfb5433f2f19e81550b615e
+        image: registry.re8ch.com/image/re8ch-ai-operations@sha256:efc3344c17f82b49c6d5c65376e51c02160acd9ea6aeac2b02c7c22d208b3fcd
         imagePullPolicy: IfNotPresent
         env:
         - name: RE8CH_TOOL_PROFILE
@@ -524,7 +524,7 @@ spec:
       - name: harbor-registry-pull
       containers:
       - name: controller
-        image: registry.re8ch.com/image/re8ch-ai-operations@sha256:4fc65f269db3ca31114d0b5b547bc2eeb6e138c17dfb5433f2f19e81550b615e
+        image: registry.re8ch.com/image/re8ch-ai-operations@sha256:efc3344c17f82b49c6d5c65376e51c02160acd9ea6aeac2b02c7c22d208b3fcd
         command:
         - python
         - /app/tenant_control_controller.py
@@ -642,7 +642,7 @@ spec:
                 - r640
       containers:
       - name: reconciler
-        image: registry.re8ch.com/image/re8ch-ai-operations@sha256:4fc65f269db3ca31114d0b5b547bc2eeb6e138c17dfb5433f2f19e81550b615e
+        image: registry.re8ch.com/image/re8ch-ai-operations@sha256:efc3344c17f82b49c6d5c65376e51c02160acd9ea6aeac2b02c7c22d208b3fcd
         command:
         - python
         - /app/tenant_provider_reconciler.py
@@ -664,6 +664,8 @@ spec:
               key: service-role-key
         - name: GRAFANA_DATABASE_BINDINGS_JSON
           value: '[{"database":"anysite","namespace":"re8ch-anysite","secretName":"anysite-db-credentials","secretUID":"ecb4edf3-eb40-4b0e-ab28-7bf3dab490c4","tenantRef":"re8ch"},{"database":"secretary","namespace":"re8ch-secretary","secretName":"secretary-db-credentials","secretUID":"e31d554c-5cf8-4663-adcd-811849a31b3c","tenantRef":"re8ch"}]'
+        - name: STALWART_URL
+          value: https://stalwart-admin.service.re8ch.com
         resources:
           requests:
             cpu: 25m
